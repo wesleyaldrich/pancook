@@ -1,6 +1,7 @@
 package com.wesleyaldrich.pancook.ui.screens
 
 import androidx.annotation.ColorRes
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -48,8 +49,11 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.text.style.TextDecoration
 import com.wesleyaldrich.pancook.R
 import com.wesleyaldrich.pancook.model.Ingredient
 import com.wesleyaldrich.pancook.model.Recipe
@@ -104,7 +108,7 @@ fun getDummyPlannerData(upcoming: Boolean): Map<String, Map<Recipe, Int>> {
         mapOf(
             "01-07-2025" to mapOf(
                 Recipe(
-                    id = 2,
+                    id = 3,
                     title = "French Toast",
                     description = "Delicious toast",
                     imageUrl = "",
@@ -133,10 +137,10 @@ fun PlannerScreen() {
         // Tab Container with rounded corners
         Box(
             modifier = Modifier
-                .padding(16.dp)
+                .padding(top = 10.dp, start = 10.dp, end = 10.dp)
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
-                .background(Color(0xFFE0E0E0)) // light gray background for container
+                .clip(RoundedCornerShape(16.dp))
+                .background(color = colorResource(R.color.primary))
         ) {
             Row(
                 modifier = Modifier
@@ -161,7 +165,10 @@ fun PlannerScreen() {
                     ) {
                         Text(
                             text = title,
-                            color = Color.Black
+                            color = if(isSelected) Color.Black else Color.White,
+                            fontFamily = nunito,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 18.sp
                         )
                     }
                 }
@@ -181,22 +188,35 @@ fun PlannerScreen() {
 
 @Composable
 fun PlannerList(modifier: Modifier = Modifier, data: Map<String, Map<Recipe, Int>>) {
-    LazyColumn(modifier = Modifier
-        .fillMaxSize()
-        .padding(10.dp, 10.dp)
+    val checkedStates = remember {
+        mutableStateMapOf<Int, Boolean>() // key = recipe.id, value = checked
+    }
+
+    LazyColumn(
+        modifier = modifier
+            .fillMaxSize()
+            .padding(10.dp)
     ) {
-        data.forEach {(dateStr, recipeForDate) ->
+        data.forEach { (dateStr, recipeMap) ->
             item {
                 DateSectionHeader(title = formatDateHeader(dateStr))
             }
-            recipeForDate.forEach {(recipe, sc) ->
+            recipeMap.forEach { (recipe, serveCount) ->
                 item {
-                    PlanItem(title = recipe.title, serveCount = sc)
+                    PlanCard(
+                        title = recipe.title,
+                        serveCount = serveCount,
+                        isChecked = checkedStates[recipe.id] ?: false,
+                        onCheckedChange = { newValue ->
+                            checkedStates[recipe.id] = newValue
+                        }
+                    )
                 }
             }
         }
     }
 }
+
 
 fun formatDateHeader(dateString: String): String {
     val inputFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy", Locale.getDefault())
@@ -262,79 +282,67 @@ fun CircularCheckbox(
 }
 
 @Composable
-fun PlanItem(title :String, serveCount : Int) {
-    val checkboxStates = remember { mutableStateListOf(false) }
-    // Container
-    Box(
+fun PlanCard(
+    title: String,
+    serveCount: Int,
+    isChecked: Boolean,
+    onCheckedChange: (Boolean) -> Unit
+) {
+    val textAlpha by animateFloatAsState(
+        targetValue = if (isChecked) 0.5f else 1f,
+        label = "TextAlpha"
+    )
+    val textDecoration = if (isChecked) TextDecoration.LineThrough else TextDecoration.None
+
+    Row(
         modifier = Modifier
-            .padding(vertical = 5.dp)
-//            .background(
-//                color = colorResource(id = R.color.primary),
-//                shape = RoundedCornerShape(4.dp)
-//            )
+            .fillMaxWidth()
+            .padding(horizontal = 12.dp, vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        // Layout Row
-        Row(
+        // Image Container
+        Box(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 12.dp, vertical = 8.dp)
-                ,
-            verticalAlignment = Alignment.CenterVertically
+                .size(55.dp)
+                .clip(CircleShape)
+                .background(Color.Gray.copy(alpha = if (isChecked) 0.3f else 1f))
         ) {
-            // Image Container
-            Box(
-                modifier = Modifier
-                    .size(55.dp)
-                    .clip(CircleShape)
-                    .background(Color.Gray)
-            ) {
-                Image(
-                    painter = painterResource(id = R.drawable.hash_brown),
-                    contentDescription = null
-                )
-            }
-
-            Spacer(modifier = Modifier.width(10.dp))
-
-            // info Container
-            Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .align(Alignment.Top)
-            ) {
-                Text(
-                    text = title,
-                    fontFamily = nunito,
-                    fontWeight = FontWeight.Medium,
-                    fontSize = 18.sp,
-//                    color = Color.White
-                )
-                Spacer(modifier = Modifier.height(0.dp))
-                Text(
-                    text = "$serveCount " +
-                            "people",
-                    fontFamily = nunito,
-                    fontWeight = FontWeight.Normal,
-                    fontSize = 12.sp,
-//                    color = Color.White
-                )
-            }
-
-            Spacer(modifier = Modifier.width(10.dp))
-
-            // Action button container
-            Row (
-                modifier = Modifier,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                checkboxStates.forEachIndexed({index, isChecked ->
-                    CircularCheckbox(
-                        checked = isChecked,
-                        onCheckedChange = { checkboxStates[index] = it }
-                    )
-                })
-            }
+            Image(
+                painter = painterResource(id = R.drawable.hash_brown),
+                contentDescription = null,
+                modifier = Modifier.fillMaxSize()
+            )
         }
+
+        Spacer(modifier = Modifier.width(10.dp))
+
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .alpha(textAlpha)
+        ) {
+            Text(
+                text = title,
+                fontFamily = nunito,
+                fontWeight = FontWeight.Medium,
+                fontSize = 18.sp,
+                textDecoration = textDecoration
+            )
+            Text(
+                text = "$serveCount people",
+                fontFamily = nunito,
+                fontWeight = FontWeight.Normal,
+                fontSize = 12.sp,
+                textDecoration = textDecoration
+            )
+        }
+
+        Spacer(modifier = Modifier.width(10.dp))
+
+        CircularCheckbox(
+            checked = isChecked,
+            onCheckedChange = onCheckedChange
+        )
     }
 }
 
