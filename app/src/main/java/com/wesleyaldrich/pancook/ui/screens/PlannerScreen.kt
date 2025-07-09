@@ -53,6 +53,8 @@ import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.text.style.TextDecoration
 import com.wesleyaldrich.pancook.R
 import com.wesleyaldrich.pancook.model.Ingredient
@@ -60,7 +62,7 @@ import com.wesleyaldrich.pancook.model.Recipe
 import com.wesleyaldrich.pancook.ui.theme.inter
 import com.wesleyaldrich.pancook.ui.theme.montserrat
 import com.wesleyaldrich.pancook.ui.theme.nunito
-import com.wesleyaldrich.pancook.ui.theme.poppins
+import com.wesleyaldrich.pancook.ui.theme.nunito
 import org.w3c.dom.Text
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -195,7 +197,7 @@ fun PlannerList(modifier: Modifier = Modifier, data: Map<String, Map<Recipe, Int
     LazyColumn(
         modifier = modifier
             .fillMaxSize()
-            .padding(10.dp)
+            .padding(horizontal = 10.dp)
     ) {
         data.forEach { (dateStr, recipeMap) ->
             item {
@@ -229,25 +231,35 @@ fun formatDateHeader(dateString: String): String {
     }
 }
 
+fun Modifier.bottomBorder(strokeWidth: Dp = 1.dp, color: Color = Color.Black): Modifier = this.then(
+    Modifier.drawBehind {
+        val strokePx = strokeWidth.toPx()
+        val y = size.height - strokePx / 2
+        drawLine(
+            color = color,
+            start = Offset(0f, y),
+            end = Offset(size.width, y),
+            strokeWidth = strokePx
+        )
+    }
+)
 
 @Composable
 fun DateSectionHeader(title: String) {
     Box(modifier = Modifier
-        .wrapContentWidth()
+//        .wrapContentWidth()
+        .fillMaxWidth()
         .padding(vertical = 8.dp)
-        .background(
-            color = colorResource(id = R.color.primary),
-            shape = RoundedCornerShape(10.dp)
-        )
+        .bottomBorder(1.dp, Color.Black)
     ) {
         Text(
             text = title,
             fontFamily = nunito,
             fontSize = 18.sp,
             fontWeight = FontWeight.Bold,
-            color = Color.White,
+            color = Color.Black,
             modifier = Modifier
-                .padding(horizontal = 14.dp, vertical = 5.dp)
+//                .padding(horizontal = 14.dp, vertical = 5.dp)
         )
     }
 }
@@ -294,55 +306,68 @@ fun PlanCard(
     )
     val textDecoration = if (isChecked) TextDecoration.LineThrough else TextDecoration.None
 
-    Row(
+    Box(
         modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 12.dp, vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        // Image Container
-        Box(
-            modifier = Modifier
-                .size(55.dp)
-                .clip(CircleShape)
-                .background(Color.Gray.copy(alpha = if (isChecked) 0.3f else 1f))
-        ) {
-            Image(
-                painter = painterResource(id = R.drawable.hash_brown),
-                contentDescription = null,
-                modifier = Modifier.fillMaxSize()
-            )
-        }
-
-        Spacer(modifier = Modifier.width(10.dp))
-
-        Column(
-            modifier = Modifier
-                .weight(1f)
-                .alpha(textAlpha)
-        ) {
-            Text(
-                text = title,
-                fontFamily = nunito,
-                fontWeight = FontWeight.Medium,
-                fontSize = 18.sp,
-                textDecoration = textDecoration
-            )
-            Text(
-                text = "$serveCount people",
-                fontFamily = nunito,
-                fontWeight = FontWeight.Normal,
-                fontSize = 12.sp,
-                textDecoration = textDecoration
-            )
-        }
-
-        Spacer(modifier = Modifier.width(10.dp))
-
-        CircularCheckbox(
-            checked = isChecked,
-            onCheckedChange = onCheckedChange
+            .padding(bottom = 5.dp)
+            .background(
+            color = colorResource(R.color.primary),
+            shape = RoundedCornerShape(10.dp)
         )
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 12.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Image Container
+            Box(
+                modifier = Modifier
+                    .size(55.dp)
+                    .clip(CircleShape)
+                    .background(Color.Gray.copy(alpha = if (isChecked) 0.3f else 1f))
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.hash_brown),
+                    contentDescription = null,
+                    modifier = Modifier.fillMaxSize()
+                )
+            }
+
+            Spacer(modifier = Modifier.width(10.dp))
+
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .height(55.dp)
+                    .alpha(textAlpha),
+                verticalArrangement = Arrangement.Top,
+            ) {
+                Text(
+                    text = title,
+                    fontFamily = nunito,
+                    fontWeight = FontWeight.Medium,
+                    fontSize = 18.sp,
+                    color = Color.White,
+                    textDecoration = textDecoration
+                )
+                Text(
+                    text = "$serveCount people",
+                    fontFamily = nunito,
+                    fontWeight = FontWeight.Normal,
+                    fontSize = 12.sp,
+                    color = Color.White,
+                    textDecoration = textDecoration
+                )
+            }
+
+            Spacer(modifier = Modifier.width(10.dp))
+
+            CircularCheckbox(
+                checked = isChecked,
+                onCheckedChange = onCheckedChange
+            )
+        }
     }
 }
 
