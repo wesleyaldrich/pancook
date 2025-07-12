@@ -9,6 +9,7 @@ import androidx.navigation.compose.composable
 import com.wesleyaldrich.pancook.ui.screens.HomeScreen
 import com.wesleyaldrich.pancook.ui.screens.MyRecipeScreen
 import com.wesleyaldrich.pancook.ui.screens.PlannerScreen
+import com.wesleyaldrich.pancook.ui.screens.GroceryScreen
 import com.wesleyaldrich.pancook.ui.screens.ProfileScreen
 
 @Composable
@@ -20,7 +21,7 @@ fun NavigationGraph(navController: NavHostController, modifier: Modifier = Modif
     ) {
         composable(Screen.Home.route) { HomeScreen() }
         composable(Screen.MyRecipe.route) { MyRecipeScreen() }
-        composable(Screen.Planner.route) { PlannerScreen() }
+        composable(Screen.Planner.route) { GroceryScreen() }
         composable(Screen.Profile.route) { ProfileScreen() }
     }
 }
