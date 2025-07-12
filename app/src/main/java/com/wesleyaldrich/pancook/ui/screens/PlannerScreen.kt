@@ -197,7 +197,7 @@ fun PlannerList(modifier: Modifier = Modifier, data: Map<String, Map<Recipe, Int
     LazyColumn(
         modifier = modifier
             .fillMaxSize()
-            .padding(horizontal = 10.dp)
+            .padding(horizontal = 15.dp)
     ) {
         data.forEach { (dateStr, recipeMap) ->
             item {
