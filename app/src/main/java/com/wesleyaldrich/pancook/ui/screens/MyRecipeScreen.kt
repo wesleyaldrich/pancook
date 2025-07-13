@@ -32,7 +32,7 @@ fun MyRecipeScreen() {
                     description = "by Me",
                     steps = listOf("Step 1", "Step 2"),
                     ingredients = listOf(
-                        Ingredient("1", "Potatoes", 3, "pcs")
+                        Ingredient("Potatoes", 3, "pcs")
                     ),
                     servings = 2,
                     duration = "15 min",
@@ -45,7 +45,7 @@ fun MyRecipeScreen() {
                     description = "by Me",
                     steps = listOf("Step 1", "Step 2"),
                     ingredients = listOf(
-                        Ingredient("1", "Potatoes", 3, "pcs")
+                        Ingredient("Potatoes", 3, "pcs")
                     ),
                     servings = 2,
                     duration = "20 min",
@@ -58,7 +58,7 @@ fun MyRecipeScreen() {
                     description = "by Me",
                     steps = listOf("Step 1", "Step 2"),
                     ingredients = listOf(
-                        Ingredient("1", "Potatoes", 3, "pcs")
+                        Ingredient("Potatoes", 3, "pcs")
                     ),
                     servings = 2,
                     duration = "30 min",
@@ -71,7 +71,7 @@ fun MyRecipeScreen() {
                     description = "by Me",
                     steps = listOf("Step 1", "Step 2"),
                     ingredients = listOf(
-                        Ingredient("1", "Potatoes", 3, "pcs")
+                        Ingredient("Potatoes", 3, "pcs")
                     ),
                     servings = 2,
                     duration = "45 min",
@@ -84,7 +84,7 @@ fun MyRecipeScreen() {
                     description = "by Me",
                     steps = listOf("Step 1", "Step 2"),
                     ingredients = listOf(
-                        Ingredient("1", "Potatoes", 3, "pcs")
+                        Ingredient("Potatoes", 3, "pcs")
                     ),
                     servings = 2,
                     duration = "25 min",
@@ -97,7 +97,7 @@ fun MyRecipeScreen() {
                     description = "by Me",
                     steps = listOf("Step 1", "Step 2"),
                     ingredients = listOf(
-                        Ingredient("1", "Potatoes", 3, "pcs")
+                        Ingredient("Potatoes", 3, "pcs")
                     ),
                     servings = 2,
                     duration = "35 min",
@@ -110,7 +110,7 @@ fun MyRecipeScreen() {
                     description = "by Me",
                     steps = listOf("Step 1", "Step 2"),
                     ingredients = listOf(
-                        Ingredient("1", "Potatoes", 3, "pcs")
+                        Ingredient("Potatoes", 3, "pcs")
                     ),
                     servings = 2,
                     duration = "60 min",
@@ -123,7 +123,7 @@ fun MyRecipeScreen() {
                     description = "by Me",
                     steps = listOf("Step 1", "Step 2"),
                     ingredients = listOf(
-                        Ingredient("1", "Potatoes", 3, "pcs")
+                        Ingredient("Potatoes", 3, "pcs")
                     ),
                     servings = 2,
                     duration = "10 min",

@@ -88,7 +88,7 @@ fun getDummyPlannerData(upcoming: Boolean): Map<String, Map<Recipe, Int>> {
                     description = "Crispy and golden",
                     image = R.drawable.hash_brown,
                     ingredients = listOf(
-                        Ingredient("1", "Potatoes", 3, "pcs")
+                        Ingredient("Potatoes", 3, "pcs")
                     ),
                     steps = listOf("Step 1", "Step 2"),
                     servings = 2,
@@ -100,7 +100,7 @@ fun getDummyPlannerData(upcoming: Boolean): Map<String, Map<Recipe, Int>> {
                     description = "Crispy and Fudgy",
                     image = R.drawable.fudgy_brownies,
                     ingredients = listOf(
-                        Ingredient("1", "Potatoes", 3, "pcs")
+                        Ingredient("Potatoes", 3, "pcs")
                     ),
                     steps = listOf("Step 1", "Step 2"),
                     servings = 2,
@@ -117,7 +117,7 @@ fun getDummyPlannerData(upcoming: Boolean): Map<String, Map<Recipe, Int>> {
                     description = "Delicious toast",
                     image = R.drawable.hash_brown,
                     ingredients = listOf(
-                        Ingredient("2", "Bread", 4, "slices")
+                        Ingredient("Bread", 4, "slices")
                     ),
                     steps = listOf("Step 1", "Step 2"),
                     servings = 1,
