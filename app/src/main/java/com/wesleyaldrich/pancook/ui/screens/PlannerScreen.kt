@@ -86,7 +86,7 @@ fun getDummyPlannerData(upcoming: Boolean): Map<String, Map<Recipe, Int>> {
                     id = 1,
                     title = "Hash Browns",
                     description = "Crispy and golden",
-                    imageUrl = "",
+                    image = R.drawable.hash_brown,
                     ingredients = listOf(
                         Ingredient("1", "Potatoes", 3, "pcs")
                     ),
@@ -95,9 +95,9 @@ fun getDummyPlannerData(upcoming: Boolean): Map<String, Map<Recipe, Int>> {
                 ) to 2,
                 Recipe(
                     id = 2,
-                    title = "Hash Brownies",
-                    description = "Crispy and golden",
-                    imageUrl = "",
+                    title = "Fudgy Brownies",
+                    description = "Crispy and Fudgy",
+                    image = R.drawable.fudgy_brownies,
                     ingredients = listOf(
                         Ingredient("1", "Potatoes", 3, "pcs")
                     ),
@@ -113,7 +113,7 @@ fun getDummyPlannerData(upcoming: Boolean): Map<String, Map<Recipe, Int>> {
                     id = 3,
                     title = "French Toast",
                     description = "Delicious toast",
-                    imageUrl = "",
+                    image = R.drawable.hash_brown,
                     ingredients = listOf(
                         Ingredient("2", "Bread", 4, "slices")
                     ),
@@ -206,7 +206,7 @@ fun PlannerList(modifier: Modifier = Modifier, data: Map<String, Map<Recipe, Int
             recipeMap.forEach { (recipe, serveCount) ->
                 item {
                     PlanCard(
-                        title = recipe.title,
+                        recipe = recipe,
                         serveCount = serveCount,
                         isChecked = checkedStates[recipe.id] ?: false,
                         onCheckedChange = { newValue ->
@@ -295,7 +295,7 @@ fun CircularCheckbox(
 
 @Composable
 fun PlanCard(
-    title: String,
+    recipe: Recipe,
     serveCount: Int,
     isChecked: Boolean,
     onCheckedChange: (Boolean) -> Unit
@@ -328,7 +328,7 @@ fun PlanCard(
                     .background(Color.Gray.copy(alpha = if (isChecked) 0.3f else 1f))
             ) {
                 Image(
-                    painter = painterResource(id = R.drawable.hash_brown),
+                    painter = painterResource(id = recipe.image),
                     contentDescription = null,
                     modifier = Modifier.fillMaxSize()
                 )
@@ -344,7 +344,7 @@ fun PlanCard(
                 verticalArrangement = Arrangement.Top,
             ) {
                 Text(
-                    text = title,
+                    text = recipe.title,
                     fontFamily = nunito,
                     fontWeight = FontWeight.Medium,
                     fontSize = 18.sp,
