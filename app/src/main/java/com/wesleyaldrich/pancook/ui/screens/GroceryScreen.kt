@@ -13,40 +13,57 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.max
 import androidx.compose.ui.unit.sp
 import com.wesleyaldrich.pancook.R
 import com.wesleyaldrich.pancook.model.Ingredient
@@ -54,7 +71,7 @@ import com.wesleyaldrich.pancook.model.Recipe
 import com.wesleyaldrich.pancook.ui.theme.nunito
 import com.wesleyaldrich.pancook.ui.theme.poppins
 
-fun getDummyRecipes(): List<Recipe> {
+fun getDummyRecipes(): Map<Recipe, Int> {
     val ingredientList1 = listOf(
         Ingredient("Spaghetti", 200, "g"),
         Ingredient("Ground Beef", 150, "g"),
@@ -74,45 +91,51 @@ fun getDummyRecipes(): List<Recipe> {
     val ingredientList3 = listOf(
         Ingredient("Chicken Breast", 200, "g"),
         Ingredient("Salt", 1, "tsp"),
-        Ingredient("Pepper", 1/2, "tsp"),
+        Ingredient("Pepper", 1, "tsp"), // Fixed from 1/2 to 1 for Int type
         Ingredient("Rosemary", 1, "tsp"),
         Ingredient("Olive oil", 1, "tbsp")
     )
 
-    return listOf(
-        Recipe(
-            id = 1,
-            title = "Spaghetti Bolognese",
-            description = "A classic Italian pasta dish with meat sauce.",
-            image = R.drawable.hash_brown,
-            ingredients = ingredientList1,
-            steps = listOf("Boil pasta", "Cook beef", "Add sauce", "Mix together"),
-            servings = 2,
-            duration = "30 min",
-            likeCount = 124
-        ),
-        Recipe(
-            id = 2,
-            title = "Fresh Garden Salad",
-            description = "A healthy and fresh salad mix.",
-            image = R.drawable.salad,
-            ingredients = ingredientList2,
-            steps = listOf("Chop veggies", "Toss with oil", "Add cheese"),
-            servings = 1,
-            duration = "15 min",
-            likeCount = 89
-        ),
-        Recipe(
-            id = 3,
-            title = "Grilled Chicken",
-            description = "Juicy grilled chicken breast with herbs.",
-            image = R.drawable.fudgy_brownies,
-            ingredients = ingredientList3,
-            steps = listOf("Season chicken", "Heat pan", "Grill 7 min each side"),
-            servings = 2,
-            duration = "25 min",
-            likeCount = 176
-        )
+    val recipe1 = Recipe(
+        id = 1,
+        title = "Spaghetti Bolognese",
+        description = "A classic Italian pasta dish with meat sauce.",
+        image = R.drawable.hash_brown,
+        ingredients = ingredientList1,
+        steps = listOf("Boil pasta", "Cook beef", "Add sauce", "Mix together"),
+        servings = 2,
+        duration = "30 min",
+        likeCount = 124
+    )
+
+    val recipe2 = Recipe(
+        id = 2,
+        title = "Fresh Garden Salad",
+        description = "A healthy and fresh salad mix.",
+        image = R.drawable.salad,
+        ingredients = ingredientList2,
+        steps = listOf("Chop veggies", "Toss with oil", "Add cheese"),
+        servings = 1,
+        duration = "15 min",
+        likeCount = 89
+    )
+
+    val recipe3 = Recipe(
+        id = 3,
+        title = "Grilled Chicken",
+        description = "Juicy grilled chicken breast with herbs.",
+        image = R.drawable.fudgy_brownies,
+        ingredients = ingredientList3,
+        steps = listOf("Season chicken", "Heat pan", "Grill 7 min each side"),
+        servings = 2,
+        duration = "25 min",
+        likeCount = 176
+    )
+
+    return mapOf(
+        recipe1 to 4, // Custom serveCount
+        recipe2 to 2,
+        recipe3 to 3
     )
 }
 
@@ -124,7 +147,8 @@ fun GroceryScreen(
     onRemoveClick: (Recipe) -> Unit
 )
 {
-    val recipes = getDummyRecipes()
+    val originalMap = getDummyRecipes()
+    val recipes = remember { mutableStateMapOf<Recipe, Int>().apply { putAll(originalMap) } }
 
     Column(
         modifier = Modifier
@@ -172,13 +196,17 @@ fun GroceryScreen(
 //            contentPadding = PaddingValues(horizontal = 4.dp),
             horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            recipes.forEach { recipe ->
+            recipes.forEach { (recipe, serveCount) ->
                 item {
                     RecipeCardMini(
                         recipe = recipe,
+                        serveCount = serveCount,
                         imagePainter = painterResource(id = recipe.image),
-                        onClick = {onRecipeClick(recipe)},
-                        onRemoveClick = { onRemoveClick(recipe) }
+                        onClick = { onRecipeClick(recipe) },
+                        onRemoveClick = { onRemoveClick(recipe) },
+                        onServeCountChange = { newCount ->
+                            recipes[recipe] = newCount
+                        }
                     )
                 }
             }
@@ -189,38 +217,39 @@ fun GroceryScreen(
 @Composable
 fun RecipeCardMini(
     recipe: Recipe,
+    serveCount: Int,
     imagePainter: Painter,
     onClick: () -> Unit,
-    onRemoveClick: () -> Unit
+    onRemoveClick: () -> Unit,
+    onServeCountChange: (Int) -> Unit
 ) {
+    val expanded = remember { mutableStateOf(false) }
+    val dropdownAnchor = remember { mutableStateOf<Offset?>(null) }
+    val density = LocalDensity.current
+
     Card(
         modifier = Modifier
-            .width(180.dp)
-            .height(150.dp),
+            .width(175.dp)
+            .height(165.dp),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = colorResource(R.color.white)),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
-        Column(
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            // Top Content
+        Column(modifier = Modifier.fillMaxWidth()) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(90.dp)
+                    .height(110.dp)
                     .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
+                    .clickable { onClick() }
             ) {
                 Image(
                     painter = imagePainter,
                     contentDescription = "Card Image",
                     contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .fillMaxWidth()
-//                        .height(180.dp)
+                    modifier = Modifier.fillMaxSize()
                 )
 
-                // Top Row
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -229,47 +258,92 @@ fun RecipeCardMini(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Row (modifier = Modifier
-                        .background(
-                            colorResource(R.color.primary).copy(alpha = 0.8f),
-                            RoundedCornerShape(12.dp)
-                        )
-                        .padding(horizontal = 9.dp, vertical = 4.dp)
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .background(
+                                colorResource(R.color.primary).copy(alpha = 0.8f),
+                                RoundedCornerShape(12.dp)
+                            )
+                            .padding(horizontal = 8.dp, vertical = 4.dp)
                     ) {
                         Icon(
-                            imageVector = Icons.Default.Favorite,
-                            contentDescription = "Likes",
+                            imageVector = Icons.Default.Person,
+                            contentDescription = "Serve Count",
                             tint = colorResource(R.color.accent_yellow),
                             modifier = Modifier.size(14.dp)
                         )
                         Spacer(modifier = Modifier.width(5.dp))
                         Text(
-                            text = recipe.duration,
+                            text = serveCount.toString(),
                             fontFamily = nunito,
                             fontWeight = FontWeight.SemiBold,
                             fontSize = 12.sp,
                             color = colorResource(R.color.accent_yellow),
                         )
-                    }
-                    Row {
+                        Spacer(modifier = Modifier.width(2.dp))
+
                         Box(
                             modifier = Modifier
-                                .size(30.dp)
-                                .clip(RoundedCornerShape(20.dp))
-                                .background(colorResource(R.color.primary).copy(alpha = 0.75f)),
-                            contentAlignment = Alignment.Center
+                                .wrapContentSize(Alignment.TopStart)
+                                .onGloballyPositioned { coordinates ->
+                                    val originalOffset = coordinates.localToWindow(Offset.Zero)
+                                    val shiftedOffset = originalOffset.copy(x = originalOffset.x - 500) // shift left by 50 pixels
+                                    dropdownAnchor.value = shiftedOffset
+                                }
                         ) {
                             Icon(
-                                imageVector = Icons.Default.Clear,
-                                contentDescription = "Delete",
+                                imageVector = Icons.Default.ArrowDropDown,
+                                contentDescription = "Change Serve Count",
                                 tint = colorResource(R.color.accent_yellow),
-                                modifier = Modifier.size(16.dp)
+                                modifier = Modifier
+                                    .size(18.dp)
+                                    .clickable { expanded.value = true }
                             )
+
+                            DropdownMenu(
+                                expanded = expanded.value,
+                                onDismissRequest = { expanded.value = false },
+                                modifier = Modifier
+                                    .background(colorResource(R.color.primary))
+                                    .width(70.dp)
+                                    .heightIn(max = 200.dp)
+                            ) {
+                                (1..15).forEach { count ->
+                                    DropdownMenuItem(
+                                        text = { Text(
+                                            text = "$count",
+                                            fontFamily = nunito,
+                                            color = Color.White
+                                        ) },
+                                        onClick = {
+                                            onServeCountChange(count)
+                                            expanded.value = false
+                                        }
+                                    )
+                                }
+                            }
                         }
+                    }
+
+                    Box(
+                        modifier = Modifier
+                            .size(30.dp)
+                            .clip(RoundedCornerShape(20.dp))
+                            .background(colorResource(R.color.primary).copy(alpha = 0.75f))
+                            .clickable { onRemoveClick() },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Clear,
+                            contentDescription = "Delete",
+                            tint = colorResource(R.color.accent_yellow),
+                            modifier = Modifier.size(16.dp)
+                        )
                     }
                 }
 
-                // Like row
+                // Like count
                 Row(
                     modifier = Modifier
                         .align(Alignment.BottomStart)
@@ -297,7 +371,6 @@ fun RecipeCardMini(
                 }
             }
 
-            // Recipe detail
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
