@@ -15,6 +15,8 @@ import com.wesleyaldrich.pancook.ui.components.ReusableCard
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
+import com.wesleyaldrich.pancook.model.Ingredient
+import com.wesleyaldrich.pancook.model.Recipe
 
 @Composable
 fun MyRecipeScreen() {
@@ -24,58 +26,106 @@ fun MyRecipeScreen() {
         recipes.addAll(
             listOf(
                 Recipe(
-                    imageResId = R.drawable.salad,
+                    id = 4,
+                    image = R.drawable.salad,
                     title = "Delicious Salad",
                     description = "by Me",
+                    steps = listOf("Step 1", "Step 2"),
+                    ingredients = listOf(
+                        Ingredient("1", "Potatoes", 3, "pcs")
+                    ),
+                    servings = 2,
                     duration = "15 min",
                     likeCount = 1234 
                 ),
                 Recipe(
-                    imageResId = R.drawable.salad,
+                    id = 5,
+                    image = R.drawable.salad,
                     title = "Spicy Noodles",
                     description = "by Me",
+                    steps = listOf("Step 1", "Step 2"),
+                    ingredients = listOf(
+                        Ingredient("1", "Potatoes", 3, "pcs")
+                    ),
+                    servings = 2,
                     duration = "20 min",
                     likeCount = 567
                 ),
                 Recipe(
-                    imageResId = R.drawable.salad,
+                    id = 6,
+                    image = R.drawable.salad,
                     title = "Chicken Stir-fry",
                     description = "by Me",
+                    steps = listOf("Step 1", "Step 2"),
+                    ingredients = listOf(
+                        Ingredient("1", "Potatoes", 3, "pcs")
+                    ),
+                    servings = 2,
                     duration = "30 min",
                     likeCount = 890
                 ),
                 Recipe(
-                    imageResId = R.drawable.salad,
+                    id = 7,
+                    image = R.drawable.salad,
                     title = "Vegetable Curry",
                     description = "by Me",
+                    steps = listOf("Step 1", "Step 2"),
+                    ingredients = listOf(
+                        Ingredient("1", "Potatoes", 3, "pcs")
+                    ),
+                    servings = 2,
                     duration = "45 min",
                     likeCount = 123
                 ),
                 Recipe(
-                    imageResId = R.drawable.salad,
+                    id = 8,
+                    image = R.drawable.salad,
                     title = "Creamy Pasta",
                     description = "by Me",
+                    steps = listOf("Step 1", "Step 2"),
+                    ingredients = listOf(
+                        Ingredient("1", "Potatoes", 3, "pcs")
+                    ),
+                    servings = 2,
                     duration = "25 min",
                     likeCount = 456
                 ),
                 Recipe(
-                    imageResId = R.drawable.salad,
+                    id = 9,
+                    image = R.drawable.salad,
                     title = "Grilled Fish",
                     description = "by Me",
+                    steps = listOf("Step 1", "Step 2"),
+                    ingredients = listOf(
+                        Ingredient("1", "Potatoes", 3, "pcs")
+                    ),
+                    servings = 2,
                     duration = "35 min",
                     likeCount = 789
                 ),
                 Recipe(
-                    imageResId = R.drawable.salad,
+                    id = 11,
+                    image = R.drawable.salad,
                     title = "Beef Stew",
                     description = "by Me",
+                    steps = listOf("Step 1", "Step 2"),
+                    ingredients = listOf(
+                        Ingredient("1", "Potatoes", 3, "pcs")
+                    ),
+                    servings = 2,
                     duration = "60 min",
                     likeCount = 101
                 ),
                 Recipe(
-                    imageResId = R.drawable.salad,
+                    id = 12,
+                    image = R.drawable.salad,
                     title = "Tomato Soup",
                     description = "by Me",
+                    steps = listOf("Step 1", "Step 2"),
+                    ingredients = listOf(
+                        Ingredient("1", "Potatoes", 3, "pcs")
+                    ),
+                    servings = 2,
                     duration = "10 min",
                     likeCount = 202
                 )
@@ -93,7 +143,7 @@ fun MyRecipeScreen() {
         ) {
             items(recipes) { recipe ->
                 ReusableCard(
-                    imagePainter = painterResource(id = recipe.imageResId),
+                    imagePainter = painterResource(id = recipe.image),
                     title = recipe.title,
                     description = recipe.description,
                     duration = recipe.duration,
@@ -103,14 +153,6 @@ fun MyRecipeScreen() {
         }
     }
 }
-
-data class Recipe(
-    val imageResId: Int,
-    val title: String,
-    val description: String,
-    val duration: String,
-    val likeCount: Int = 0
-)
 
 @Preview(showBackground = true)
 @Composable

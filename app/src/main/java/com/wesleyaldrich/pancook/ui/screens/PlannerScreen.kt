@@ -86,23 +86,25 @@ fun getDummyPlannerData(upcoming: Boolean): Map<String, Map<Recipe, Int>> {
                     id = 1,
                     title = "Hash Browns",
                     description = "Crispy and golden",
-                    imageUrl = "",
+                    image = R.drawable.hash_brown,
                     ingredients = listOf(
                         Ingredient("1", "Potatoes", 3, "pcs")
                     ),
                     steps = listOf("Step 1", "Step 2"),
-                    servings = 2
+                    servings = 2,
+                    duration = "20 min"
                 ) to 2,
                 Recipe(
                     id = 2,
-                    title = "Hash Brownies",
-                    description = "Crispy and golden",
-                    imageUrl = "",
+                    title = "Fudgy Brownies",
+                    description = "Crispy and Fudgy",
+                    image = R.drawable.fudgy_brownies,
                     ingredients = listOf(
                         Ingredient("1", "Potatoes", 3, "pcs")
                     ),
                     steps = listOf("Step 1", "Step 2"),
-                    servings = 2
+                    servings = 2,
+                    duration = "1 hour"
                 ) to 3
             )
         )
@@ -113,12 +115,13 @@ fun getDummyPlannerData(upcoming: Boolean): Map<String, Map<Recipe, Int>> {
                     id = 3,
                     title = "French Toast",
                     description = "Delicious toast",
-                    imageUrl = "",
+                    image = R.drawable.hash_brown,
                     ingredients = listOf(
                         Ingredient("2", "Bread", 4, "slices")
                     ),
                     steps = listOf("Step 1", "Step 2"),
-                    servings = 1
+                    servings = 1,
+                    duration = "30 min"
                 ) to 1
             )
         )
@@ -197,7 +200,7 @@ fun PlannerList(modifier: Modifier = Modifier, data: Map<String, Map<Recipe, Int
     LazyColumn(
         modifier = modifier
             .fillMaxSize()
-            .padding(horizontal = 10.dp)
+            .padding(horizontal = 15.dp)
     ) {
         data.forEach { (dateStr, recipeMap) ->
             item {
@@ -206,7 +209,7 @@ fun PlannerList(modifier: Modifier = Modifier, data: Map<String, Map<Recipe, Int
             recipeMap.forEach { (recipe, serveCount) ->
                 item {
                     PlanCard(
-                        title = recipe.title,
+                        recipe = recipe,
                         serveCount = serveCount,
                         isChecked = checkedStates[recipe.id] ?: false,
                         onCheckedChange = { newValue ->
@@ -295,7 +298,7 @@ fun CircularCheckbox(
 
 @Composable
 fun PlanCard(
-    title: String,
+    recipe: Recipe,
     serveCount: Int,
     isChecked: Boolean,
     onCheckedChange: (Boolean) -> Unit
@@ -328,7 +331,7 @@ fun PlanCard(
                     .background(Color.Gray.copy(alpha = if (isChecked) 0.3f else 1f))
             ) {
                 Image(
-                    painter = painterResource(id = R.drawable.hash_brown),
+                    painter = painterResource(id = recipe.image),
                     contentDescription = null,
                     modifier = Modifier.fillMaxSize()
                 )
@@ -344,7 +347,7 @@ fun PlanCard(
                 verticalArrangement = Arrangement.Top,
             ) {
                 Text(
-                    text = title,
+                    text = recipe.title,
                     fontFamily = nunito,
                     fontWeight = FontWeight.Medium,
                     fontSize = 18.sp,

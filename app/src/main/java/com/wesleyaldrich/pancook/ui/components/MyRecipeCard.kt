@@ -21,7 +21,7 @@ import androidx.compose.ui.unit.dp
 import com.wesleyaldrich.pancook.R
 import com.wesleyaldrich.pancook.ui.theme.PancookTheme
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Bookmark
+//import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.ui.res.colorResource
@@ -104,7 +104,7 @@ fun ReusableCard(
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
-                                imageVector = Icons.Default.Bookmark,
+                                imageVector = Icons.Default.Favorite,
                                 contentDescription = "Save",
                                 tint = colorResource(R.color.accent_yellow),
                                 modifier = Modifier.size(16.dp)
