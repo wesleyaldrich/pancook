@@ -91,7 +91,8 @@ fun getDummyPlannerData(upcoming: Boolean): Map<String, Map<Recipe, Int>> {
                         Ingredient("1", "Potatoes", 3, "pcs")
                     ),
                     steps = listOf("Step 1", "Step 2"),
-                    servings = 2
+                    servings = 2,
+                    duration = "20 min"
                 ) to 2,
                 Recipe(
                     id = 2,
@@ -102,7 +103,8 @@ fun getDummyPlannerData(upcoming: Boolean): Map<String, Map<Recipe, Int>> {
                         Ingredient("1", "Potatoes", 3, "pcs")
                     ),
                     steps = listOf("Step 1", "Step 2"),
-                    servings = 2
+                    servings = 2,
+                    duration = "1 hour"
                 ) to 3
             )
         )
@@ -118,7 +120,8 @@ fun getDummyPlannerData(upcoming: Boolean): Map<String, Map<Recipe, Int>> {
                         Ingredient("2", "Bread", 4, "slices")
                     ),
                     steps = listOf("Step 1", "Step 2"),
-                    servings = 1
+                    servings = 1,
+                    duration = "30 min"
                 ) to 1
             )
         )
