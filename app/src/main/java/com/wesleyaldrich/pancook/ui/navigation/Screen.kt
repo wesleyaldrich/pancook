@@ -1,8 +1,17 @@
 package com.wesleyaldrich.pancook.ui.navigation
 
-sealed class Screen(val route: String, val title: String) {
-    object Home : Screen("home", "Home")
-    object MyRecipe : Screen("my_recipe", "My Recipe")
-    object Planner : Screen("planner", "Planner")
-    object Profile : Screen("profile", "Profile")
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.List
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Event
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.ui.graphics.vector.ImageVector
+
+sealed class Screen(val route: String, val title: String, val icon: ImageVector) {
+    object Home : Screen("home", "Home", Icons.Default.Home)
+    object MyRecipe : Screen("recipe", "My Recipe", Icons.AutoMirrored.Filled.List)
+    object Add : Screen("add", "Add Recipe", Icons.Default.Add)
+    object Planner : Screen("planner", "Planner", Icons.Default.Event)
+    object Profile : Screen("profile", "Profile", Icons.Default.Person)
 }
