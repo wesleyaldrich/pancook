@@ -14,6 +14,7 @@ import com.wesleyaldrich.pancook.ui.screens.MyRecipeScreen
 import com.wesleyaldrich.pancook.ui.screens.PlannerScreen
 import com.wesleyaldrich.pancook.ui.screens.GroceryScreen
 import com.wesleyaldrich.pancook.ui.screens.ProfileScreen
+import com.wesleyaldrich.pancook.ui.screens.SavedRecipeScreen
 
 @Composable
 fun NavigationGraph(navController: NavHostController, modifier: Modifier = Modifier) {
@@ -29,7 +30,9 @@ fun NavigationGraph(navController: NavHostController, modifier: Modifier = Modif
         composable(Screen.Home.route) { HomeScreen() }
         composable(Screen.MyRecipe.route) { MyRecipeScreen() }
         composable(Screen.Add.route) { AddRecipeScreen() }
-        composable(Screen.Planner.route) { GroceryScreen() }
+        composable(Screen.Planner.route) { PlannerScreen() }
         composable(Screen.Profile.route) { ProfileScreen() }
+        composable(Screen.GroceryList.route) { GroceryScreen() }
+        composable(Screen.SavedRecipe.route) { SavedRecipeScreen() }
     }
 }
