@@ -21,7 +21,11 @@ fun NavigationGraph(navController: NavHostController, modifier: Modifier = Modif
     ) {
         composable(Screen.Home.route) { HomeScreen() }
         composable(Screen.MyRecipe.route) { MyRecipeScreen() }
-        composable(Screen.Planner.route) { GroceryScreen() }
+        composable(Screen.Planner.route) { GroceryScreen(
+            onBackClick = {},
+            onRecipeClick = {},
+            onRemoveClick = {},
+        ) }
         composable(Screen.Profile.route) { ProfileScreen() }
     }
 }
