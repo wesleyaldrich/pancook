@@ -1,5 +1,7 @@
 package com.wesleyaldrich.pancook.ui.navigation
 
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
@@ -18,7 +20,11 @@ fun NavigationGraph(navController: NavHostController, modifier: Modifier = Modif
     NavHost(
         navController = navController,
         startDestination = Screen.Home.route,
-        modifier = modifier
+        modifier = modifier,
+        enterTransition    = { EnterTransition.None  },
+        exitTransition     = { ExitTransition.None   },
+        popEnterTransition = { EnterTransition.None  },
+        popExitTransition  = { ExitTransition.None   },
     ) {
         composable(Screen.Home.route) { HomeScreen() }
         composable(Screen.MyRecipe.route) { MyRecipeScreen() }
