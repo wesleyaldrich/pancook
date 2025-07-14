@@ -31,13 +31,12 @@ fun NavigationGraph(navController: NavHostController, modifier: Modifier = Modif
         composable(Screen.MyRecipe.route) { MyRecipeScreen() }
         composable(Screen.Add.route) { AddRecipeScreen() }
         composable(Screen.Planner.route) { PlannerScreen() }
-//        composable(Screen.Planner.route) { GroceryScreen(
-//            onBackClick = {},
-//            onRecipeClick = {},
-//            onRemoveClick = {},
-//        ) }
+        composable(Screen.GroceryList.route) { GroceryScreen(
+            onBackClick = {},
+            onRecipeClick = {},
+            onRemoveClick = {},
+        ) }
         composable(Screen.Profile.route) { ProfileScreen() }
-        composable(Screen.GroceryList.route) { GroceryScreen() }
         composable(Screen.SavedRecipe.route) { SavedRecipeScreen() }
     }
 }
