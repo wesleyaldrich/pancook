@@ -1,5 +1,7 @@
 package com.wesleyaldrich.pancook.ui.screens
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable // Import clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -15,11 +17,15 @@ import com.wesleyaldrich.pancook.ui.components.ReusableCard
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.draw.clip
+import androidx.navigation.NavController // Import NavController
+import androidx.navigation.compose.rememberNavController // For preview only
 import com.wesleyaldrich.pancook.model.Ingredient
 import com.wesleyaldrich.pancook.model.Recipe
+import com.wesleyaldrich.pancook.ui.navigation.Screen // Import Screen
 
 @Composable
-fun MyRecipeScreen() {
+fun MyRecipeScreen(navController: NavController) { // Accept NavController
     val recipes = remember { mutableStateListOf<Recipe>() }
 
     LaunchedEffect(Unit) {
@@ -27,16 +33,16 @@ fun MyRecipeScreen() {
             listOf(
                 Recipe(
                     id = 4,
-                    image = R.drawable.salad,
                     title = "Delicious Salad",
                     description = "by Me",
-                    steps = listOf("Step 1", "Step 2"),
+                    image = R.drawable.salad,
                     ingredients = listOf(
                         Ingredient("1", "Potatoes", 3, "pcs")
                     ),
+                    steps = listOf("Step 1", "Step 2"),
                     servings = 2,
                     duration = "15 min",
-                    likeCount = 1234 
+                    upvoteCount = 1234 // Changed to upvoteCount
                 ),
                 Recipe(
                     id = 5,
@@ -49,7 +55,7 @@ fun MyRecipeScreen() {
                     ),
                     servings = 2,
                     duration = "20 min",
-                    likeCount = 567
+                    upvoteCount = 567 // Changed to upvoteCount
                 ),
                 Recipe(
                     id = 6,
@@ -62,7 +68,7 @@ fun MyRecipeScreen() {
                     ),
                     servings = 2,
                     duration = "30 min",
-                    likeCount = 890
+                    upvoteCount = 890 // Changed to upvoteCount
                 ),
                 Recipe(
                     id = 7,
@@ -75,7 +81,7 @@ fun MyRecipeScreen() {
                     ),
                     servings = 2,
                     duration = "45 min",
-                    likeCount = 123
+                    upvoteCount = 123 // Changed to upvoteCount
                 ),
                 Recipe(
                     id = 8,
@@ -88,7 +94,7 @@ fun MyRecipeScreen() {
                     ),
                     servings = 2,
                     duration = "25 min",
-                    likeCount = 456
+                    upvoteCount = 456 // Changed to upvoteCount
                 ),
                 Recipe(
                     id = 9,
@@ -101,7 +107,7 @@ fun MyRecipeScreen() {
                     ),
                     servings = 2,
                     duration = "35 min",
-                    likeCount = 789
+                    upvoteCount = 789 // Changed to upvoteCount
                 ),
                 Recipe(
                     id = 11,
@@ -114,7 +120,7 @@ fun MyRecipeScreen() {
                     ),
                     servings = 2,
                     duration = "60 min",
-                    likeCount = 101
+                    upvoteCount = 101 // Changed to upvoteCount
                 ),
                 Recipe(
                     id = 12,
@@ -127,7 +133,7 @@ fun MyRecipeScreen() {
                     ),
                     servings = 2,
                     duration = "10 min",
-                    likeCount = 202
+                    upvoteCount = 202 // Changed to upvoteCount
                 )
             )
         )
@@ -147,7 +153,10 @@ fun MyRecipeScreen() {
                     title = recipe.title,
                     description = recipe.description,
                     duration = recipe.duration,
-                    likeCount = recipe.likeCount
+                    upvoteCount = recipe.upvoteCount, // Changed to upvoteCount
+                    modifier = Modifier.clickable { // Add clickable modifier
+                        navController.navigate(Screen.DetailRecipe.createRoute(recipe.id))
+                    }
                 )
             }
         }
@@ -158,6 +167,7 @@ fun MyRecipeScreen() {
 @Composable
 fun MyRecipeScreenPreview() {
     PancookTheme {
-        MyRecipeScreen()
+        // Provide a dummy NavController for preview purposes
+        MyRecipeScreen(navController = rememberNavController())
     }
 }

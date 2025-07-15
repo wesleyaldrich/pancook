@@ -2,15 +2,17 @@ package com.wesleyaldrich.pancook.ui.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
+import androidx.navigation.NavType
 import com.wesleyaldrich.pancook.ui.screens.HomeScreen
 import com.wesleyaldrich.pancook.ui.screens.MyRecipeScreen
 import com.wesleyaldrich.pancook.ui.screens.PlannerScreen
 import com.wesleyaldrich.pancook.ui.screens.GroceryScreen
 import com.wesleyaldrich.pancook.ui.screens.ProfileScreen
+import com.wesleyaldrich.pancook.ui.screens.DetailRecipeScreen // Import the DetailRecipeScreen
 
 @Composable
 fun NavigationGraph(navController: NavHostController, modifier: Modifier = Modifier) {
@@ -20,8 +22,17 @@ fun NavigationGraph(navController: NavHostController, modifier: Modifier = Modif
         modifier = modifier
     ) {
         composable(Screen.Home.route) { HomeScreen() }
-        composable(Screen.MyRecipe.route) { MyRecipeScreen() }
+        composable(Screen.MyRecipe.route) { MyRecipeScreen(navController = navController) }
         composable(Screen.Planner.route) { GroceryScreen() }
         composable(Screen.Profile.route) { ProfileScreen() }
+
+        // New composable for DetailRecipeScreen
+        composable(
+            route = Screen.DetailRecipe.route,
+            arguments = listOf(navArgument("recipeId") { type = NavType.IntType })
+        ) { backStackEntry ->
+            val recipeId = backStackEntry.arguments?.getInt("recipeId") ?: 0
+            DetailRecipeScreen(recipeId = recipeId, navController = navController)
+        }
     }
 }

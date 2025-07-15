@@ -9,5 +9,5 @@ data class Recipe(
     val steps: List<String>,
     val servings: Int,
     val duration: String,
-    val likeCount: Int = 0
+    val upvoteCount: Int = 0
 )

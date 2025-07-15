@@ -27,30 +27,37 @@ fun MainScreen() {
 
     val screens = listOf(Screen.Home, Screen.MyRecipe, Screen.Planner, Screen.Profile)
 
+    // Determine if the current route is the DetailRecipe screen
+    val isDetailRecipeScreen = currentRoute?.startsWith(Screen.DetailRecipe.route.substringBefore('/')) == true
+
     Scaffold(
         topBar = {
-            val currentScreen = screens.find { it.route == currentRoute }
-            TopAppBar(title = { Text(currentScreen?.title ?: "") })
+            if (!isDetailRecipeScreen) { // Conditionally show TopAppBar
+                val currentScreen = screens.find { it.route == currentRoute }
+                TopAppBar(title = { Text(currentScreen?.title ?: "") })
+            }
         },
         bottomBar = {
-            NavigationBar {
-                screens.forEach { screen ->
-                    NavigationBarItem(
-                        selected = currentRoute == screen.route,
-                        onClick = {
-                            if (currentRoute != screen.route) {
-                                navController.navigate(screen.route) {
-                                    popUpTo(navController.graph.startDestinationId) {
-                                        saveState = true
+            if (!isDetailRecipeScreen) { // Conditionally show NavigationBar
+                NavigationBar {
+                    screens.forEach { screen ->
+                        NavigationBarItem(
+                            selected = currentRoute == screen.route,
+                            onClick = {
+                                if (currentRoute != screen.route) {
+                                    navController.navigate(screen.route) {
+                                        popUpTo(navController.graph.startDestinationId) {
+                                            saveState = true
+                                        }
+                                        launchSingleTop = true
+                                        restoreState = true
                                     }
-                                    launchSingleTop = true
-                                    restoreState = true
                                 }
-                            }
-                        },
-                        icon = { Icon(Icons.Default.Home, contentDescription = screen.title) },
-                        label = { Text(screen.title) }
-                    )
+                            },
+                            icon = { Icon(Icons.Default.Home, contentDescription = screen.title) },
+                            label = { Text(screen.title) }
+                        )
+                    }
                 }
             }
         }

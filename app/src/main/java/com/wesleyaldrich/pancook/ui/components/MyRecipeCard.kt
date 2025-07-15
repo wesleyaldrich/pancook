@@ -21,9 +21,8 @@ import androidx.compose.ui.unit.dp
 import com.wesleyaldrich.pancook.R
 import com.wesleyaldrich.pancook.ui.theme.PancookTheme
 import androidx.compose.material.icons.Icons
-//import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.ThumbUp // Changed to ThumbUp
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
@@ -38,7 +37,7 @@ import com.wesleyaldrich.pancook.ui.theme.poppins
  * @param title The main title text for the card.
  * @param description A short description text for the card.
  * @param duration The duration text for the recipe (e.g., "30 min").
- * @param likeCount The number of likes for the item.
+ * @param upvoteCount The number of upvotes for the item. // Changed to upvoteCount
  */
 @Composable
 fun ReusableCard(
@@ -47,7 +46,7 @@ fun ReusableCard(
     title: String,
     description: String,
     duration: String,
-    likeCount: Int,
+    upvoteCount: Int, // Changed to upvoteCount
 ) {
     Card(
         modifier = modifier
@@ -104,8 +103,8 @@ fun ReusableCard(
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
-                                imageVector = Icons.Default.Favorite,
-                                contentDescription = "Save",
+                                imageVector = Icons.Filled.ThumbUp, // Changed to ThumbUp
+                                contentDescription = "Upvote", // Changed contentDescription
                                 tint = colorResource(R.color.accent_yellow),
                                 modifier = Modifier.size(16.dp)
                             )
@@ -140,17 +139,17 @@ fun ReusableCard(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Favorite,
-                        contentDescription = "Likes",
+                        imageVector = Icons.Filled.ThumbUp, // Changed to ThumbUp
+                        contentDescription = "Upvotes", // Changed contentDescription
                         tint = colorResource(R.color.accent_yellow),
                         modifier = Modifier.size(14.dp)
                     )
                     Spacer(modifier = Modifier.width(3.dp))
                     Text(
-                        text = if (likeCount >= 1000) {
-                            "${likeCount / 1000}k"
+                        text = if (upvoteCount >= 1000) { // Changed to upvoteCount
+                            "${upvoteCount / 1000}k"
                         } else {
-                            "$likeCount"
+                            "$upvoteCount"
                         },
                         fontFamily = nunito,
                         fontWeight = FontWeight.Medium,
@@ -201,7 +200,7 @@ fun ReusableCardPreview() {
                 title = "Delicious Salad",
                 description = "by Nunuk",
                 duration = "15 min",
-                likeCount = 1234 // This will now show as "1k Likes"
+                upvoteCount = 1234 // Changed to upvoteCount
             )
             Spacer(modifier = Modifier.height(16.dp))
             ReusableCard(
@@ -209,7 +208,7 @@ fun ReusableCardPreview() {
                 title = "Another Delicious Dish",
                 description = "by Chef John",
                 duration = "45 min",
-                likeCount = 987 // This will remain "987 Likes"
+                upvoteCount = 987 // Changed to upvoteCount
             )
             Spacer(modifier = Modifier.height(16.dp))
             ReusableCard(
@@ -217,7 +216,7 @@ fun ReusableCardPreview() {
                 title = "Quick Snack",
                 description = "by Mary",
                 duration = "5 min",
-                likeCount = 10000 // This will show as "10k Likes"
+                upvoteCount = 10000 // Changed to upvoteCount
             )
         }
     }
