@@ -11,6 +11,8 @@ import androidx.compose.material.icons.filled.SaveAlt
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.navigation.NavType
+import androidx.navigation.navArgument
 
 sealed class Screen(val route: String, val title: String, val icon: ImageVector) {
     object Home : Screen("home", "Home", Icons.Default.Home)
@@ -23,11 +25,11 @@ sealed class Screen(val route: String, val title: String, val icon: ImageVector)
     object DetailRecipe : Screen("detail_recipe/{recipeId}", "Detail Recipe", Icons.Default.Info) {
         fun createRoute(recipeId: Int) = "detail_recipe/$recipeId"
     }
-    // New Instruction Screen - simplified route
+
     object Instruction : Screen("instruction/{recipeId}", "Instruction", Icons.Default.PlayArrow) {
-        fun createRoute(recipeId: Int) = "instruction/$recipeId" // No stepIndex in route
+        fun createRoute(recipeId: Int) = "instruction/$recipeId"
     }
-    // New RecipeCompletion Screen
+
     object RecipeCompletion : Screen("recipe_completion/{recipeId}", "Recipe Completion", Icons.Default.Home) {
         fun createRoute(recipeId: Int) = "recipe_completion/$recipeId"
     }

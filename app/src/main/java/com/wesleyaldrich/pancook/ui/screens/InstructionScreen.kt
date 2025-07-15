@@ -40,47 +40,28 @@ import kotlinx.coroutines.delay
 import kotlin.math.max
 import com.wesleyaldrich.pancook.ui.navigation.Screen // Import the Screen object
 import androidx.compose.ui.graphics.Brush // Import Brush for gradient background
+import com.wesleyaldrich.pancook.model.Instruction // Import Instruction
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun InstructionScreen(recipeId: Int, navController: NavController) {
-    // This should ideally come from a ViewModel or a data source based on recipeId
-    val deliciousSaladRecipe = remember {
-        Recipe(
-            id = 4,
-            title = "Delicious Salad",
-            description = "A refreshing mix of garden greens.",
-            image = R.drawable.salad, // Placeholder image for now
-            ingredients = listOf(), // Not used on this screen
-            steps = listOf(
-                "Wash and dry the lettuce. Tear into bite-sized pieces and place in a large salad bowl.",
-                "Halve the cherry tomatoes. Dice the cucumber and finely slice the red onion.",
-                "Add the tomatoes, cucumber, and red onion to the salad bowl with the lettuce.",
-                "Crumble the feta cheese over the vegetables.",
-                "Boil 2 large eggs for 8-10 minutes for a hard-boiled consistency. Let them cool, peel, and quarter them.", // NEW STEP
-                "In a small bowl, whisk together the olive oil, lemon juice, salt, and black pepper to make the dressing.",
-                "Pour the dressing over the salad. Toss gently to combine all ingredients evenly.",
-                "Add the quartered boiled eggs to the salad.", // Updated to include eggs
-                "Serve immediately as a refreshing side or light meal.",
-                "Enjoy your delicious salad!"
-            ),
-            servings = 2,
-            duration = "15 min",
-            upvoteCount = 1234,
-            recipeMaker = "by Chef Ana"
-        )
+    // Retrieve the specific recipe from the shared data source using the ID
+    val currentRecipe = remember(recipeId) { // Use remember(recipeId) to re-lookup if ID changes
+        allRecipes.find { it.id == recipeId }
     }
 
-    // Define specific timers for certain steps
-    val stepTimers = remember {
-        mapOf(
-            4 to 480 // Step index 4 (5th step) for boiling eggs, 8 minutes = 480 seconds
-        )
+    // Handle case where recipe is not found (e.g., navigate back or show error)
+    if (currentRecipe == null) {
+        LaunchedEffect(Unit) {
+            navController.popBackStack() // Go back if recipe not found
+        }
+        return // Don't render anything if recipe is null
     }
 
-    val currentRecipe = deliciousSaladRecipe // Using the hardcoded recipe for now
+    // Use properties from currentRecipe
+    val instructions = currentRecipe.steps
+    val currentRecipeMainImage = currentRecipe.image // Using the main image from the actual recipe
 
-    // Manage currentStepIndex internally with rememberSaveable
     var currentStepIndex by rememberSaveable { mutableStateOf(0) }
     var timerValueSeconds by rememberSaveable { mutableStateOf(0) }
     var isTimerRunning by rememberSaveable { mutableStateOf(false) }
@@ -89,10 +70,10 @@ fun InstructionScreen(recipeId: Int, navController: NavController) {
     val context = LocalContext.current // Get the current context
 
     // Reset timer state when currentStepIndex changes
-    LaunchedEffect(currentStepIndex) {
-        val predefinedTimer = stepTimers[currentStepIndex]
-        if (predefinedTimer != null) {
-            timerValueSeconds = predefinedTimer
+    LaunchedEffect(currentStepIndex, instructions) { // Depend on instructions too if list changes dynamically
+        val currentInstruction = instructions.getOrNull(currentStepIndex)
+        if (currentInstruction != null && currentInstruction.timerSeconds > 0) {
+            timerValueSeconds = currentInstruction.timerSeconds
             isTimerRunning = false
             isTimerPaused = false
         } else {
@@ -101,7 +82,6 @@ fun InstructionScreen(recipeId: Int, navController: NavController) {
             isTimerPaused = false
         }
     }
-
 
     // Timer logic
     LaunchedEffect(isTimerRunning, timerValueSeconds) { // Depend on timerValueSeconds too to stop immediately
@@ -162,9 +142,8 @@ fun InstructionScreen(recipeId: Int, navController: NavController) {
                             .background(MaterialTheme.colorScheme.surfaceVariant),
                         contentAlignment = Alignment.Center
                     ) {
-                        // Placeholder image. In a real app, you'd load an image specific to the current step.
                         Image(
-                            painter = painterResource(id = currentRecipe.image), // Using recipe's main image as placeholder
+                            painter = painterResource(id = currentRecipeMainImage), // Use the actual recipe's main image
                             contentDescription = "Instruction Image",
                             modifier = Modifier.fillMaxSize(),
                             contentScale = ContentScale.Crop
@@ -185,7 +164,7 @@ fun InstructionScreen(recipeId: Int, navController: NavController) {
 
                     // 62. Instruction detail
                     Text(
-                        text = currentRecipe.steps.getOrElse(currentStepIndex) { "No instruction found for this step." },
+                        text = instructions.getOrNull(currentStepIndex)?.description ?: "No instruction found for this step.", // Access description from the passed instructions
                         style = MaterialTheme.typography.bodyLarge.copy(fontSize = 18.sp),
                         modifier = Modifier.fillMaxWidth()
                     )
@@ -193,7 +172,8 @@ fun InstructionScreen(recipeId: Int, navController: NavController) {
                     Spacer(modifier = Modifier.height(32.dp))
 
                     // Conditional Timer section
-                    if (stepTimers.containsKey(currentStepIndex)) {
+                    val currentInstruction = instructions.getOrNull(currentStepIndex)
+                    if (currentInstruction != null && currentInstruction.timerSeconds > 0) { // Check if the current instruction has a timer
                         Card(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -317,7 +297,7 @@ fun InstructionScreen(recipeId: Int, navController: NavController) {
                                                 isTimerRunning = true
                                                 isTimerPaused = false
                                             } else {
-                                                timerValueSeconds = stepTimers[currentStepIndex] ?: 0 // Reset to initial value or 0
+                                                timerValueSeconds = currentInstruction.timerSeconds // Reset to initial value or 0
                                                 isTimerPaused = false // Make sure it's not paused after reset
                                             }
                                         } else {
@@ -348,7 +328,7 @@ fun InstructionScreen(recipeId: Int, navController: NavController) {
                                     Spacer(modifier = Modifier.height(8.dp))
                                     Button(
                                         onClick = {
-                                            timerValueSeconds = stepTimers[currentStepIndex] ?: 0 // Reset to initial value or 0
+                                            timerValueSeconds = currentInstruction.timerSeconds // Reset to initial value or 0
                                             isTimerRunning = false
                                             isTimerPaused = false
                                         },
@@ -410,7 +390,7 @@ fun InstructionScreen(recipeId: Int, navController: NavController) {
 
                 Button(
                     onClick = {
-                        if (currentStepIndex < currentRecipe.steps.size - 1) {
+                        if (currentStepIndex < instructions.size - 1) {
                             currentStepIndex++
                         } else {
                             // Navigate to RecipeCompletionScreen when on the last step and "Next" is clicked
@@ -423,7 +403,7 @@ fun InstructionScreen(recipeId: Int, navController: NavController) {
                     shape = RoundedCornerShape(8.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = colorResource(R.color.primary).copy(alpha = 1f))
                 ) {
-                    Text(text = if (currentStepIndex < currentRecipe.steps.size - 1) "Next" else "Finish", color = MaterialTheme.colorScheme.onPrimary, fontSize = 16.sp)
+                    Text(text = if (currentStepIndex < instructions.size - 1) "Next" else "Finish", color = MaterialTheme.colorScheme.onPrimary, fontSize = 16.sp)
                     Spacer(modifier = Modifier.width(4.dp))
                     Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = "Next Step", tint = MaterialTheme.colorScheme.onPrimary)
                 }

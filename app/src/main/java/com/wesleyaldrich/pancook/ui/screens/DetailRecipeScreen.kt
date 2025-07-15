@@ -15,6 +15,7 @@ import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.ThumbUp
+import androidx.compose.material.icons.filled.ThumbDown // Import ThumbDown
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -40,52 +41,29 @@ import kotlin.math.floor
 import kotlin.math.log
 import com.wesleyaldrich.pancook.ui.theme.PancookTheme
 import com.wesleyaldrich.pancook.model.Recipe
-import com.wesleyaldrich.pancook.ui.navigation.Screen // Import the Screen object
+import com.wesleyaldrich.pancook.ui.navigation.Screen
+import com.wesleyaldrich.pancook.model.Instruction
+import com.wesleyaldrich.pancook.model.NutritionFact // Import NutritionFact
+import com.wesleyaldrich.pancook.model.Comment // Import Comment
+import coil.compose.rememberAsyncImagePainter // For loading comment images if any
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DetailRecipeScreen(recipeId: Int, navController: NavController) {
     var servingCount by remember { mutableStateOf(1) }
 
-    // This should ideally come from a ViewModel or a data source based on recipeId
-    val deliciousSaladRecipe = remember {
-        Recipe(
-            id = 4,
-            title = "Delicious Salad",
-            description = "A refreshing mix of garden greens.",
-            image = R.drawable.salad,
-            ingredients = listOf(
-                Ingredient(R.drawable.ingredient_tomato, "Fresh Lettuce", "Vegetables", 1.0f, "head"),
-                Ingredient(R.drawable.ingredient_tomato, "Cherry Tomatoes", "Vegetables", 150.0f, "g"),
-                Ingredient(R.drawable.ingredient_tomato, "Cucumber", "Vegetables", 0.5f, "pcs"),
-                Ingredient(R.drawable.ingredient_tomato, "Red Onion", "Vegetables", 0.25f, "pcs"),
-                Ingredient(R.drawable.ingredient_tomato, "Feta Cheese", "Dairy", 50.0f, "g"),
-                Ingredient(R.drawable.ingredient_tomato, "Olive Oil", "Condiments", 2.0f, "tbsp"),
-                Ingredient(R.drawable.ingredient_tomato, "Lemon Juice", "Condiments", 1.0f, "tbsp"),
-                Ingredient(R.drawable.ingredient_tomato, "Salt", "Seasoning", 0.5f, "tsp"),
-                Ingredient(R.drawable.ingredient_tomato, "Black Pepper", "Seasoning", 0.25f, "tsp"),
-                Ingredient(R.drawable.ingredient_tomato, "Egg", "Seasoning", 2.05f, "pcs")
-            ),
-            steps = listOf(
-                "Wash and dry the lettuce. Tear into bite-sized pieces and place in a large salad bowl.",
-                "Halve the cherry tomatoes. Dice the cucumber and finely slice the red onion.",
-                "Add the tomatoes, cucumber, and red onion to the salad bowl with the lettuce.",
-                "Crumble the feta cheese over the vegetables.",
-                "Boil 2 large eggs for 8-10 minutes for a hard-boiled consistency. Let them cool, peel, and quarter them.", // NEW STEP
-                "In a small bowl, whisk together the olive oil, lemon juice, salt, and black pepper to make the dressing.",
-                "Pour the dressing over the salad. Toss gently to combine all ingredients evenly.",
-                "Add the quartered boiled eggs to the salad.", // Updated to include eggs
-                "Serve immediately as a refreshing side or light meal.",
-                "Enjoy your delicious salad!"
-            ),
-            servings = 2,
-            duration = "15 min",
-            upvoteCount = 1234,
-            recipeMaker = "by Chef Ana"
-        )
+    // Retrieve the specific recipe from the shared data source using the ID
+    val currentRecipe = remember(recipeId) {
+        allRecipes.find { it.id == recipeId }
     }
 
-    val currentRecipe = deliciousSaladRecipe // Using the hardcoded recipe for now
+    // Handle case where recipe is not found (e.g., navigate back or show error)
+    if (currentRecipe == null) {
+        LaunchedEffect(Unit) {
+            navController.popBackStack()
+        }
+        return
+    }
 
     val upvoteCount = currentRecipe.upvoteCount
     val bookmarkCount = 3200
@@ -97,15 +75,6 @@ fun DetailRecipeScreen(recipeId: Int, navController: NavController) {
         val units = arrayOf("", "k", "M", "B", "T")
         val formattedValue = String.format("%.1f", count / Math.pow(1000.0, exp.toDouble()))
         return formattedValue.replace(".0", "") + units[exp]
-    }
-
-    val nutritionFacts = remember {
-        listOf(
-            "250 kcal",
-            "20g",
-            "15g",
-            "10g"
-        )
     }
 
     Scaffold(
@@ -170,7 +139,7 @@ fun DetailRecipeScreen(recipeId: Int, navController: NavController) {
                                     modifier = Modifier
                                         .size(8.dp)
                                         .clip(CircleShape)
-                                        .background(colorResource(R.color.primary).copy(alpha = if (it == 0) 0.8f else 0.4f)) // Changed color
+                                        .background(colorResource(R.color.primary).copy(alpha = if (it == 0) 0.8f else 0.4f))
                                 )
                                 if (it < 2) Spacer(modifier = Modifier.width(4.dp))
                             }
@@ -199,7 +168,7 @@ fun DetailRecipeScreen(recipeId: Int, navController: NavController) {
                                             modifier = Modifier
                                                 .size(20.dp)
                                                 .clip(CircleShape)
-                                                .background(MaterialTheme.colorScheme.surfaceVariant), // Changed color
+                                                .background(MaterialTheme.colorScheme.surfaceVariant),
                                             contentScale = ContentScale.Crop,
                                         )
                                         Spacer(modifier = Modifier.width(4.dp))
@@ -271,7 +240,6 @@ fun DetailRecipeScreen(recipeId: Int, navController: NavController) {
                             }
                         }
 
-                        // Adjusted from 16.dp to 6.dp to create a 12dp gap with the next card's top padding
                         Text(
                             text = currentRecipe.description,
                             style = MaterialTheme.typography.bodyLarge.copy(fontSize = 16.sp),
@@ -284,7 +252,6 @@ fun DetailRecipeScreen(recipeId: Int, navController: NavController) {
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
-                            // Changed vertical padding from 8.dp to 6.dp
                             .padding(horizontal = 16.dp, vertical = 6.dp),
                         shape = RoundedCornerShape(12.dp),
                         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
@@ -391,16 +358,15 @@ fun DetailRecipeScreen(recipeId: Int, navController: NavController) {
                 }
 
                 item {
-                    // Nutrition Section
+                    // Nutrition Section - Uses currentRecipe.nutritionFacts
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
-                            // Changed vertical padding from 8.dp to 6.dp
                             .padding(horizontal = 16.dp, vertical = 6.dp),
                         shape = RoundedCornerShape(12.dp),
                         colors = CardDefaults.cardColors(containerColor = Color.Transparent)
                     ) {
-                        Column(modifier = Modifier.padding(16.dp)) { // Uniform padding for content
+                        Column(modifier = Modifier.padding(16.dp)) {
                             Text(
                                 text = "Nutrition",
                                 style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold, fontSize = 20.sp, color = colorResource(R.color.primary).copy(alpha = 1f)),
@@ -411,17 +377,15 @@ fun DetailRecipeScreen(recipeId: Int, navController: NavController) {
                                 horizontalArrangement = Arrangement.SpaceAround,
                                 verticalAlignment = Alignment.Top
                             ) {
-                                val nutritionLabels = listOf("Calories", "Protein", "Fat", "Carbs")
                                 val fixedNutritionItemWidth = 80.dp
 
-                                nutritionLabels.forEachIndexed { index, label ->
-                                    val value = nutritionFacts[index]
+                                currentRecipe.nutritionFacts.forEach { fact -> // Iterate through nutritionFacts
                                     Column(
                                         horizontalAlignment = Alignment.CenterHorizontally,
                                         modifier = Modifier.width(fixedNutritionItemWidth)
                                     ) {
                                         Text(
-                                            text = label,
+                                            text = fact.label, // Use fact.label
                                             style = MaterialTheme.typography.bodyMedium.copy(fontSize = 16.sp),
                                             modifier = Modifier.padding(bottom = 4.dp)
                                         )
@@ -434,7 +398,7 @@ fun DetailRecipeScreen(recipeId: Int, navController: NavController) {
                                             contentAlignment = Alignment.Center
                                         ) {
                                             Text(
-                                                text = value,
+                                                text = fact.value, // Use fact.value
                                                 style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold, fontSize = 11.sp),
                                                 color = colorResource(R.color.accent_yellow).copy(alpha = 1f),
                                                 maxLines = 1,
@@ -447,28 +411,26 @@ fun DetailRecipeScreen(recipeId: Int, navController: NavController) {
                         }
                     }
 
-                    // Instructions Section (Now includes steps)
+                    // Instructions Section
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
-                            // Changed vertical padding from 8.dp to 6.dp
                             .padding(horizontal = 16.dp, vertical = 6.dp),
                         shape = RoundedCornerShape(12.dp),
                         colors = CardDefaults.cardColors(containerColor = Color.Transparent)
                     ) {
-                        Column(modifier = Modifier.padding(16.dp)) { // Uniform padding for content
+                        Column(modifier = Modifier.padding(16.dp)) {
                             Text(
                                 text = "Instructions",
                                 style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold, fontSize = 20.sp, color = colorResource(R.color.primary).copy(alpha = 1f)),
-                                modifier = Modifier.padding(bottom = 8.dp) // Maintain a small gap below header
+                                modifier = Modifier.padding(bottom = 8.dp)
                             )
 
-                            // Instructions steps (now within this Column, inside the Card)
                             currentRecipe.steps.forEach { step ->
                                 Column(
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .padding(vertical = 4.dp) // Reduced vertical padding between steps for a tighter look
+                                        .padding(vertical = 4.dp)
                                 ) {
                                     Row(verticalAlignment = Alignment.CenterVertically) {
                                         Box(
@@ -478,11 +440,11 @@ fun DetailRecipeScreen(recipeId: Int, navController: NavController) {
                                                 .background(colorResource(R.color.primary).copy(alpha = 1f)),
                                             contentAlignment = Alignment.Center
                                         ) {
-                                            Text(text = "${currentRecipe.steps.indexOf(step) + 1}", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                                            Text(text = "${step.stepNumber}", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 16.sp)
                                         }
                                         Spacer(modifier = Modifier.width(8.dp))
                                         Text(
-                                            text = step,
+                                            text = step.description,
                                             style = MaterialTheme.typography.bodyLarge.copy(fontSize = 16.sp),
                                             modifier = Modifier.weight(1f)
                                         )
@@ -494,53 +456,81 @@ fun DetailRecipeScreen(recipeId: Int, navController: NavController) {
                 }
 
                 item {
-                    // Comments Section
+                    // Comments Section - Uses currentRecipe.comments
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
-                            // Changed vertical padding from 8.dp to 6.dp
                             .padding(horizontal = 16.dp, vertical = 6.dp),
                         shape = RoundedCornerShape(12.dp),
                         colors = CardDefaults.cardColors(containerColor = Color.Transparent)
                     ) {
-                        Column(modifier = Modifier.padding(16.dp)) { // Uniform padding for content
+                        Column(modifier = Modifier.padding(16.dp)) {
                             Text(
                                 text = "Comments",
                                 style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold, fontSize = 20.sp, color = colorResource(R.color.primary).copy(alpha = 1f)),
                                 modifier = Modifier.padding(bottom = 8.dp)
                             )
-                            Row(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
-                                Image(
-                                    painter = painterResource(id = R.drawable.ic_serving),
-                                    contentDescription = "User Avatar",
-                                    modifier = Modifier
-                                        .size(48.dp)
-                                        .clip(CircleShape)
-                                        .background(colorResource(R.color.accent_yellow).copy(alpha = 1f)), // Changed color
-                                    contentScale = ContentScale.Crop,
-                                    colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface)
+                            if (currentRecipe.comments.isEmpty()) {
+                                Text(
+                                    text = "No comments yet. Be the first to share your thoughts!",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                                    modifier = Modifier.padding(vertical = 8.dp)
                                 )
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Column {
-                                    Text(text = "John Doe", fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                                    Text(text = "This is a placeholder comment. Great recipe!", style = MaterialTheme.typography.bodyLarge.copy(fontSize = 16.sp))
-                                }
-                            }
-                            Row(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
-                                Image(
-                                    painter = painterResource(id = R.drawable.ic_serving),
-                                    contentDescription = "User Avatar",
-                                    modifier = Modifier
-                                        .size(48.dp)
-                                        .clip(CircleShape)
-                                        .background(MaterialTheme.colorScheme.surfaceVariant), // Changed color
-                                    contentScale = ContentScale.Crop,
-                                    colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface)
-                                )
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Column {
-                                    Text(text = "Jane Smith", fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                                    Text(text = "Another placeholder comment. I would try this!", style = MaterialTheme.typography.bodyLarge.copy(fontSize = 16.sp))
+                            } else {
+                                currentRecipe.comments.forEach { comment -> // Iterate through comments
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(vertical = 8.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        // User Avatar (placeholder or load from comment.imageUrl)
+                                        if (comment.imageUrl != null && comment.imageUrl.startsWith("content://")) {
+                                            Image(
+                                                painter = rememberAsyncImagePainter(comment.imageUrl),
+                                                contentDescription = "User Avatar",
+                                                modifier = Modifier
+                                                    .size(48.dp)
+                                                    .clip(CircleShape)
+                                                    .background(colorResource(R.color.accent_yellow).copy(alpha = 1f)),
+                                                contentScale = ContentScale.Crop
+                                            )
+                                        } else {
+                                            // Fallback to generic icon if no image URL or if it's a dummy
+                                            Image(
+                                                painter = painterResource(id = R.drawable.ic_serving), // Reusing a placeholder icon
+                                                contentDescription = "User Avatar",
+                                                modifier = Modifier
+                                                    .size(48.dp)
+                                                    .clip(CircleShape)
+                                                    .background(colorResource(R.color.accent_yellow).copy(alpha = 1f)),
+                                                contentScale = ContentScale.Crop,
+                                                colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface)
+                                            )
+                                        }
+                                        Spacer(modifier = Modifier.width(8.dp))
+                                        Column(modifier = Modifier.weight(1f)) {
+                                            Text(text = comment.userName, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                                            Text(text = comment.commentText, style = MaterialTheme.typography.bodyLarge.copy(fontSize = 16.sp))
+                                            comment.isUpvote?.let { isUpvote ->
+                                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                                    Icon(
+                                                        imageVector = if (isUpvote) Icons.Default.ThumbUp else Icons.Default.ThumbDown,
+                                                        contentDescription = if (isUpvote) "Upvoted" else "Downvoted",
+                                                        tint = if (isUpvote) Color.Green else Color.Red,
+                                                        modifier = Modifier.size(16.dp)
+                                                    )
+                                                    Spacer(modifier = Modifier.width(4.dp))
+                                                    Text(
+                                                        text = if (isUpvote) "Recommended" else "Not Recommended",
+                                                        fontSize = 12.sp,
+                                                        color = if (isUpvote) Color.Green else Color.Red
+                                                    )
+                                                }
+                                            }
+                                        }
+                                    }
                                 }
                             }
                             Spacer(modifier = Modifier.height(80.dp))
@@ -588,8 +578,7 @@ fun DetailRecipeScreen(recipeId: Int, navController: NavController) {
 
                 Button(
                     onClick = {
-                        // Navigate to the Instruction screen, starting at step 0
-                        navController.navigate(Screen.Instruction.createRoute(recipeId)) // No stepIndex here
+                        navController.navigate(Screen.Instruction.createRoute(recipeId))
                     },
                     modifier = Modifier
                         .weight(0.5f)

@@ -8,7 +8,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import androidx.navigation.NavType
+import androidx.navigation.NavType // Import NavType
 import com.wesleyaldrich.pancook.ui.screens.AddRecipeScreen
 import com.wesleyaldrich.pancook.ui.screens.HomeScreen
 import com.wesleyaldrich.pancook.ui.screens.MyRecipeScreen
@@ -18,7 +18,7 @@ import com.wesleyaldrich.pancook.ui.screens.ProfileScreen
 import com.wesleyaldrich.pancook.ui.screens.DetailRecipeScreen
 import com.wesleyaldrich.pancook.ui.screens.SavedRecipeScreen
 import com.wesleyaldrich.pancook.ui.screens.InstructionScreen
-import com.wesleyaldrich.pancook.ui.screens.RecipeCompletionScreen // Import the new screen
+import com.wesleyaldrich.pancook.ui.screens.RecipeCompletionScreen
 
 @Composable
 fun NavigationGraph(navController: NavHostController, modifier: Modifier = Modifier) {
@@ -49,15 +49,14 @@ fun NavigationGraph(navController: NavHostController, modifier: Modifier = Modif
         ) }
         composable(Screen.Profile.route) { ProfileScreen() }
         composable(Screen.SavedRecipe.route) { SavedRecipeScreen() }
-        // New Instruction Screen Composable - only recipeId
+        // Instruction Screen now only takes recipeId
         composable(
             route = Screen.Instruction.route,
             arguments = listOf(navArgument("recipeId") { type = NavType.IntType })
         ) { backStackEntry ->
             val recipeId = backStackEntry.arguments?.getInt("recipeId") ?: 0
-            InstructionScreen(recipeId = recipeId, navController = navController) // Removed initialStepIndex from parameter
+            InstructionScreen(recipeId = recipeId, navController = navController) // Removed instructions list from parameter
         }
-        // New RecipeCompletion Screen Composable
         composable(
             route = Screen.RecipeCompletion.route,
             arguments = listOf(navArgument("recipeId") { type = NavType.IntType })

@@ -6,9 +6,11 @@ data class Recipe(
     val description: String,
     val image: Int,
     val ingredients: List<Ingredient>,
-    val steps: List<String>,
+    val steps: List<Instruction>,
     val servings: Int,
     val duration: String,
     val upvoteCount: Int = 0,
-    val recipeMaker: String
+    val recipeMaker: String,
+    val nutritionFacts: List<NutritionFact>,
+    val comments: List<Comment>
 )

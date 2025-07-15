@@ -34,33 +34,31 @@ import com.wesleyaldrich.pancook.R
 import com.wesleyaldrich.pancook.model.Recipe
 import com.wesleyaldrich.pancook.ui.navigation.Screen
 import com.wesleyaldrich.pancook.ui.theme.PancookTheme
-import androidx.compose.ui.graphics.Brush // Import Brush for gradient background
-import androidx.compose.foundation.lazy.LazyColumn // Import LazyColumn for scrollable content
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.foundation.lazy.LazyColumn
+import com.wesleyaldrich.pancook.model.Comment // Import Comment
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RecipeCompletionScreen(recipeId: Int, navController: NavController) {
-    // This should ideally come from a ViewModel or a data source based on recipeId
+    // Retrieve the specific recipe from the shared data source
     val sampleRecipe = remember {
-        Recipe(
-            id = 4,
-            title = "Delicious Salad",
-            description = "A refreshing mix of garden greens.",
-            image = R.drawable.salad,
-            ingredients = listOf(),
-            steps = listOf(),
-            servings = 2,
-            duration = "15 min",
-            upvoteCount = 1234,
-            recipeMaker = "by Chef Ana"
-        )
+        allRecipes.find { it.id == recipeId }
+    }
+
+    // Handle case where recipe is not found
+    if (sampleRecipe == null) {
+        LaunchedEffect(Unit) {
+            navController.popBackStack()
+        }
+        return
     }
 
     var uploadedImageUri by remember { mutableStateOf<Uri?>(null) }
     var commentTitle by remember { mutableStateOf("") }
     var commentDetail by remember { mutableStateOf("") }
-    var upvoted by remember { mutableStateOf(false) } // State for upvote button
-    var downvoted by remember { mutableStateOf(false) } // State for downvote button
+    var upvoted by remember { mutableStateOf(false) }
+    var downvoted by remember { mutableStateOf(false) }
 
     val pickImageLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
@@ -68,7 +66,6 @@ fun RecipeCompletionScreen(recipeId: Int, navController: NavController) {
         uploadedImageUri = uri
     }
 
-    // Determine if "Send Comment" button should be enabled
     val isSendCommentEnabled = uploadedImageUri != null && commentTitle.isNotBlank() && commentDetail.isNotBlank()
 
     Scaffold(
@@ -76,7 +73,7 @@ fun RecipeCompletionScreen(recipeId: Int, navController: NavController) {
             TopAppBar(
                 title = { },
                 navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) { // 67. Back button
+                    IconButton(onClick = { navController.popBackStack() }) {
                         Icon(
                             Icons.Filled.ArrowBack,
                             contentDescription = "Back to Detail Page",
@@ -88,26 +85,25 @@ fun RecipeCompletionScreen(recipeId: Int, navController: NavController) {
             )
         }
     ) { paddingValues ->
-        Box(modifier = Modifier.fillMaxSize()) { // Wrap content in a Box to allow BottomCenter alignment
-            LazyColumn( // Use LazyColumn for scrollable content
+        Box(modifier = Modifier.fillMaxSize()) {
+            LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(paddingValues)
                     .padding(horizontal = 16.dp)
-                    .padding(bottom = 80.dp), // Add padding for sticky buttons
+                    .padding(bottom = 80.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 item {
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // 68. Completed dish image upload
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(220.dp)
                             .clip(RoundedCornerShape(12.dp))
                             .background(MaterialTheme.colorScheme.surfaceVariant)
-                            .clickable { pickImageLauncher.launch("image/*") } // Clickable to open image picker
+                            .clickable { pickImageLauncher.launch("image/*") }
                             .border(1.dp, colorResource(R.color.primary).copy(alpha = 1f), RoundedCornerShape(12.dp)),
                         contentAlignment = Alignment.Center
                     ) {
@@ -138,7 +134,6 @@ fun RecipeCompletionScreen(recipeId: Int, navController: NavController) {
 
                     Spacer(modifier = Modifier.height(24.dp))
 
-                    // 69. Recipe vote buttons
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceEvenly,
@@ -147,53 +142,55 @@ fun RecipeCompletionScreen(recipeId: Int, navController: NavController) {
                         Button(
                             onClick = {
                                 upvoted = !upvoted
-                                downvoted = false // Ensure only one is active at a time
+                                downvoted = false
                             },
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = if (upvoted) MaterialTheme.colorScheme.error else colorResource(R.color.primary).copy(alpha = 1f)
+                                containerColor = if (upvoted) colorResource(R.color.primary).copy(alpha = 1f) else MaterialTheme.colorScheme.surfaceVariant, // Changed colors for clarity
+                                contentColor = if (upvoted) colorResource(R.color.accent_yellow) else MaterialTheme.colorScheme.onSurfaceVariant
                             ),
                             shape = RoundedCornerShape(8.dp),
                             modifier = Modifier
                                 .weight(1f)
-                                .height(50.dp) // Set equal width and height
+                                .height(50.dp)
                         ) {
                             Icon(
                                 Icons.Filled.ThumbUp,
                                 contentDescription = "Upvote",
-                                tint = if (upvoted) colorResource(R.color.accent_yellow).copy(alpha = 1f) else colorResource(R.color.accent_yellow).copy(alpha = 1f),
+                                tint = if (upvoted) colorResource(R.color.accent_yellow).copy(alpha = 1f) else MaterialTheme.colorScheme.onSurfaceVariant,
                                 modifier = Modifier.size(24.dp)
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
                                 text = "Upvote",
-                                color = if (upvoted) colorResource(R.color.accent_yellow).copy(alpha = 1f) else colorResource(R.color.accent_yellow).copy(alpha = 1f),
+                                color = if (upvoted) colorResource(R.color.accent_yellow).copy(alpha = 1f) else MaterialTheme.colorScheme.onSurfaceVariant,
                                 fontSize = 18.sp
                             )
                         }
-                        Spacer(modifier = Modifier.width(16.dp)) // Space between buttons
+                        Spacer(modifier = Modifier.width(16.dp))
                         Button(
                             onClick = {
                                 downvoted = !downvoted
-                                upvoted = false // Ensure only one is active at a time
+                                upvoted = false
                             },
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = if (downvoted) colorResource(R.color.primary).copy(alpha = 1f) else MaterialTheme.colorScheme.error
+                                containerColor = if (downvoted) colorResource(R.color.primary).copy(alpha = 1f) else MaterialTheme.colorScheme.surfaceVariant, // Changed colors for clarity
+                                contentColor = if (downvoted) colorResource(R.color.accent_yellow) else MaterialTheme.colorScheme.onSurfaceVariant
                             ),
                             shape = RoundedCornerShape(8.dp),
                             modifier = Modifier
                                 .weight(1f)
-                                .height(50.dp) // Set equal width and height
+                                .height(50.dp)
                         ) {
                             Icon(
                                 Icons.Filled.ThumbDown,
                                 contentDescription = "Downvote",
-                                tint = if (downvoted) colorResource(R.color.accent_yellow).copy(alpha = 1f) else colorResource(R.color.accent_yellow).copy(alpha = 1f),
+                                tint = if (downvoted) colorResource(R.color.accent_yellow).copy(alpha = 1f) else MaterialTheme.colorScheme.onSurfaceVariant,
                                 modifier = Modifier.size(24.dp)
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
                                 text = "Downvote",
-                                color = if (downvoted) colorResource(R.color.accent_yellow).copy(alpha = 1f) else colorResource(R.color.accent_yellow).copy(alpha = 1f),
+                                color = if (downvoted) colorResource(R.color.accent_yellow).copy(alpha = 1f) else MaterialTheme.colorScheme.onSurfaceVariant,
                                 fontSize = 18.sp
                             )
                         }
@@ -201,12 +198,11 @@ fun RecipeCompletionScreen(recipeId: Int, navController: NavController) {
 
                     Spacer(modifier = Modifier.height(24.dp))
 
-                    // 70. Recipe maker title input
                     Text(
                         text = "Comment Title (${commentTitle.length}/25)",
                         style = MaterialTheme.typography.labelLarge,
                         color = colorResource(R.color.primary).copy(alpha = 1f),
-                        modifier = Modifier.fillMaxWidth().wrapContentWidth(Alignment.Start) // Changed alignment
+                        modifier = Modifier.fillMaxWidth().wrapContentWidth(Alignment.Start)
                     )
                     OutlinedTextField(
                         value = commentTitle,
@@ -228,12 +224,11 @@ fun RecipeCompletionScreen(recipeId: Int, navController: NavController) {
                     )
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // 71. Recipe maker detail input
                     Text(
                         text = "Comment Detail (${commentDetail.length}/150)",
                         style = MaterialTheme.typography.labelLarge,
                         color = colorResource(R.color.primary).copy(alpha = 1f),
-                        modifier = Modifier.fillMaxWidth().wrapContentWidth(Alignment.Start) // Changed alignment
+                        modifier = Modifier.fillMaxWidth().wrapContentWidth(Alignment.Start)
                     )
                     OutlinedTextField(
                         value = commentDetail,
@@ -245,7 +240,7 @@ fun RecipeCompletionScreen(recipeId: Int, navController: NavController) {
                         placeholder = { Text("Type here") },
                         modifier = Modifier
                             .fillMaxWidth()
-                            .heightIn(min = 100.dp), // Removed weight to allow content to scroll
+                            .heightIn(min = 100.dp),
                         shape = RoundedCornerShape(8.dp),
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = colorResource(R.color.secondary),
@@ -254,11 +249,10 @@ fun RecipeCompletionScreen(recipeId: Int, navController: NavController) {
                             unfocusedLabelColor =colorResource(R.color.primary).copy(alpha = 1f)
                         )
                     )
-                    Spacer(modifier = Modifier.height(16.dp)) // Add spacer to push content up
+                    Spacer(modifier = Modifier.height(16.dp))
                 }
             }
 
-            // 72. Navigation buttons (sticky at the bottom)
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -286,7 +280,7 @@ fun RecipeCompletionScreen(recipeId: Int, navController: NavController) {
                     }},
                     modifier = Modifier
                         .weight(0.5f)
-                        .height(50.dp), // Set height to match DetailRecipeScreen
+                        .height(50.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.surfaceVariant,
                         contentColor = MaterialTheme.colorScheme.onSurfaceVariant
@@ -300,12 +294,23 @@ fun RecipeCompletionScreen(recipeId: Int, navController: NavController) {
 
                 Button(
                     onClick = {
-                        // Logic to send comment (e.g., API call)
-                        // For now, just print the values
-                        println("Image URI: $uploadedImageUri")
-                        println("Comment Title: $commentTitle")
-                        println("Comment Detail: $commentDetail")
-                        println("Upvoted: $upvoted, Downvoted: $downvoted")
+                        // Form a Comment object from the input and print it
+                        val newComment = Comment(
+                            userName = "Current User", // Replace with actual user name
+                            commentText = commentDetail,
+                            imageUrl = uploadedImageUri?.toString(), // Convert Uri to String
+                            isUpvote = when {
+                                upvoted -> true
+                                downvoted -> false
+                                else -> null
+                            }
+                        )
+                        println("New Comment to be sent: $newComment")
+                        // In a real app, you would send this 'newComment' object
+                        // to a backend service or update a mutable list accessible
+                        // by DetailRecipeScreen.
+
+                        // After sending, navigate home
                         navController.navigate(Screen.Home.route) {
                             popUpTo(navController.graph.startDestinationId) {
                                 inclusive = true
@@ -315,7 +320,7 @@ fun RecipeCompletionScreen(recipeId: Int, navController: NavController) {
                     enabled = isSendCommentEnabled,
                     modifier = Modifier
                         .weight(0.5f)
-                        .height(50.dp), // Set height to match DetailRecipeScreen
+                        .height(50.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = colorResource(R.color.primary).copy(alpha = 1f),
                         disabledContainerColor = Color.LightGray
