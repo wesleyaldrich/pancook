@@ -88,9 +88,9 @@ fun getDummyPlannerData(upcoming: Boolean): Map<String, Map<Recipe, Int>> {
                     description = "Crispy and golden",
                     image = R.drawable.hash_brown,
                     ingredients = listOf(
-                        Ingredient("1", "Potatoes", 3, "pcs")
+                        Ingredient(R.drawable.ingredient_tomato, "Potatoes", "Vegetables", 3, "pcs")
                     ),
-                    steps = listOf("Step 1", "Step 2"),
+                    steps = listOf("Grate potatoes", "Fry until golden"),
                     servings = 2,
                     duration = "20 min"
                 ) to 2,
@@ -100,9 +100,11 @@ fun getDummyPlannerData(upcoming: Boolean): Map<String, Map<Recipe, Int>> {
                     description = "Crispy and Fudgy",
                     image = R.drawable.fudgy_brownies,
                     ingredients = listOf(
-                        Ingredient("1", "Potatoes", 3, "pcs")
+                        Ingredient(R.drawable.ingredient_tomato, "Cocoa Powder", "Baking", 2, "tbsp"),
+                        Ingredient(R.drawable.ingredient_tomato, "Flour", "Baking", 100, "g"),
+                        Ingredient(R.drawable.ingredient_tomato, "Butter", "Dairy", 50, "g")
                     ),
-                    steps = listOf("Step 1", "Step 2"),
+                    steps = listOf("Mix ingredients", "Bake in oven"),
                     servings = 2,
                     duration = "1 hour"
                 ) to 3
@@ -117,9 +119,11 @@ fun getDummyPlannerData(upcoming: Boolean): Map<String, Map<Recipe, Int>> {
                     description = "Delicious toast",
                     image = R.drawable.hash_brown,
                     ingredients = listOf(
-                        Ingredient("2", "Bread", 4, "slices")
+                        Ingredient(R.drawable.ingredient_tomato, "Bread", "Bakery", 4, "slices"),
+                        Ingredient(R.drawable.ingredient_tomato, "Egg", "Dairy", 2, "pcs"),
+                        Ingredient(R.drawable.ingredient_tomato, "Milk", "Dairy", 100, "ml")
                     ),
-                    steps = listOf("Step 1", "Step 2"),
+                    steps = listOf("Dip bread in mixture", "Fry until golden"),
                     servings = 1,
                     duration = "30 min"
                 ) to 1

@@ -37,7 +37,7 @@ fun MyRecipeScreen(navController: NavController) { // Accept NavController
                     description = "by Me",
                     image = R.drawable.salad,
                     ingredients = listOf(
-                        Ingredient("1", "Potatoes", 3, "pcs")
+                        Ingredient(R.drawable.ingredient_tomato, "Potatoes", "Vegetables", 3, "pcs")
                     ),
                     steps = listOf("Step 1", "Step 2"),
                     servings = 2,
@@ -51,7 +51,7 @@ fun MyRecipeScreen(navController: NavController) { // Accept NavController
                     description = "by Me",
                     steps = listOf("Step 1", "Step 2"),
                     ingredients = listOf(
-                        Ingredient("1", "Potatoes", 3, "pcs")
+                        Ingredient(R.drawable.ingredient_tomato, "Potatoes", "Vegetables", 3, "pcs")
                     ),
                     servings = 2,
                     duration = "20 min",
@@ -64,7 +64,7 @@ fun MyRecipeScreen(navController: NavController) { // Accept NavController
                     description = "by Me",
                     steps = listOf("Step 1", "Step 2"),
                     ingredients = listOf(
-                        Ingredient("1", "Potatoes", 3, "pcs")
+                        Ingredient(R.drawable.ingredient_tomato, "Potatoes", "Vegetables", 3, "pcs")
                     ),
                     servings = 2,
                     duration = "30 min",
@@ -77,7 +77,7 @@ fun MyRecipeScreen(navController: NavController) { // Accept NavController
                     description = "by Me",
                     steps = listOf("Step 1", "Step 2"),
                     ingredients = listOf(
-                        Ingredient("1", "Potatoes", 3, "pcs")
+                        Ingredient(R.drawable.ingredient_tomato, "Potatoes", "Vegetables", 3, "pcs")
                     ),
                     servings = 2,
                     duration = "45 min",
@@ -90,7 +90,7 @@ fun MyRecipeScreen(navController: NavController) { // Accept NavController
                     description = "by Me",
                     steps = listOf("Step 1", "Step 2"),
                     ingredients = listOf(
-                        Ingredient("1", "Potatoes", 3, "pcs")
+                        Ingredient(R.drawable.ingredient_tomato, "Potatoes", "Vegetables", 3, "pcs")
                     ),
                     servings = 2,
                     duration = "25 min",
@@ -103,7 +103,7 @@ fun MyRecipeScreen(navController: NavController) { // Accept NavController
                     description = "by Me",
                     steps = listOf("Step 1", "Step 2"),
                     ingredients = listOf(
-                        Ingredient("1", "Potatoes", 3, "pcs")
+                        Ingredient(R.drawable.ingredient_tomato, "Potatoes", "Vegetables", 3, "pcs")
                     ),
                     servings = 2,
                     duration = "35 min",
@@ -116,7 +116,7 @@ fun MyRecipeScreen(navController: NavController) { // Accept NavController
                     description = "by Me",
                     steps = listOf("Step 1", "Step 2"),
                     ingredients = listOf(
-                        Ingredient("1", "Potatoes", 3, "pcs")
+                        Ingredient(R.drawable.ingredient_tomato, "Potatoes", "Vegetables", 3, "pcs")
                     ),
                     servings = 2,
                     duration = "60 min",
@@ -129,7 +129,7 @@ fun MyRecipeScreen(navController: NavController) { // Accept NavController
                     description = "by Me",
                     steps = listOf("Step 1", "Step 2"),
                     ingredients = listOf(
-                        Ingredient("1", "Potatoes", 3, "pcs")
+                        Ingredient(R.drawable.ingredient_tomato, "Potatoes", "Vegetables", 3, "pcs")
                     ),
                     servings = 2,
                     duration = "10 min",
@@ -138,6 +138,7 @@ fun MyRecipeScreen(navController: NavController) { // Accept NavController
             )
         )
     }
+
 
     Column(modifier = Modifier.fillMaxSize()) {
         LazyVerticalGrid(
