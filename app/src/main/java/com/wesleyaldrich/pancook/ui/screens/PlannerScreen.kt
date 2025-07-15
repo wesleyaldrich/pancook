@@ -63,10 +63,10 @@ import com.wesleyaldrich.pancook.ui.theme.inter
 import com.wesleyaldrich.pancook.ui.theme.montserrat
 import com.wesleyaldrich.pancook.ui.theme.nunito
 import com.wesleyaldrich.pancook.ui.theme.nunito
-import org.w3c.dom.Text
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.Locale
+// Removed unused import: import kotlin.random.Random
 
 @Composable
 fun CenteredTextBox(text: String, family: FontFamily, weight: FontWeight = FontWeight.Normal, size: TextUnit, align: TextAlign) {
@@ -78,55 +78,96 @@ fun CenteredTextBox(text: String, family: FontFamily, weight: FontWeight = FontW
     }
 }
 
+// Removed getRandomRecipeMakerForPlanner() as it's no longer needed
+
 fun getDummyPlannerData(upcoming: Boolean): Map<String, Map<Recipe, Int>> {
     return if (upcoming) {
         mapOf(
             "08-07-2025" to mapOf(
                 Recipe(
-                    id = 1,
+                    id = 101, // Consistent ID with MyRecipeScreen
                     title = "Hash Browns",
-                    description = "Crispy and golden",
+                    description = "Classic crispy potato breakfast.", // Consistent description
                     image = R.drawable.hash_brown,
                     ingredients = listOf(
-                        Ingredient(R.drawable.ingredient_tomato, "Potatoes", "Vegetables", 3, "pcs")
+                        Ingredient(R.drawable.ingredient_tomato, "Potatoes", "Vegetables", 2.0f, "large"), // Consistent qty and unit
+                        Ingredient(R.drawable.ingredient_tomato, "Butter", "Dairy", 2.0f, "tbsp"),
+                        Ingredient(R.drawable.ingredient_tomato, "Salt", "Seasoning", 0.5f, "tsp"),
+                        Ingredient(R.drawable.ingredient_tomato, "Black Pepper", "Seasoning", 0.25f, "tsp")
                     ),
-                    steps = listOf("Grate potatoes", "Fry until golden"),
-                    servings = 2,
-                    duration = "20 min"
-                ) to 2,
+                    steps = listOf(
+                        "Peel and grate potatoes. Rinse grated potatoes thoroughly under cold water until water runs clear.",
+                        "Squeeze out as much excess water as possible from the grated potatoes using a clean kitchen towel or paper towels. This is crucial for crispiness!",
+                        "Season the dried grated potatoes with salt and pepper.",
+                        "Heat butter in a large non-stick skillet over medium heat until melted and slightly browned.",
+                        "Press the grated potatoes into an even layer in the skillet. Cook for 5-7 minutes per side, pressing occasionally with a spatula, until golden brown and crispy.",
+                        "Flip carefully and cook the other side until also golden and crispy.",
+                        "Serve hot immediately, optionally with ketchup or a fried egg."
+                    ),
+                    servings = 2, // Consistent servings
+                    duration = "20 min", // Consistent duration
+                    upvoteCount = 500, // Fixed upvote count for Hash Browns
+                    recipeMaker = "by Chef Emily" // Fixed recipeMaker for Hash Browns
+                ) to 2, // Serving count for planner entry
                 Recipe(
-                    id = 2,
+                    id = 102, // Consistent ID with MyRecipeScreen
                     title = "Fudgy Brownies",
-                    description = "Crispy and Fudgy",
+                    description = "Rich, decadent, and perfectly fudgy.", // Consistent description
                     image = R.drawable.fudgy_brownies,
                     ingredients = listOf(
-                        Ingredient(R.drawable.ingredient_tomato, "Cocoa Powder", "Baking", 2, "tbsp"),
-                        Ingredient(R.drawable.ingredient_tomato, "Flour", "Baking", 100, "g"),
-                        Ingredient(R.drawable.ingredient_tomato, "Butter", "Dairy", 50, "g")
+                        Ingredient(R.drawable.ingredient_tomato, "Unsalted Butter", "Dairy", 100.0f, "g"),
+                        Ingredient(R.drawable.ingredient_tomato, "Granulated Sugar", "Sweeteners", 200.0f, "g"),
+                        Ingredient(R.drawable.ingredient_tomato, "Unsweetened Cocoa Powder", "Baking", 50.0f, "g"),
+                        Ingredient(R.drawable.ingredient_tomato, "Large Eggs", "Dairy", 2.0f, "pcs"),
+                        Ingredient(R.drawable.ingredient_tomato, "All-Purpose Flour", "Baking", 60.0f, "g"),
+                        Ingredient(R.drawable.ingredient_tomato, "Vanilla Extract", "Flavoring", 1.0f, "tsp"),
+                        Ingredient(R.drawable.ingredient_tomato, "Salt", "Seasoning", 0.25f, "tsp")
                     ),
-                    steps = listOf("Mix ingredients", "Bake in oven"),
-                    servings = 2,
-                    duration = "1 hour"
-                ) to 3
+                    steps = listOf(
+                        "Preheat oven to 175°C (350°F). Grease and flour an 8x8 inch baking pan.",
+                        "In a medium saucepan, melt butter over low heat. Remove from heat and stir in sugar until combined.",
+                        "Whisk in cocoa powder. Add eggs one at a time, mixing well after each addition. Stir in vanilla extract.",
+                        "Gradually add flour and salt, mixing until just combined. Do not overmix.",
+                        "Pour batter into the prepared baking pan and spread evenly.",
+                        "Bake for 20-25 minutes, or until a toothpick inserted into the center comes out with moist crumbs (not wet batter).",
+                        "Let cool completely in the pan on a wire rack before cutting into squares."
+                    ),
+                    servings = 2, // Consistent servings
+                    duration = "1 hour", // Consistent duration
+                    upvoteCount = 750, // Fixed upvote count for Fudgy Brownies
+                    recipeMaker = "by Baker John" // Fixed recipeMaker for Fudgy Brownies
+                ) to 3 // Serving count for planner entry
             )
         )
     } else {
         mapOf(
             "01-07-2025" to mapOf(
                 Recipe(
-                    id = 3,
+                    id = 103, // Consistent ID with MyRecipeScreen
                     title = "French Toast",
-                    description = "Delicious toast",
-                    image = R.drawable.hash_brown,
+                    description = "A sweet and savory breakfast classic.", // Consistent description
+                    image = R.drawable.hash_brown, // Placeholder
                     ingredients = listOf(
-                        Ingredient(R.drawable.ingredient_tomato, "Bread", "Bakery", 4, "slices"),
-                        Ingredient(R.drawable.ingredient_tomato, "Egg", "Dairy", 2, "pcs"),
-                        Ingredient(R.drawable.ingredient_tomato, "Milk", "Dairy", 100, "ml")
+                        Ingredient(R.drawable.ingredient_tomato, "Bread", "Bakery", 4.0f, "slices"),
+                        Ingredient(R.drawable.ingredient_tomato, "Large Eggs", "Dairy", 2.0f, "pcs"),
+                        Ingredient(R.drawable.ingredient_tomato, "Milk", "Dairy", 100.0f, "ml"),
+                        Ingredient(R.drawable.ingredient_tomato, "Granulated Sugar", "Sweeteners", 1.0f, "tbsp"),
+                        Ingredient(R.drawable.ingredient_tomato, "Vanilla Extract", "Flavoring", 0.5f, "tsp"),
+                        Ingredient(R.drawable.ingredient_tomato, "Cinnamon", "Spices", 0.25f, "tsp"),
+                        Ingredient(R.drawable.ingredient_tomato, "Butter", "Dairy", 1.0f, "tbsp")
                     ),
-                    steps = listOf("Dip bread in mixture", "Fry until golden"),
-                    servings = 1,
-                    duration = "30 min"
-                ) to 1
+                    steps = listOf(
+                        "In a shallow dish, whisk together eggs, milk, sugar, vanilla extract, and cinnamon until well combined.",
+                        "Heat butter in a large non-stick skillet or griddle over medium heat.",
+                        "Dip each slice of bread into the egg mixture, ensuring both sides are fully coated but not soggy.",
+                        "Place bread slices on the hot skillet. Cook for 2-4 minutes per side, or until golden brown and cooked through.",
+                        "Serve hot with your favorite toppings like syrup, fresh fruit, or powdered sugar."
+                    ),
+                    servings = 1, // Consistent servings
+                    duration = "30 min", // Consistent duration
+                    upvoteCount = 300, // Fixed upvote count for French Toast
+                    recipeMaker = "by Chef Jane" // Fixed recipeMaker for French Toast
+                ) to 1 // Serving count for planner entry
             )
         )
     }
@@ -317,9 +358,9 @@ fun PlanCard(
         modifier = Modifier
             .padding(bottom = 5.dp)
             .background(
-            color = colorResource(R.color.primary),
-            shape = RoundedCornerShape(10.dp)
-        )
+                color = colorResource(R.color.primary),
+                shape = RoundedCornerShape(10.dp)
+            )
     ) {
         Row(
             modifier = Modifier
@@ -355,6 +396,14 @@ fun PlanCard(
                     fontFamily = nunito,
                     fontWeight = FontWeight.Medium,
                     fontSize = 18.sp,
+                    color = Color.White,
+                    textDecoration = textDecoration
+                )
+                Text(
+                    text = recipe.recipeMaker, // Display recipe maker
+                    fontFamily = nunito,
+                    fontWeight = FontWeight.Normal,
+                    fontSize = 10.sp,
                     color = Color.White,
                     textDecoration = textDecoration
                 )

@@ -66,12 +66,14 @@ fun MainScreen() {
         Screen.Profile
     )
 
-    // Determine if the current route is the DetailRecipe screen
-    val isDetailRecipeScreen = currentRoute?.startsWith(Screen.DetailRecipe.route.substringBefore('/')) == true
+    // Determine if the current route is the DetailRecipe screen or Instruction screen
+    val isSpecialScreen = currentRoute?.startsWith(Screen.DetailRecipe.route.substringBefore('/')) == true ||
+            currentRoute?.startsWith(Screen.Instruction.route.substringBefore('/')) == true ||
+            currentRoute?.startsWith(Screen.RecipeCompletion.route.substringBefore('/')) == true // Add this line
 
     Scaffold(
         topBar = {
-            if (!isDetailRecipeScreen) { // Conditionally show TopAppBar
+            if (!isSpecialScreen) { // Conditionally show TopAppBar
                 CustomTopBar(
                     username = "Pancokers",
                     onFirstButtonClick = {
@@ -96,7 +98,7 @@ fun MainScreen() {
             }
         },
         bottomBar = {
-            if (!isDetailRecipeScreen) { // Conditionally show NavigationBar
+            if (!isSpecialScreen) { // Conditionally show NavigationBar
                 CustomBottomBar(
                     navController = navController,
                     currentRoute = currentRoute ?: ""
@@ -104,7 +106,7 @@ fun MainScreen() {
             }
         },
         floatingActionButton = {
-            if (!isDetailRecipeScreen) {
+            if (!isSpecialScreen) {
                 FloatingActionButton(
                     onClick = {
                         navController.navigate(Screen.Add.route)

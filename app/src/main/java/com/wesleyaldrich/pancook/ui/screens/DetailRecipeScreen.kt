@@ -2,14 +2,12 @@ package com.wesleyaldrich.pancook.ui.screens
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape // Import for RoundedCornerShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.KeyboardArrowDown
@@ -24,31 +22,75 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp // Import for sp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.wesleyaldrich.pancook.R
-import com.wesleyaldrich.pancook.ui.theme.PancookTheme
+import com.wesleyaldrich.pancook.model.Ingredient
 import kotlin.math.floor
 import kotlin.math.log
-import androidx.compose.ui.graphics.Brush // Import for Brush
+import com.wesleyaldrich.pancook.ui.theme.PancookTheme
+import com.wesleyaldrich.pancook.model.Recipe
+import com.wesleyaldrich.pancook.ui.navigation.Screen // Import the Screen object
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DetailRecipeScreen(recipeId: Int, navController: NavController) {
-    var servingCount by remember { mutableStateOf(1) } // Default value set to 1
+    var servingCount by remember { mutableStateOf(1) }
 
-    // Placeholder values for social counts
-    val upvoteCount = 12500
+    // This should ideally come from a ViewModel or a data source based on recipeId
+    val deliciousSaladRecipe = remember {
+        Recipe(
+            id = 4,
+            title = "Delicious Salad",
+            description = "A refreshing mix of garden greens.",
+            image = R.drawable.salad,
+            ingredients = listOf(
+                Ingredient(R.drawable.ingredient_tomato, "Fresh Lettuce", "Vegetables", 1.0f, "head"),
+                Ingredient(R.drawable.ingredient_tomato, "Cherry Tomatoes", "Vegetables", 150.0f, "g"),
+                Ingredient(R.drawable.ingredient_tomato, "Cucumber", "Vegetables", 0.5f, "pcs"),
+                Ingredient(R.drawable.ingredient_tomato, "Red Onion", "Vegetables", 0.25f, "pcs"),
+                Ingredient(R.drawable.ingredient_tomato, "Feta Cheese", "Dairy", 50.0f, "g"),
+                Ingredient(R.drawable.ingredient_tomato, "Olive Oil", "Condiments", 2.0f, "tbsp"),
+                Ingredient(R.drawable.ingredient_tomato, "Lemon Juice", "Condiments", 1.0f, "tbsp"),
+                Ingredient(R.drawable.ingredient_tomato, "Salt", "Seasoning", 0.5f, "tsp"),
+                Ingredient(R.drawable.ingredient_tomato, "Black Pepper", "Seasoning", 0.25f, "tsp"),
+                Ingredient(R.drawable.ingredient_tomato, "Egg", "Seasoning", 2.05f, "pcs")
+            ),
+            steps = listOf(
+                "Wash and dry the lettuce. Tear into bite-sized pieces and place in a large salad bowl.",
+                "Halve the cherry tomatoes. Dice the cucumber and finely slice the red onion.",
+                "Add the tomatoes, cucumber, and red onion to the salad bowl with the lettuce.",
+                "Crumble the feta cheese over the vegetables.",
+                "Boil 2 large eggs for 8-10 minutes for a hard-boiled consistency. Let them cool, peel, and quarter them.", // NEW STEP
+                "In a small bowl, whisk together the olive oil, lemon juice, salt, and black pepper to make the dressing.",
+                "Pour the dressing over the salad. Toss gently to combine all ingredients evenly.",
+                "Add the quartered boiled eggs to the salad.", // Updated to include eggs
+                "Serve immediately as a refreshing side or light meal.",
+                "Enjoy your delicious salad!"
+            ),
+            servings = 2,
+            duration = "15 min",
+            upvoteCount = 1234,
+            recipeMaker = "by Chef Ana"
+        )
+    }
+
+    val currentRecipe = deliciousSaladRecipe // Using the hardcoded recipe for now
+
+    val upvoteCount = currentRecipe.upvoteCount
     val bookmarkCount = 3200
     val shareCount = 567
 
-    // Define formatCount inside the composable, or outside if it doesn't need composable scope
     fun formatCount(count: Int): String {
         if (count < 1000) return count.toString()
         val exp = floor(log(count.toDouble(), 1000.0)).toInt()
@@ -57,19 +99,12 @@ fun DetailRecipeScreen(recipeId: Int, navController: NavController) {
         return formattedValue.replace(".0", "") + units[exp]
     }
 
-    // Placeholder list of base ingredients (for 1 serving)
-    val baseIngredients = remember {
+    val nutritionFacts = remember {
         listOf(
-            "1.0 unit Fresh Lettuce",
-            "0.5 unit Cherry Tomatoes",
-            "0.25 unit Cucumber",
-            "0.1 unit Red Onion",
-            "50.0g Grilled Chicken",
-            "1.0 tbsp Olive Oil",
-            "1.0 dash Salt",
-            "1.0 dash Black Pepper",
-            "2.0 pcs Hard-boiled Eggs",
-            "10.0g Feta Cheese"
+            "250 kcal",
+            "20g",
+            "15g",
+            "10g"
         )
     }
 
@@ -82,7 +117,7 @@ fun DetailRecipeScreen(recipeId: Int, navController: NavController) {
                         Icon(
                             painterResource(id = R.drawable.ic_back_arrow),
                             contentDescription = "Back",
-                            tint = MaterialTheme.colorScheme.onSurface
+                            tint = colorResource(R.color.primary).copy(alpha = 1f)
                         )
                     }
                 },
@@ -95,399 +130,425 @@ fun DetailRecipeScreen(recipeId: Int, navController: NavController) {
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(paddingValues)
-                // .padding(bottom = 80.dp) // Removed this padding
             ) {
                 item {
-                    // 34. Carousel Recipe image placeholder
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 16.dp) // Apply horizontal padding here to match card width
+                            .padding(horizontal = 16.dp)
                     ) {
                         Box(modifier = Modifier
                             .fillMaxWidth()
                             .height(220.dp)
-                            .clip(RoundedCornerShape(12.dp)) // Apply rounded corners here
+                            .clip(RoundedCornerShape(12.dp))
                         ) {
                             LazyRow(
-                                modifier = Modifier.fillMaxSize(), // LazyRow fills the clipped Box
+                                modifier = Modifier.fillMaxSize(),
                                 horizontalArrangement = Arrangement.Center,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                // Although LazyRow is used, currently only one image is displayed.
-                                // If more images are added to the list, they will also fill the width.
-                                items(listOf(R.drawable.salad)) { imgResId ->
+                                items(listOf(currentRecipe.image)) { imgResId ->
                                     Image(
-                                        painter = painterResource(id = imgResId), // Use imgResId from the items lambda
+                                        painter = painterResource(id = imgResId),
                                         contentDescription = "Recipe Image",
                                         modifier = Modifier
-                                            .fillParentMaxWidth() // This ensures each item in LazyRow takes full width of the LazyRow's parent
-                                            .fillMaxHeight(), // Ensures the image fills the height of the Box
-                                        contentScale = ContentScale.Crop // Prevents stretching by cropping the image
+                                            .fillParentMaxWidth()
+                                            .fillMaxHeight(),
+                                        contentScale = ContentScale.Crop
                                     )
                                 }
                             }
                         }
-                        // Carousel dots moved below the carousel image box
                         Row(
                             modifier = Modifier
-                                .fillMaxWidth() // Take full width to center the dots
-                                .padding(top = 8.dp), // Padding between image and dots
+                                .fillMaxWidth()
+                                .padding(top = 8.dp),
                             horizontalArrangement = Arrangement.Center
                         ) {
-                            repeat(3) { // Assuming 3 total pages for the carousel based on image
+                            repeat(3) {
                                 Box(
                                     modifier = Modifier
                                         .size(8.dp)
                                         .clip(CircleShape)
-                                        .background(Color.Black.copy(alpha = if (it == 0) 0.8f else 0.4f)) // Highlight first dot
+                                        .background(colorResource(R.color.primary).copy(alpha = if (it == 0) 0.8f else 0.4f)) // Changed color
                                 )
                                 if (it < 2) Spacer(modifier = Modifier.width(4.dp))
                             }
                         }
                     }
 
-
                     Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 16.dp)) {
-                        // Main header row containing title/creator/duration on left and social buttons on right
                         Row(
                             modifier = Modifier.fillMaxWidth(),
-                            verticalAlignment = Alignment.Top, // Keeping Alignment.Top
-                            horizontalArrangement = Arrangement.SpaceBetween // Pushes the left part and social buttons apart
+                            verticalAlignment = Alignment.Top,
+                            horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            // Left section: Column for Title, and then Row for Creator + Duration
-                            Column(modifier = Modifier.weight(1f)) { // Give it weight to push social buttons right
+                            Column(modifier = Modifier.weight(1f)) {
                                 Text(
-                                    text = "Delicious Salad", // 35. Recipe title - Placeholder
-                                    style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
-                                    modifier = Modifier.fillMaxWidth() // Title should take full width of its column
+                                    text = currentRecipe.title,
+                                    style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold, fontSize = 24.sp, color = colorResource(R.color.primary).copy(alpha = 1f)),
+                                    modifier = Modifier.fillMaxWidth()
                                 )
-                                Spacer(modifier = Modifier.height(4.dp)) // Space between title and the next row
+                                Spacer(modifier = Modifier.height(4.dp))
 
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    // Creator Name (40) group
+                                Row(verticalAlignment = Alignment.CenterVertically) {
                                     Row(verticalAlignment = Alignment.CenterVertically) {
                                         Image(
-                                            painter = painterResource(id = R.drawable.ic_profile_placeholder),
+                                            painter = painterResource(id = R.drawable.nopal),
                                             contentDescription = "Creator Profile",
                                             modifier = Modifier
                                                 .size(20.dp)
                                                 .clip(CircleShape)
-                                                .background(Color.LightGray),
+                                                .background(MaterialTheme.colorScheme.surfaceVariant), // Changed color
                                             contentScale = ContentScale.Crop,
-                                            colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface)
                                         )
                                         Spacer(modifier = Modifier.width(4.dp))
                                         Text(
-                                            text = "by Firstname", // 40. Creator name - Placeholder, now just "Firstname"
-                                            style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Medium) // Made smaller
+                                            text = currentRecipe.recipeMaker,
+                                            style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium, fontSize = 16.sp, color = colorResource(R.color.primary).copy(alpha = 1f))
                                         )
                                     }
 
-                                    // Duration (36, 37) group
-                                    Spacer(modifier = Modifier.width(16.dp)) // Minimal space between name and duration
+                                    Spacer(modifier = Modifier.width(16.dp))
                                     Row(verticalAlignment = Alignment.CenterVertically) {
                                         Icon(
-                                            painterResource(id = R.drawable.ic_clock), // 36. Duration icon
+                                            painterResource(id = R.drawable.ic_clock),
                                             contentDescription = "Duration",
                                             modifier = Modifier.size(20.dp),
-                                            tint = MaterialTheme.colorScheme.onSurface
+                                            tint = colorResource(R.color.primary).copy(alpha = 1f)
                                         )
                                         Spacer(modifier = Modifier.width(2.dp))
-                                        Text(text = "15 min", style = MaterialTheme.typography.bodySmall) // Made smaller
+                                        Text(text = currentRecipe.duration, style = MaterialTheme.typography.bodyMedium.copy(fontSize = 16.sp))
                                     }
                                 }
                             }
 
-                            // 38. Social icons (Upvote, Saved, Share) & 39. Social Icon labels
                             Row(
-                                modifier = Modifier.padding(top = 8.dp), // Added top padding to move down
-                                verticalAlignment = Alignment.Top // Still align within its own row to top
+                                modifier = Modifier.padding(top = 8.dp),
+                                verticalAlignment = Alignment.Top
                             ) {
-                                // Upvote
                                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                     IconButton(
                                         onClick = { /* Handle Upvote */ },
-                                        modifier = Modifier.size(24.dp) // Maintain icon size
+                                        modifier = Modifier.size(24.dp)
                                     ) {
-                                        Icon(Icons.Filled.ThumbUp, contentDescription = "Upvote", tint = MaterialTheme.colorScheme.onSurface)
+                                        Icon(Icons.Filled.ThumbUp, contentDescription = "Upvote", tint = colorResource(R.color.primary).copy(alpha = 1f))
                                     }
-                                    Spacer(modifier = Modifier.height(0.dp)) // Reduced space between icon and text
+                                    Spacer(modifier = Modifier.height(0.dp))
                                     Text(
                                         text = formatCount(upvoteCount),
-                                        style = MaterialTheme.typography.labelSmall.copy(fontSize = MaterialTheme.typography.labelSmall.fontSize * 0.8) // Made text even smaller
+                                        style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp)
                                     )
                                 }
-                                Spacer(modifier = Modifier.width(4.dp)) // Smaller space between social icon groups
-                                // Bookmark
+                                Spacer(modifier = Modifier.width(4.dp))
                                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                     IconButton(
                                         onClick = { /* Handle Saved */ },
-                                        modifier = Modifier.size(24.dp) // Maintain icon size
+                                        modifier = Modifier.size(24.dp)
                                     ) {
-                                        Icon(Icons.Filled.Bookmark, contentDescription = "Saved", tint = MaterialTheme.colorScheme.onSurface)
+                                        Icon(Icons.Filled.Bookmark, contentDescription = "Saved", tint = colorResource(R.color.primary).copy(alpha = 1f))
                                     }
-                                    Spacer(modifier = Modifier.height(0.dp)) // Reduced space between icon and text
+                                    Spacer(modifier = Modifier.height(0.dp))
                                     Text(
                                         text = formatCount(bookmarkCount),
-                                        style = MaterialTheme.typography.labelSmall.copy(fontSize = MaterialTheme.typography.labelSmall.fontSize * 0.8) // Made text even smaller
+                                        style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp)
                                     )
                                 }
-                                Spacer(modifier = Modifier.width(4.dp)) // Smaller space between social icon groups
-                                // Share
+                                Spacer(modifier = Modifier.width(4.dp))
                                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                     IconButton(
                                         onClick = { /* Handle Share */ },
-                                        modifier = Modifier.size(24.dp) // Maintain icon size
+                                        modifier = Modifier.size(24.dp)
                                     ) {
-                                        Icon(Icons.Filled.Share, contentDescription = "Share", tint = MaterialTheme.colorScheme.onSurface)
+                                        Icon(Icons.Filled.Share, contentDescription = "Share", tint = colorResource(R.color.primary).copy(alpha = 1f))
                                     }
-                                    Spacer(modifier = Modifier.height(0.dp)) // Reduced space between icon and text
+                                    Spacer(modifier = Modifier.height(0.dp))
                                     Text(
                                         text = formatCount(shareCount),
-                                        style = MaterialTheme.typography.labelSmall.copy(fontSize = MaterialTheme.typography.labelSmall.fontSize * 0.8) // Made text even smaller
+                                        style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp)
                                     )
                                 }
                             }
                         }
 
-                        // Remaining content below the main header row
-                        Spacer(modifier = Modifier.height(16.dp)) // Space after the main header block, before description
-
+                        // Adjusted from 16.dp to 6.dp to create a 12dp gap with the next card's top padding
                         Text(
-                            text = "A fresh and healthy salad perfect for a light meal or side dish. This recipe is easy to make and packed with nutrients. Enjoy!", // 41. Recipe description text area - Placeholder
-                            style = MaterialTheme.typography.bodyMedium,
-                            modifier = Modifier.padding(bottom = 24.dp)
+                            text = currentRecipe.description,
+                            style = MaterialTheme.typography.bodyLarge.copy(fontSize = 16.sp),
+                            modifier = Modifier.padding(bottom = 6.dp)
                         )
                     }
                 }
 
-                // Ingredients Section within a Card
                 item {
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 8.dp), // Padding for the card itself
-                        shape = RoundedCornerShape(12.dp), // Rounded corners for the card
-                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant) // Card background color
+                            // Changed vertical padding from 8.dp to 6.dp
+                            .padding(horizontal = 16.dp, vertical = 6.dp),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
                     ) {
-                        Column(modifier = Modifier.padding(16.dp)) { // Inner padding for card content
-                            Row( // Combined row for Ingredients header and serving controls
+                        Column(modifier = Modifier.padding(16.dp)) {
+                            Row(
                                 modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
                                 verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.SpaceBetween // Distribute content
+                                horizontalArrangement = Arrangement.SpaceBetween
                             ) {
                                 Text(
-                                    text = "Ingredients", // 42. Ingredients section header
-                                    style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
-                                    modifier = Modifier.weight(1f) // Allow text to take space
+                                    text = "Ingredients",
+                                    style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold, fontSize = 20.sp, color = colorResource(R.color.primary).copy(alpha = 1f)),
+                                    modifier = Modifier.weight(1f)
                                 )
 
-                                // Serving controls group (43, 44, 45)
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     Icon(
-                                        painterResource(id = R.drawable.ic_serving), // 43. Serving count icon
+                                        painterResource(id = R.drawable.ic_serving),
                                         contentDescription = "Serving Count",
-                                        modifier = Modifier.size(20.dp), // Smaller icon
-                                        tint = MaterialTheme.colorScheme.onSurface
+                                        modifier = Modifier.size(20.dp),
+                                        tint = colorResource(R.color.primary).copy(alpha = 1f)
                                     )
-                                    Spacer(modifier = Modifier.width(4.dp)) // Smaller space after icon
+                                    Spacer(modifier = Modifier.width(4.dp))
 
                                     Button(
                                         onClick = { if (servingCount > 1) servingCount-- },
-                                        modifier = Modifier.size(20.dp), // Smaller button size
+                                        modifier = Modifier.size(20.dp),
                                         shape = CircleShape,
                                         contentPadding = PaddingValues(0.dp),
-                                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                                        colors = ButtonDefaults.buttonColors(containerColor = colorResource(R.color.primary).copy(alpha = 1f))
                                     ) {
-                                        Icon(Icons.Filled.KeyboardArrowDown, contentDescription = "Decrease Serving", tint = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.size(16.dp)) // Smaller icon inside button
+                                        Icon(Icons.Filled.KeyboardArrowDown, contentDescription = "Decrease Serving", tint = colorResource(R.color.accent_yellow).copy(alpha = 1f), modifier = Modifier.size(16.dp))
                                     }
                                     Text(
-                                        text = "$servingCount", // 45. Serving count value
-                                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, fontSize = 16.sp), // Smaller text size
-                                        modifier = Modifier.padding(horizontal = 4.dp) // Smaller horizontal padding
+                                        text = "$servingCount",
+                                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, fontSize = 16.sp),
+                                        modifier = Modifier.padding(horizontal = 4.dp)
                                     )
                                     Button(
                                         onClick = { servingCount++ },
-                                        modifier = Modifier.size(20.dp), // Smaller button size
+                                        modifier = Modifier.size(20.dp),
                                         shape = CircleShape,
                                         contentPadding = PaddingValues(0.dp),
-                                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                                        colors = ButtonDefaults.buttonColors(containerColor = colorResource(R.color.primary).copy(alpha = 1f))
                                     ) {
-                                        Icon(Icons.Filled.KeyboardArrowUp, contentDescription = "Increase Serving", tint = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.size(16.dp)) // Smaller icon inside button
+                                        Icon(Icons.Filled.KeyboardArrowUp, contentDescription = "Increase Serving", tint = colorResource(R.color.accent_yellow).copy(alpha = 1f), modifier = Modifier.size(16.dp))
                                     }
                                 }
                             }
 
-                            // Placeholder for Ingredients List (46. Ingredients value & 47. Ingredients detail)
-                            baseIngredients.forEach { baseIngredient ->
-                                val parts = baseIngredient.split(" ", limit = 2) // Split to get the numeric part and the rest
-                                val originalValue = parts[0].toFloatOrNull() ?: 0f
-                                val multipliedValue = originalValue * servingCount
-                                val formattedMultipliedValue = if (multipliedValue == floor(multipliedValue)) {
-                                    multipliedValue.toInt().toString()
-                                } else {
-                                    String.format("%.1f", multipliedValue)
-                                }
+                            val ingredientValueBoxWidth = 50.dp
+                            val indentSpacerWidth = 12.dp
 
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(vertical = 4.dp),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    // Small box for ingredient value (46)
-                                    Box(
+                            Column(modifier = Modifier.padding(start = 8.dp)) {
+                                currentRecipe.ingredients.forEach { ingredient ->
+                                    val multipliedQty = ingredient.qty * servingCount
+                                    val formattedQty = "%.2f".format(multipliedQty)
+
+                                    Row(
                                         modifier = Modifier
-                                            .size(width = 40.dp, height = 24.dp) // Adjust size as needed
-                                            .clip(RoundedCornerShape(8.dp)) // Increased corner rounding here!
-                                            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)), // Light background for the box
-                                        contentAlignment = Alignment.Center
+                                            .fillMaxWidth()
+                                            .padding(vertical = 4.dp),
+                                        verticalAlignment = Alignment.CenterVertically
                                     ) {
+                                        Box(
+                                            modifier = Modifier
+                                                .size(width = ingredientValueBoxWidth, height = 20.dp)
+                                                .clip(RoundedCornerShape(8.dp))
+                                                .background(colorResource(R.color.primary).copy(alpha = 1f)),
+                                            contentAlignment = Alignment.CenterEnd
+                                        ) {
+                                            Text(
+                                                text = formattedQty,
+                                                style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold, fontSize = 11.sp),
+                                                color = colorResource(R.color.accent_yellow).copy(alpha = 1f),
+                                                textAlign = TextAlign.End,
+                                                modifier = Modifier.padding(end = 8.dp),
+                                                maxLines = 1,
+                                                overflow = TextOverflow.Ellipsis
+                                            )
+                                        }
+                                        Spacer(modifier = Modifier.width(4.dp))
+
                                         Text(
-                                            text = formattedMultipliedValue,
-                                            style = MaterialTheme.typography.bodySmall, // Smaller text for the value
-                                            fontWeight = FontWeight.Bold,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                            text = ingredient.unitMeasurement,
+                                            style = MaterialTheme.typography.bodySmall.copy(fontSize = 14.sp),
+                                            fontWeight = FontWeight.Normal,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                            modifier = Modifier.width(40.dp)
+                                        )
+                                        Spacer(modifier = Modifier.width(indentSpacerWidth))
+
+                                        Text(
+                                            text = ingredient.name,
+                                            style = MaterialTheme.typography.bodyLarge.copy(fontSize = 16.sp),
+                                            modifier = Modifier.weight(1f)
                                         )
                                     }
-                                    Spacer(modifier = Modifier.width(8.dp)) // Space between box and text
-                                    Text(
-                                        text = parts[1], // Only show the detail part (47)
-                                        style = MaterialTheme.typography.bodyLarge,
-                                        modifier = Modifier.weight(1f) // Allow text to take remaining space
-                                    )
                                 }
                             }
                         }
                     }
                 }
 
-
                 item {
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Column(modifier = Modifier.padding(horizontal = 16.dp)) {
-                        Text(
-                            text = "Nutrition", // 49. Nutrition section header
-                            style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
-                            modifier = Modifier.padding(bottom = 8.dp)
-                        )
-                        Row(
-                            modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Text(text = "Calories:", style = MaterialTheme.typography.bodyLarge)
-                            Text(text = "XXX kcal", style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Medium))
-                        }
-                        Row(
-                            modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Text(text = "Protein:", style = MaterialTheme.typography.bodyLarge)
-                            Text(text = "XXg", style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Medium))
-                        }
-                        Row(
-                            modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Text(text = "Fat:", style = MaterialTheme.typography.bodyLarge)
-                            Text(text = "XXg", style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Medium))
-                        }
-                        Row(
-                            modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Text(text = "Carbs:", style = MaterialTheme.typography.bodyLarge)
-                            Text(text = "XXg", style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Medium))
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(24.dp))
-
-                    Column(modifier = Modifier.padding(horizontal = 16.dp)) {
-                        Text(
-                            text = "Instructions", // 52. Instruction section header
-                            style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
-                            modifier = Modifier.padding(bottom = 8.dp)
-                        )
-                    }
-                }
-
-                // Placeholder for Instructions
-                items(3) { index ->
-                    Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
-                        Row(verticalAlignment = Alignment.Top) {
-                            Box(
-                                modifier = Modifier
-                                    .size(30.dp)
-                                    .clip(CircleShape)
-                                    .background(MaterialTheme.colorScheme.primary),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(text = "${index + 1}", color = Color.White, fontWeight = FontWeight.Bold)
-                            }
-                            Spacer(modifier = Modifier.width(8.dp))
+                    // Nutrition Section
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            // Changed vertical padding from 8.dp to 6.dp
+                            .padding(horizontal = 16.dp, vertical = 6.dp),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color.Transparent)
+                    ) {
+                        Column(modifier = Modifier.padding(16.dp)) { // Uniform padding for content
                             Text(
-                                text = "Step ${index + 1}: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-                                style = MaterialTheme.typography.bodyLarge,
-                                modifier = Modifier.weight(1f)
+                                text = "Nutrition",
+                                style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold, fontSize = 20.sp, color = colorResource(R.color.primary).copy(alpha = 1f)),
+                                modifier = Modifier.padding(bottom = 8.dp)
                             )
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceAround,
+                                verticalAlignment = Alignment.Top
+                            ) {
+                                val nutritionLabels = listOf("Calories", "Protein", "Fat", "Carbs")
+                                val fixedNutritionItemWidth = 80.dp
+
+                                nutritionLabels.forEachIndexed { index, label ->
+                                    val value = nutritionFacts[index]
+                                    Column(
+                                        horizontalAlignment = Alignment.CenterHorizontally,
+                                        modifier = Modifier.width(fixedNutritionItemWidth)
+                                    ) {
+                                        Text(
+                                            text = label,
+                                            style = MaterialTheme.typography.bodyMedium.copy(fontSize = 16.sp),
+                                            modifier = Modifier.padding(bottom = 4.dp)
+                                        )
+                                        Box(
+                                            modifier = Modifier
+                                                .height(32.dp)
+                                                .fillMaxWidth()
+                                                .clip(RoundedCornerShape(8.dp))
+                                                .background(colorResource(R.color.primary).copy(alpha = 1f)),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Text(
+                                                text = value,
+                                                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold, fontSize = 11.sp),
+                                                color = colorResource(R.color.accent_yellow).copy(alpha = 1f),
+                                                maxLines = 1,
+                                                overflow = TextOverflow.Ellipsis
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    // Instructions Section (Now includes steps)
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            // Changed vertical padding from 8.dp to 6.dp
+                            .padding(horizontal = 16.dp, vertical = 6.dp),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color.Transparent)
+                    ) {
+                        Column(modifier = Modifier.padding(16.dp)) { // Uniform padding for content
+                            Text(
+                                text = "Instructions",
+                                style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold, fontSize = 20.sp, color = colorResource(R.color.primary).copy(alpha = 1f)),
+                                modifier = Modifier.padding(bottom = 8.dp) // Maintain a small gap below header
+                            )
+
+                            // Instructions steps (now within this Column, inside the Card)
+                            currentRecipe.steps.forEach { step ->
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(vertical = 4.dp) // Reduced vertical padding between steps for a tighter look
+                                ) {
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Box(
+                                            modifier = Modifier
+                                                .size(30.dp)
+                                                .clip(CircleShape)
+                                                .background(colorResource(R.color.primary).copy(alpha = 1f)),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Text(text = "${currentRecipe.steps.indexOf(step) + 1}", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                                        }
+                                        Spacer(modifier = Modifier.width(8.dp))
+                                        Text(
+                                            text = step,
+                                            style = MaterialTheme.typography.bodyLarge.copy(fontSize = 16.sp),
+                                            modifier = Modifier.weight(1f)
+                                        )
+                                    }
+                                }
+                            }
                         }
                     }
                 }
 
                 item {
-                    Spacer(modifier = Modifier.height(24.dp))
-
-                    Column(modifier = Modifier.padding(horizontal = 16.dp)) {
-                        Text(
-                            text = "Comments", // 56. Comment section header
-                            style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
-                            modifier = Modifier.padding(bottom = 8.dp)
-                        )
-                        Row(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp), verticalAlignment = Alignment.Top) {
-                            Image(
-                                painter = painterResource(id = R.drawable.ic_profile_placeholder),
-                                contentDescription = "User Avatar",
-                                modifier = Modifier
-                                    .size(48.dp)
-                                    .clip(CircleShape)
-                                    .background(Color.Gray),
-                                contentScale = ContentScale.Crop,
-                                colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface)
+                    // Comments Section
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            // Changed vertical padding from 8.dp to 6.dp
+                            .padding(horizontal = 16.dp, vertical = 6.dp),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color.Transparent)
+                    ) {
+                        Column(modifier = Modifier.padding(16.dp)) { // Uniform padding for content
+                            Text(
+                                text = "Comments",
+                                style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold, fontSize = 20.sp, color = colorResource(R.color.primary).copy(alpha = 1f)),
+                                modifier = Modifier.padding(bottom = 8.dp)
                             )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Column {
-                                Text(text = "John Doe", fontWeight = FontWeight.Bold)
-                                Text(text = "This is a placeholder comment. Great recipe!", style = MaterialTheme.typography.bodyMedium)
+                            Row(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+                                Image(
+                                    painter = painterResource(id = R.drawable.ic_serving),
+                                    contentDescription = "User Avatar",
+                                    modifier = Modifier
+                                        .size(48.dp)
+                                        .clip(CircleShape)
+                                        .background(colorResource(R.color.accent_yellow).copy(alpha = 1f)), // Changed color
+                                    contentScale = ContentScale.Crop,
+                                    colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Column {
+                                    Text(text = "John Doe", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                                    Text(text = "This is a placeholder comment. Great recipe!", style = MaterialTheme.typography.bodyLarge.copy(fontSize = 16.sp))
+                                }
                             }
-                        }
-                        Row(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp), verticalAlignment = Alignment.Top) {
-                            Image(
-                                painter = painterResource(id = R.drawable.ic_profile_placeholder),
-                                contentDescription = "User Avatar",
-                                modifier = Modifier
-                                    .size(48.dp)
-                                    .clip(CircleShape)
-                                    .background(Color.Gray),
-                                contentScale = ContentScale.Crop,
-                                colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface)
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Column {
-                                Text(text = "Jane Smith", fontWeight = FontWeight.Bold)
-                                Text(text = "Another placeholder comment. I would try this!", style = MaterialTheme.typography.bodyMedium)
+                            Row(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+                                Image(
+                                    painter = painterResource(id = R.drawable.ic_serving),
+                                    contentDescription = "User Avatar",
+                                    modifier = Modifier
+                                        .size(48.dp)
+                                        .clip(CircleShape)
+                                        .background(MaterialTheme.colorScheme.surfaceVariant), // Changed color
+                                    contentScale = ContentScale.Crop,
+                                    colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Column {
+                                    Text(text = "Jane Smith", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                                    Text(text = "Another placeholder comment. I would try this!", style = MaterialTheme.typography.bodyLarge.copy(fontSize = 16.sp))
+                                }
                             }
+                            Spacer(modifier = Modifier.height(80.dp))
                         }
-                        // Add some padding at the end of the LazyColumn to make sure content doesn't get hidden by the bottom bar
-                        Spacer(modifier = Modifier.height(80.dp)) // Height of your bottom bar + some extra padding
                     }
                 }
             }
 
-            // Two sticky buttons at the bottom
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -496,44 +557,47 @@ fun DetailRecipeScreen(recipeId: Int, navController: NavController) {
                         Brush.verticalGradient(
                             colors = listOf(
                                 Color.Transparent,
-                                MaterialTheme.colorScheme.surface.copy(alpha = 0.9f), // Slightly transparent surface
-                                MaterialTheme.colorScheme.surface // Full color at the bottom
+                                MaterialTheme.colorScheme.surface.copy(alpha = 0.9f),
+                                MaterialTheme.colorScheme.surface
                             ),
                             startY = 0f,
-                            endY = 300f // Adjust this value to control the gradient spread
+                            endY = 300f
                         )
                     )
                     .padding(horizontal = 16.dp, vertical = 8.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // "Add to Planner" button
                 Button(
                     onClick = { /* Handle add to planner */ },
                     modifier = Modifier
-                        .weight(0.4f)
+                        .weight(0.5f)
                         .height(50.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.surfaceVariant,
                         contentColor = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+                    ),
+                    shape = RoundedCornerShape(8.dp)
                 ) {
-                    Icon(Icons.Filled.Add, contentDescription = "Add to Planner") // You might want a different icon for planner
+                    Icon(Icons.Filled.Add, contentDescription = "Add to Planner")
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text(text = "Add to Planner")
+                    Text(text = "Add to Planner", fontSize = 15.5.sp)
                 }
 
                 Spacer(modifier = Modifier.width(16.dp))
 
-                // "Start Instruction" button
                 Button(
-                    onClick = { /* Handle navigation to instructions */ },
+                    onClick = {
+                        // Navigate to the Instruction screen, starting at step 0
+                        navController.navigate(Screen.Instruction.createRoute(recipeId)) // No stepIndex here
+                    },
                     modifier = Modifier
-                        .weight(0.6f)
+                        .weight(0.5f)
                         .height(50.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                    colors = ButtonDefaults.buttonColors(containerColor = colorResource(R.color.primary).copy(alpha = 1f)),
+                    shape = RoundedCornerShape(8.dp)
                 ) {
-                    Text(text = "Start Instruction", color = MaterialTheme.colorScheme.onPrimary)
+                    Text(text = "Start Instruction", color = MaterialTheme.colorScheme.onPrimary, fontSize = 16.sp)
                 }
             }
         }
@@ -542,8 +606,8 @@ fun DetailRecipeScreen(recipeId: Int, navController: NavController) {
 
 @Preview(
     showBackground = true,
-    widthDp = 411, // Pixel 2 width
-    heightDp = 731 // Pixel 2 height
+    widthDp = 411,
+    heightDp = 1700
 )
 @Composable
 fun DetailRecipeScreenPreview() {

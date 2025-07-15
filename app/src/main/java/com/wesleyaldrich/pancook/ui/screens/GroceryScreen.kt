@@ -4,20 +4,15 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import android.widget.Space
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
@@ -51,14 +46,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
@@ -71,7 +64,6 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.max
 import androidx.compose.ui.unit.sp
 import com.wesleyaldrich.pancook.R
 import com.wesleyaldrich.pancook.model.Ingredient
@@ -79,66 +71,72 @@ import com.wesleyaldrich.pancook.model.Recipe
 import com.wesleyaldrich.pancook.ui.theme.PancookTheme
 import com.wesleyaldrich.pancook.ui.theme.nunito
 import com.wesleyaldrich.pancook.ui.theme.poppins
+// Removed unused import: import kotlin.random.Random
+
+// Removed getRandomRecipeMakerForGrocery() as it's no longer needed
 
 fun getDummyRecipes(): Map<Recipe, Int> {
     val ingredientList1 = listOf(
-        Ingredient(R.drawable.ingredient_tomato, "Spaghetti", "Pasta", 200, "g"),
-        Ingredient(R.drawable.ingredient_tomato, "Ground Beef", "Meat", 150, "g"),
-        Ingredient(R.drawable.ingredient_tomato, "Tomato Sauce", "Condiments", 100, "ml"),
-        Ingredient(R.drawable.ingredient_tomato, "Onion", "Vegetables", 1, "piece"),
-        Ingredient(R.drawable.ingredient_tomato, "Garlic", "Spices", 2, "cloves")
+        Ingredient(R.drawable.ingredient_tomato, "Spaghetti", "Pasta", 200.0f, "g"), // Changed to Float
+        Ingredient(R.drawable.ingredient_tomato, "Ground Beef", "Meat", 150.0f, "g"), // Changed to Float
+        Ingredient(R.drawable.ingredient_tomato, "Tomato Sauce", "Condiments", 100.0f, "ml"), // Changed to Float
+        Ingredient(R.drawable.ingredient_tomato, "Onion", "Vegetables", 1.0f, "piece"), // Changed to Float
+        Ingredient(R.drawable.ingredient_tomato, "Garlic", "Spices", 2.0f, "cloves") // Changed to Float
     )
 
     val ingredientList2 = listOf(
-        Ingredient(R.drawable.ingredient_tomato, "Lettuce", "Vegetables", 1, "head"),
-        Ingredient(R.drawable.ingredient_tomato, "Tomato", "Vegetables", 2, "pieces"),
-        Ingredient(R.drawable.ingredient_tomato, "Cucumber", "Vegetables", 1, "piece"),
-        Ingredient(R.drawable.ingredient_tomato, "Olive oil", "Condiments", 2, "tbsp"),
-        Ingredient(R.drawable.ingredient_tomato, "Feta cheese", "Dairy", 50, "g")
+        Ingredient(R.drawable.ingredient_tomato, "Lettuce", "Vegetables", 1.0f, "head"), // Changed to Float
+        Ingredient(R.drawable.ingredient_tomato, "Tomato", "Vegetables", 2.0f, "pieces"), // Changed to Float
+        Ingredient(R.drawable.ingredient_tomato, "Cucumber", "Vegetables", 1.0f, "piece"), // Changed to Float
+        Ingredient(R.drawable.ingredient_tomato, "Olive oil", "Condiments", 2.0f, "tbsp"), // Changed to Float
+        Ingredient(R.drawable.ingredient_tomato, "Feta cheese", "Dairy", 50.0f, "g") // Changed to Float
     )
 
     val ingredientList3 = listOf(
-        Ingredient(R.drawable.ingredient_tomato, "Chicken Breast", "Meat", 200, "g"),
-        Ingredient(R.drawable.ingredient_tomato, "Salt", "Spices", 1, "tsp"),
-        Ingredient(R.drawable.ingredient_tomato, "Pepper", "Spices", 1, "tsp"),
-        Ingredient(R.drawable.ingredient_tomato, "Rosemary", "Herbs", 1, "tsp"),
-        Ingredient(R.drawable.ingredient_tomato, "Olive oil", "Condiments", 1, "tbsp")
+        Ingredient(R.drawable.ingredient_tomato, "Chicken Breast", "Meat", 200.0f, "g"), // Changed to Float
+        Ingredient(R.drawable.ingredient_tomato, "Salt", "Spices", 1.0f, "tsp"), // Changed to Float
+        Ingredient(R.drawable.ingredient_tomato, "Pepper", "Spices", 1.0f, "tsp"), // Changed to Float
+        Ingredient(R.drawable.ingredient_tomato, "Rosemary", "Herbs", 1.0f, "tsp"), // Changed to Float
+        Ingredient(R.drawable.ingredient_tomato, "Olive oil", "Condiments", 1.0f, "tbsp") // Changed to Float
     )
 
     val recipe1 = Recipe(
-        id = 1,
+        id = 1, // Consistent ID with MyRecipeScreen
         title = "Spaghetti Bolognese",
         description = "A classic Italian pasta dish with meat sauce.",
         image = R.drawable.hash_brown,
         ingredients = ingredientList1,
         steps = listOf("Boil pasta", "Cook beef", "Add sauce", "Mix together"),
-        servings = 2,
-        duration = "30 min",
-        likeCount = 124
+        servings = 2, // Consistent servings
+        duration = "30 min", // Consistent duration
+        upvoteCount = 124, // Consistent upvoteCount
+        recipeMaker = "by Mia's Meals" // Fixed recipeMaker (consistent with MyRecipeScreen)
     )
 
     val recipe2 = Recipe(
-        id = 2,
+        id = 2, // Consistent ID with MyRecipeScreen
         title = "Fresh Garden Salad",
         description = "A healthy and fresh salad mix.",
         image = R.drawable.salad,
         ingredients = ingredientList2,
         steps = listOf("Chop veggies", "Toss with oil", "Add cheese"),
-        servings = 1,
-        duration = "15 min",
-        likeCount = 89
+        servings = 1, // Consistent servings
+        duration = "15 min", // Consistent duration
+        upvoteCount = 89, // Consistent upvoteCount
+        recipeMaker = "by Jake's Plates" // Fixed recipeMaker (consistent with MyRecipeScreen)
     )
 
     val recipe3 = Recipe(
-        id = 3,
+        id = 3, // Consistent ID with MyRecipeScreen
         title = "Grilled Chicken",
         description = "Juicy grilled chicken breast with herbs.",
         image = R.drawable.fudgy_brownies,
         ingredients = ingredientList3,
         steps = listOf("Season chicken", "Heat pan", "Grill 7 min each side"),
-        servings = 2,
-        duration = "25 min",
-        likeCount = 176
+        servings = 2, // Consistent servings
+        duration = "25 min", // Consistent duration
+        upvoteCount = 176, // Consistent upvoteCount
+        recipeMaker = "by Mia's Meals" // Fixed recipeMaker (consistent with MyRecipeScreen)
     )
 
     return mapOf(
@@ -385,15 +383,6 @@ fun RecipeCardMini(
                                     dropdownAnchor.value = shiftedOffset
                                 }
                         ) {
-                            Icon(
-                                imageVector = Icons.Default.ArrowDropDown,
-                                contentDescription = "Change Serve Count",
-                                tint = colorResource(R.color.accent_yellow),
-                                modifier = Modifier
-                                    .size(18.dp)
-                                    .clickable { expanded.value = true }
-                            )
-
                             DropdownMenu(
                                 expanded = expanded.value,
                                 onDismissRequest = { expanded.value = false },
@@ -416,6 +405,14 @@ fun RecipeCardMini(
                                     )
                                 }
                             }
+                            Icon( // Moved Icon inside the Box with onGloballyPositioned
+                                imageVector = Icons.Default.ArrowDropDown,
+                                contentDescription = "Change Serve Count",
+                                tint = colorResource(R.color.accent_yellow),
+                                modifier = Modifier
+                                    .size(18.dp)
+                                    .clickable { expanded.value = true }
+                            )
                         }
                     }
 
@@ -456,7 +453,7 @@ fun RecipeCardMini(
                     )
                     Spacer(modifier = Modifier.width(5.dp))
                     Text(
-                        text = recipe.likeCount.toString(),
+                        text = recipe.upvoteCount.toString(),
                         fontFamily = nunito,
                         color = colorResource(R.color.accent_yellow),
                         fontSize = 12.sp
@@ -482,7 +479,7 @@ fun RecipeCardMini(
                         .padding(start = 8.dp)
                 )
                 Text(
-                    text = "by Nunuk",
+                    text = recipe.recipeMaker, // Changed from hardcoded "by Nunuk" to recipe.recipeMaker
                     fontFamily = nunito,
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 12.sp,
@@ -519,7 +516,7 @@ data class DisplayIngredient(
     val imageRes: Int,
     val name: String,
     val category: String,
-    val qty: Int,
+    val qty: Float, // <--- THIS IS THE CULPRIT!
     val unitMeasurement: String,
     val recipeName: String // <- comes from Recipe.title
 )

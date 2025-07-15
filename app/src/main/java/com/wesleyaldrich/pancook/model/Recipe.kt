@@ -9,5 +9,6 @@ data class Recipe(
     val steps: List<String>,
     val servings: Int,
     val duration: String,
-    val upvoteCount: Int = 0
+    val upvoteCount: Int = 0,
+    val recipeMaker: String
 )
