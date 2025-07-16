@@ -5,12 +5,12 @@ plugins {
 
 android {
     namespace = "com.wesleyaldrich.pancook"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.wesleyaldrich.pancook"
-        minSdk = 34
-        targetSdk = 34
+        minSdk = 35
+        targetSdk = 35
         versionCode = 1
         versionName = "1.0"
 
@@ -47,6 +47,7 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
+    buildToolsVersion = "35.0.0"
 }
 
 dependencies {
@@ -66,6 +67,10 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+    implementation("androidx.compose.material:material-icons-extended")
+    implementation("com.google.accompanist:accompanist-pager:0.28.0") // Check for the latest version
+    implementation("com.google.accompanist:accompanist-pager-indicators:0.28.0") // Optional, for more advanced indicators
+    implementation("io.coil-kt:coil-compose:2.4.0")
 
     implementation(libs.androidx.navigation.compose)
 }
