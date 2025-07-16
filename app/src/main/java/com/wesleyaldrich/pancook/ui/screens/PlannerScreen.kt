@@ -62,11 +62,12 @@ import com.wesleyaldrich.pancook.model.Recipe
 import com.wesleyaldrich.pancook.ui.theme.inter
 import com.wesleyaldrich.pancook.ui.theme.montserrat
 import com.wesleyaldrich.pancook.ui.theme.nunito
-import com.wesleyaldrich.pancook.ui.theme.nunito
-import org.w3c.dom.Text
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.Locale
+import com.wesleyaldrich.pancook.model.Instruction // Import Instruction
+import com.wesleyaldrich.pancook.model.NutritionFact // Import NutritionFact
+import com.wesleyaldrich.pancook.model.Comment // Import Comment
 
 @Composable
 fun CenteredTextBox(text: String, family: FontFamily, weight: FontWeight = FontWeight.Normal, size: TextUnit, align: TextAlign) {
@@ -83,30 +84,75 @@ fun getDummyPlannerData(upcoming: Boolean): Map<String, Map<Recipe, Int>> {
         mapOf(
             "08-07-2025" to mapOf(
                 Recipe(
-                    id = 1,
+                    id = 101,
                     title = "Hash Browns",
-                    description = "Crispy and golden",
+                    description = "Classic crispy potato breakfast.",
                     image = R.drawable.hash_brown,
                     ingredients = listOf(
-                        Ingredient(R.drawable.ingredient_tomato, "Potatoes", "Vegetables", 3, "pcs")
+                        Ingredient(R.drawable.ingredient_tomato, "Potatoes", "Vegetables", 2.0f, "large"),
+                        Ingredient(R.drawable.ingredient_tomato, "Butter", "Dairy", 2.0f, "tbsp"),
+                        Ingredient(R.drawable.ingredient_tomato, "Salt", "Seasoning", 0.5f, "tsp"),
+                        Ingredient(R.drawable.ingredient_tomato, "Black Pepper", "Seasoning", 0.25f, "tsp")
                     ),
-                    steps = listOf("Grate potatoes", "Fry until golden"),
+                    steps = listOf(
+                        Instruction(1, "Peel and grate potatoes. Rinse grated potatoes thoroughly under cold water until water runs clear."),
+                        Instruction(2, "Squeeze out as much excess water as possible from the grated potatoes using a clean kitchen towel or paper towels. This is crucial for crispiness!"),
+                        Instruction(3, "Season the dried grated potatoes with salt and pepper."),
+                        Instruction(4, "Heat butter in a large non-stick skillet over medium heat until melted and slightly browned."),
+                        Instruction(5, "Press the grated potatoes into an even layer in the skillet. Cook for 5-7 minutes per side, pressing occasionally with a spatula, until golden brown and crispy."),
+                        Instruction(6, "Flip carefully and cook the other side until also golden and crispy."),
+                        Instruction(7, "Serve hot immediately, optionally with ketchup or a fried egg.")
+                    ),
                     servings = 2,
-                    duration = "20 min"
+                    duration = "20 min",
+                    upvoteCount = 500,
+                    recipeMaker = "by Chef Emily",
+                    nutritionFacts = listOf( // Added for consistency
+                        NutritionFact("Calories", "300 kcal"),
+                        NutritionFact("Protein", "5g"),
+                        NutritionFact("Fat", "18g"),
+                        NutritionFact("Carbs", "30g")
+                    ),
+                    comments = listOf( // Added for consistency
+                        Comment("Breakfast King", "Crispy and delicious, a perfect breakfast side!")
+                    )
                 ) to 2,
                 Recipe(
-                    id = 2,
+                    id = 102,
                     title = "Fudgy Brownies",
-                    description = "Crispy and Fudgy",
+                    description = "Rich, decadent, and perfectly fudgy.",
                     image = R.drawable.fudgy_brownies,
                     ingredients = listOf(
-                        Ingredient(R.drawable.ingredient_tomato, "Cocoa Powder", "Baking", 2, "tbsp"),
-                        Ingredient(R.drawable.ingredient_tomato, "Flour", "Baking", 100, "g"),
-                        Ingredient(R.drawable.ingredient_tomato, "Butter", "Dairy", 50, "g")
+                        Ingredient(R.drawable.ingredient_tomato, "Unsalted Butter", "Dairy", 100.0f, "g"),
+                        Ingredient(R.drawable.ingredient_tomato, "Granulated Sugar", "Sweeteners", 200.0f, "g"),
+                        Ingredient(R.drawable.ingredient_tomato, "Unsweetened Cocoa Powder", "Baking", 50.0f, "g"),
+                        Ingredient(R.drawable.ingredient_tomato, "Large Eggs", "Dairy", 2.0f, "pcs"),
+                        Ingredient(R.drawable.ingredient_tomato, "All-Purpose Flour", "Baking", 60.0f, "g"),
+                        Ingredient(R.drawable.ingredient_tomato, "Vanilla Extract", "Flavoring", 1.0f, "tsp"),
+                        Ingredient(R.drawable.ingredient_tomato, "Salt", "Seasoning", 0.25f, "tsp")
                     ),
-                    steps = listOf("Mix ingredients", "Bake in oven"),
+                    steps = listOf(
+                        Instruction(1, "Preheat oven to 175°C (350°F). Grease and flour an 8x8 inch baking pan."),
+                        Instruction(2, "In a medium saucepan, melt butter over low heat. Remove from heat and stir in sugar until combined."),
+                        Instruction(3, "Whisk in cocoa powder. Add eggs one at a time, mixing well after each addition. Stir in vanilla extract."),
+                        Instruction(4, "Gradually add flour and salt, mixing until just combined. Do not overmix."),
+                        Instruction(5, "Pour batter into the prepared baking pan and spread evenly."),
+                        Instruction(6, "Bake for 20-25 minutes, or until a toothpick inserted into the center comes out with moist crumbs (not wet batter)."),
+                        Instruction(7, "Let cool completely in the pan on a wire rack before cutting into squares.")
+                    ),
                     servings = 2,
-                    duration = "1 hour"
+                    duration = "1 hour",
+                    upvoteCount = 750,
+                    recipeMaker = "by Baker John",
+                    nutritionFacts = listOf( // Added for consistency
+                        NutritionFact("Calories", "450 kcal"),
+                        NutritionFact("Protein", "5g"),
+                        NutritionFact("Fat", "25g"),
+                        NutritionFact("Carbs", "60g")
+                    ),
+                    comments = listOf( // Added for consistency
+                        Comment("Sweet Tooth", "The fudgiest brownies ever! A must-try.")
+                    )
                 ) to 3
             )
         )
@@ -114,18 +160,39 @@ fun getDummyPlannerData(upcoming: Boolean): Map<String, Map<Recipe, Int>> {
         mapOf(
             "01-07-2025" to mapOf(
                 Recipe(
-                    id = 3,
+                    id = 103,
                     title = "French Toast",
-                    description = "Delicious toast",
+                    description = "A sweet and savory breakfast classic.",
                     image = R.drawable.hash_brown,
                     ingredients = listOf(
-                        Ingredient(R.drawable.ingredient_tomato, "Bread", "Bakery", 4, "slices"),
-                        Ingredient(R.drawable.ingredient_tomato, "Egg", "Dairy", 2, "pcs"),
-                        Ingredient(R.drawable.ingredient_tomato, "Milk", "Dairy", 100, "ml")
+                        Ingredient(R.drawable.ingredient_tomato, "Bread", "Bakery", 4.0f, "slices"),
+                        Ingredient(R.drawable.ingredient_tomato, "Large Eggs", "Dairy", 2.0f, "pcs"),
+                        Ingredient(R.drawable.ingredient_tomato, "Milk", "Dairy", 100.0f, "ml"),
+                        Ingredient(R.drawable.ingredient_tomato, "Granulated Sugar", "Sweeteners", 1.0f, "tbsp"),
+                        Ingredient(R.drawable.ingredient_tomato, "Vanilla Extract", "Flavoring", 0.5f, "tsp"),
+                        Ingredient(R.drawable.ingredient_tomato, "Cinnamon", "Spices", 0.25f, "tsp"),
+                        Ingredient(R.drawable.ingredient_tomato, "Butter", "Dairy", 1.0f, "tbsp")
                     ),
-                    steps = listOf("Dip bread in mixture", "Fry until golden"),
+                    steps = listOf(
+                        Instruction(1, "In a shallow dish, whisk together eggs, milk, sugar, vanilla extract, and cinnamon until well combined."),
+                        Instruction(2, "Heat butter in a large non-stick skillet or griddle over medium heat."),
+                        Instruction(3, "Dip each slice of bread into the egg mixture, ensuring both sides are fully coated but not soggy."),
+                        Instruction(4, "Place bread slices on the hot skillet. Cook for 2-4 minutes per side, or until golden brown and cooked through."),
+                        Instruction(5, "Serve hot with your favorite toppings like syrup, fresh fruit, or powdered sugar.")
+                    ),
                     servings = 1,
-                    duration = "30 min"
+                    duration = "30 min",
+                    upvoteCount = 300,
+                    recipeMaker = "by Chef Jane",
+                    nutritionFacts = listOf( // Added for consistency
+                        NutritionFact("Calories", "350 kcal"),
+                        NutritionFact("Protein", "10g"),
+                        NutritionFact("Fat", "15g"),
+                        NutritionFact("Carbs", "40g")
+                    ),
+                    comments = listOf( // Added for consistency
+                        Comment("Brunch Fan", "Best French Toast ever, simple and delicious!")
+                    )
                 ) to 1
             )
         )
@@ -254,7 +321,6 @@ fun Modifier.bottomBorder(strokeWidth: Dp = 1.dp, color: Color = Color.Black): M
 @Composable
 fun DateSectionHeader(title: String) {
     Box(modifier = Modifier
-//        .wrapContentWidth()
         .fillMaxWidth()
         .padding(vertical = 8.dp)
         .bottomBorder(1.dp, Color.Black)
@@ -265,8 +331,6 @@ fun DateSectionHeader(title: String) {
             fontSize = 18.sp,
             fontWeight = FontWeight.Bold,
             color = Color.Black,
-            modifier = Modifier
-//                .padding(horizontal = 14.dp, vertical = 5.dp)
         )
     }
 }
@@ -317,9 +381,9 @@ fun PlanCard(
         modifier = Modifier
             .padding(bottom = 5.dp)
             .background(
-            color = colorResource(R.color.primary),
-            shape = RoundedCornerShape(10.dp)
-        )
+                color = colorResource(R.color.primary),
+                shape = RoundedCornerShape(10.dp)
+            )
     ) {
         Row(
             modifier = Modifier
@@ -355,6 +419,14 @@ fun PlanCard(
                     fontFamily = nunito,
                     fontWeight = FontWeight.Medium,
                     fontSize = 18.sp,
+                    color = Color.White,
+                    textDecoration = textDecoration
+                )
+                Text(
+                    text = recipe.recipeMaker,
+                    fontFamily = nunito,
+                    fontWeight = FontWeight.Normal,
+                    fontSize = 10.sp,
                     color = Color.White,
                     textDecoration = textDecoration
                 )

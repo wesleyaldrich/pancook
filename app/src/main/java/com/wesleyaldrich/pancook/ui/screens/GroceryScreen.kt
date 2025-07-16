@@ -4,20 +4,15 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import android.widget.Space
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
@@ -51,14 +46,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
@@ -71,7 +64,6 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.max
 import androidx.compose.ui.unit.sp
 import com.wesleyaldrich.pancook.R
 import com.wesleyaldrich.pancook.model.Ingredient
@@ -79,66 +71,118 @@ import com.wesleyaldrich.pancook.model.Recipe
 import com.wesleyaldrich.pancook.ui.theme.PancookTheme
 import com.wesleyaldrich.pancook.ui.theme.nunito
 import com.wesleyaldrich.pancook.ui.theme.poppins
+import com.wesleyaldrich.pancook.model.Instruction // Import Instruction
+import com.wesleyaldrich.pancook.model.NutritionFact // Import NutritionFact
+import com.wesleyaldrich.pancook.model.Comment // Import Comment
 
 fun getDummyRecipes(): Map<Recipe, Int> {
     val ingredientList1 = listOf(
-        Ingredient(R.drawable.ingredient_tomato, "Spaghetti", "Pasta", 200, "g"),
-        Ingredient(R.drawable.ingredient_tomato, "Ground Beef", "Meat", 150, "g"),
-        Ingredient(R.drawable.ingredient_tomato, "Tomato Sauce", "Condiments", 100, "ml"),
-        Ingredient(R.drawable.ingredient_tomato, "Onion", "Vegetables", 1, "piece"),
-        Ingredient(R.drawable.ingredient_tomato, "Garlic", "Spices", 2, "cloves")
+        Ingredient(R.drawable.ingredient_tomato, "Spaghetti", "Pasta", 200.0f, "g"),
+        Ingredient(R.drawable.ingredient_tomato, "Ground Beef", "Meat", 150.0f, "g"),
+        Ingredient(R.drawable.ingredient_tomato, "Tomato Sauce", "Condiments", 100.0f, "ml"),
+        Ingredient(R.drawable.ingredient_tomato, "Onion", "Vegetables", 1.0f, "piece"),
+        Ingredient(R.drawable.ingredient_tomato, "Garlic", "Spices", 2.0f, "cloves")
     )
 
     val ingredientList2 = listOf(
-        Ingredient(R.drawable.ingredient_tomato, "Lettuce", "Vegetables", 1, "head"),
-        Ingredient(R.drawable.ingredient_tomato, "Tomato", "Vegetables", 2, "pieces"),
-        Ingredient(R.drawable.ingredient_tomato, "Cucumber", "Vegetables", 1, "piece"),
-        Ingredient(R.drawable.ingredient_tomato, "Olive oil", "Condiments", 2, "tbsp"),
-        Ingredient(R.drawable.ingredient_tomato, "Feta cheese", "Dairy", 50, "g")
+        Ingredient(R.drawable.ingredient_tomato, "Lettuce", "Vegetables", 1.0f, "head"),
+        Ingredient(R.drawable.ingredient_tomato, "Tomato", "Vegetables", 2.0f, "pieces"),
+        Ingredient(R.drawable.ingredient_tomato, "Cucumber", "Vegetables", 1.0f, "piece"),
+        Ingredient(R.drawable.ingredient_tomato, "Olive oil", "Condiments", 2.0f, "tbsp"),
+        Ingredient(R.drawable.ingredient_tomato, "Feta cheese", "Dairy", 50.0f, "g")
     )
 
     val ingredientList3 = listOf(
-        Ingredient(R.drawable.ingredient_tomato, "Chicken Breast", "Meat", 200, "g"),
-        Ingredient(R.drawable.ingredient_tomato, "Salt", "Spices", 1, "tsp"),
-        Ingredient(R.drawable.ingredient_tomato, "Pepper", "Spices", 1, "tsp"),
-        Ingredient(R.drawable.ingredient_tomato, "Rosemary", "Herbs", 1, "tsp"),
-        Ingredient(R.drawable.ingredient_tomato, "Olive oil", "Condiments", 1, "tbsp")
+        Ingredient(R.drawable.ingredient_tomato, "Chicken Breast", "Meat", 200.0f, "g"),
+        Ingredient(R.drawable.ingredient_tomato, "Salt", "Spices", 1.0f, "tsp"),
+        Ingredient(R.drawable.ingredient_tomato, "Pepper", "Spices", 1.0f, "tsp"),
+        Ingredient(R.drawable.ingredient_tomato, "Rosemary", "Herbs", 1.0f, "tsp"),
+        Ingredient(R.drawable.ingredient_tomato, "Olive oil", "Condiments", 1.0f, "tbsp")
     )
 
     val recipe1 = Recipe(
         id = 1,
         title = "Spaghetti Bolognese",
-        description = "A classic Italian pasta dish with meat sauce.",
+        description = "A classic Italian pasta dish with rich meat sauce.",
         image = R.drawable.hash_brown,
         ingredients = ingredientList1,
-        steps = listOf("Boil pasta", "Cook beef", "Add sauce", "Mix together"),
+        steps = listOf(
+            Instruction(1, "Cook spaghetti according to package directions. Drain and set aside."),
+            Instruction(2, "In a large skillet or pot, brown ground beef over medium heat. Drain excess fat."),
+            Instruction(3, "Add chopped onion and minced garlic to the beef. Cook until onion is softened and transparent."),
+            Instruction(4, "Stir in tomato sauce and bring to a simmer. Reduce heat and let it simmer for at least 15 minutes to meld flavors (longer for richer taste)."),
+            Instruction(5, "Season the sauce with salt, pepper, and any other desired herbs (e.g., oregano, basil)."),
+            Instruction(6, "Serve the bolognese sauce over the cooked spaghetti. Garnish with Parmesan cheese if desired.")
+        ),
         servings = 2,
         duration = "30 min",
-        likeCount = 124
+        upvoteCount = 124,
+        recipeMaker = "by Mia's Meals",
+        nutritionFacts = listOf( // Added for consistency
+            NutritionFact("Calories", "600 kcal"),
+            NutritionFact("Protein", "30g"),
+            NutritionFact("Fat", "25g"),
+            NutritionFact("Carbs", "50g")
+        ),
+        comments = listOf( // Added for consistency
+            Comment("Pasta Lover", "Classic comfort food, can't go wrong with this!")
+        )
     )
 
     val recipe2 = Recipe(
         id = 2,
-        title = "Fresh Garden Salad",
-        description = "A healthy and fresh salad mix.",
+        title = "Fresh Garden Salad", // Changed to "Fresh Garden Salad" for consistency with MyRecipeScreen
+        description = "A light and healthy salad perfect for any meal.", // Updated description
         image = R.drawable.salad,
         ingredients = ingredientList2,
-        steps = listOf("Chop veggies", "Toss with oil", "Add cheese"),
+        steps = listOf(
+            Instruction(1, "Wash and pat dry all vegetables. Tear or chop lettuce into bite-sized pieces."),
+            Instruction(2, "Slice tomatoes and cucumber into desired shapes."),
+            Instruction(3, "Combine lettuce, tomatoes, and cucumber in a large salad bowl."),
+            Instruction(4, "Crumble feta cheese over the vegetables."),
+            Instruction(5, "Drizzle with olive oil. Add salt and pepper to taste."),
+            Instruction(6, "Toss gently until all ingredients are well combined. Serve fresh.")
+        ),
         servings = 1,
         duration = "15 min",
-        likeCount = 89
+        upvoteCount = 89,
+        recipeMaker = "by Jake's Plates",
+        nutritionFacts = listOf( // Added for consistency
+            NutritionFact("Calories", "150 kcal"),
+            NutritionFact("Protein", "5g"),
+            NutritionFact("Fat", "10g"),
+            NutritionFact("Carbs", "10g")
+        ),
+        comments = listOf( // Added for consistency
+            Comment("Salad Fan", "Fresh and light, great for lunch.")
+        )
     )
 
     val recipe3 = Recipe(
         id = 3,
         title = "Grilled Chicken",
-        description = "Juicy grilled chicken breast with herbs.",
-        image = R.drawable.fudgy_brownies,
+        description = "Simple, juicy grilled chicken breast.",
+        image = R.drawable.fudgy_brownies, // Using fudgy_brownies as placeholder image based on MyRecipeScreen
         ingredients = ingredientList3,
-        steps = listOf("Season chicken", "Heat pan", "Grill 7 min each side"),
+        steps = listOf(
+            Instruction(1, "Pat chicken breasts dry with paper towels. Season generously with salt, pepper, and rosemary on both sides."),
+            Instruction(2, "Heat olive oil in a grill pan or outdoor grill over medium-high heat."),
+            Instruction(3, "Place chicken breasts on the hot grill. Cook for about 6-8 minutes per side, or until internal temperature reaches 165°F (74°C) and juices run clear."),
+            Instruction(4, "Remove from grill and let rest for 5 minutes before slicing or serving. This helps keep the chicken juicy.")
+        ),
         servings = 2,
         duration = "25 min",
-        likeCount = 176
+        upvoteCount = 176,
+        recipeMaker = "by Mia's Meals",
+        nutritionFacts = listOf( // Added for consistency
+            NutritionFact("Calories", "280 kcal"),
+            NutritionFact("Protein", "40g"),
+            NutritionFact("Fat", "12g"),
+            NutritionFact("Carbs", "0g")
+        ),
+        comments = listOf( // Added for consistency
+            Comment("Grill Master", "Perfectly grilled chicken every time!")
+        )
     )
 
     return mapOf(
@@ -169,7 +213,6 @@ fun groupIngredientsByCategory(displayIngredients: List<DisplayIngredient>): Map
 
 @Composable
 fun GroceryScreen(
-//    recipe: List<Recipe>,
     onBackClick: () -> Unit,
     onRecipeClick: (Recipe) -> Unit,
     onRemoveClick: (Recipe) -> Unit
@@ -226,7 +269,6 @@ fun GroceryScreen(
 
         // Horizontal carousel
         LazyRow (
-//            contentPadding = PaddingValues(horizontal = 4.dp),
             horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             recipes.forEach { (recipe, serveCount) ->
@@ -252,7 +294,6 @@ fun GroceryScreen(
             onClick = {},
             modifier = Modifier
                 .fillMaxWidth()
-//                .height(50.dp)
                 .padding(vertical = 5.dp),
             shape = RoundedCornerShape(12.dp),
             colors = ButtonDefaults.buttonColors(
@@ -286,7 +327,6 @@ fun GroceryScreen(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-//                .padding(horizontal = 15.dp)
         ) {
             groupedIngredients.forEach { (category, ingredientList) ->
                 CategorySectionHeader(title = category)
@@ -385,15 +425,6 @@ fun RecipeCardMini(
                                     dropdownAnchor.value = shiftedOffset
                                 }
                         ) {
-                            Icon(
-                                imageVector = Icons.Default.ArrowDropDown,
-                                contentDescription = "Change Serve Count",
-                                tint = colorResource(R.color.accent_yellow),
-                                modifier = Modifier
-                                    .size(18.dp)
-                                    .clickable { expanded.value = true }
-                            )
-
                             DropdownMenu(
                                 expanded = expanded.value,
                                 onDismissRequest = { expanded.value = false },
@@ -416,6 +447,14 @@ fun RecipeCardMini(
                                     )
                                 }
                             }
+                            Icon( // Moved Icon inside the Box with onGloballyPositioned
+                                imageVector = Icons.Default.ArrowDropDown,
+                                contentDescription = "Change Serve Count",
+                                tint = colorResource(R.color.accent_yellow),
+                                modifier = Modifier
+                                    .size(18.dp)
+                                    .clickable { expanded.value = true }
+                            )
                         }
                     }
 
@@ -456,7 +495,7 @@ fun RecipeCardMini(
                     )
                     Spacer(modifier = Modifier.width(5.dp))
                     Text(
-                        text = recipe.likeCount.toString(),
+                        text = recipe.upvoteCount.toString(),
                         fontFamily = nunito,
                         color = colorResource(R.color.accent_yellow),
                         fontSize = 12.sp
@@ -482,7 +521,7 @@ fun RecipeCardMini(
                         .padding(start = 8.dp)
                 )
                 Text(
-                    text = "by Nunuk",
+                    text = recipe.recipeMaker,
                     fontFamily = nunito,
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 12.sp,
@@ -519,9 +558,9 @@ data class DisplayIngredient(
     val imageRes: Int,
     val name: String,
     val category: String,
-    val qty: Int,
+    val qty: Float,
     val unitMeasurement: String,
-    val recipeName: String // <- comes from Recipe.title
+    val recipeName: String
 )
 
 @Composable

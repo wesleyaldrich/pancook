@@ -19,6 +19,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.SaveAlt
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FabPosition
@@ -29,6 +30,7 @@ import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -59,54 +61,63 @@ fun MainScreen() {
     val screens = listOf(
         Screen.Home,
         Screen.MyRecipe,
-        Screen.Add,
+        Screen.Add, // This will be handled by the FAB, but kept in `screens` for route definition
         Screen.Planner,
         Screen.Profile
     )
 
+    // Determine if the current route is the DetailRecipe screen or Instruction screen
+    val isSpecialScreen = currentRoute?.startsWith(Screen.DetailRecipe.route.substringBefore('/')) == true ||
+            currentRoute?.startsWith(Screen.Instruction.route.substringBefore('/')) == true ||
+            currentRoute?.startsWith(Screen.RecipeCompletion.route.substringBefore('/')) == true // Add this line
+
     Scaffold(
         topBar = {
-            val currentScreen = screens.find { it.route == currentRoute }
-//            TopAppBar(title = { Text(currentScreen?.title ?: "") })
-            CustomTopBar(
-                username = "Pancokers",
-                onFirstButtonClick = {
-                    navController.navigate(Screen.GroceryList.route){
-                        popUpTo(navController.graph.startDestinationId) {
-                            saveState = true
+            if (!isSpecialScreen) { // Conditionally show TopAppBar
+                CustomTopBar(
+                    username = "Pancokers",
+                    onFirstButtonClick = {
+                        navController.navigate(Screen.GroceryList.route){
+                            popUpTo(navController.graph.startDestinationId) {
+                                saveState = true
+                            }
+                            launchSingleTop = true
+                            restoreState = true
                         }
-                        launchSingleTop = true
-                        restoreState = true
-                    }
-                },
-                onSecondButtonClick = {
-                    navController.navigate(Screen.SavedRecipe.route){
-                        popUpTo(navController.graph.startDestinationId) {
-                            saveState = true
+                    },
+                    onSecondButtonClick = {
+                        navController.navigate(Screen.SavedRecipe.route){
+                            popUpTo(navController.graph.startDestinationId) {
+                                saveState = true
+                            }
+                            launchSingleTop = true
+                            restoreState = true
                         }
-                        launchSingleTop = true
-                        restoreState = true
                     }
-                }
-            )
+                )
+            }
         },
         bottomBar = {
-            CustomBottomBar(
-                navController = navController,
-                currentRoute = currentRoute ?: ""
-            )
+            if (!isSpecialScreen) { // Conditionally show NavigationBar
+                CustomBottomBar(
+                    navController = navController,
+                    currentRoute = currentRoute ?: ""
+                )
+            }
         },
         floatingActionButton = {
-            FloatingActionButton(
-                onClick = {
-                    navController.navigate(Screen.Add.route)
-                },
-                shape = CircleShape,
-                containerColor = MaterialTheme.colorScheme.primary,
-                modifier = Modifier
-                    .offset(y = 48.dp)
-            ) {
-                Icon(Icons.Default.Add, contentDescription = "Center Action")
+            if (!isSpecialScreen) {
+                FloatingActionButton(
+                    onClick = {
+                        navController.navigate(Screen.Add.route)
+                    },
+                    shape = CircleShape,
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier
+                        .offset(y = 48.dp)
+                ) {
+                    Icon(Icons.Default.Add, contentDescription = "Center Action")
+                }
             }
         },
         floatingActionButtonPosition = FabPosition.Center
@@ -123,7 +134,7 @@ fun CustomBottomBar(navController: NavHostController, currentRoute: String) {
         tonalElevation = 8.dp,
     ) {
         items.forEachIndexed { index, screen ->
-            if (index == 2) {
+            if (index == 2) { // This index should correspond to where you want the FAB to be. If 'Add' is the 3rd item (index 2), then this is correct.
                 // Empty space for center FAB
                 Spacer(modifier = Modifier.weight(1f))
             }
@@ -143,7 +154,7 @@ fun CustomBottomBar(navController: NavHostController, currentRoute: String) {
                 },
                 icon = {
                     Icon(
-                        screen.icon,
+                        screen.icon, // Using screen.icon for dynamic icons
                         contentDescription = screen.title
                     )
                 },
@@ -166,7 +177,6 @@ fun CustomTopBar(
             .height(80.dp)
             .padding(horizontal = 16.dp)
             .padding(top = 20.dp),
-//            .background(Color.Red),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
     ) {

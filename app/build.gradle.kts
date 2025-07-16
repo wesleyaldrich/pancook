@@ -68,6 +68,8 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
     implementation("androidx.compose.material:material-icons-extended")
+    implementation("com.google.accompanist:accompanist-pager:0.28.0") // Check for the latest version
+    implementation("com.google.accompanist:accompanist-pager-indicators:0.28.0") // Optional, for more advanced indicators
     implementation("io.coil-kt:coil-compose:2.4.0")
 
     implementation(libs.androidx.navigation.compose)
