@@ -1,7 +1,7 @@
 package com.wesleyaldrich.pancook.ui.screens
 
 import android.util.Log // Import Log for debugging
-import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.animateContentSize // Import animateContentSize
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -25,7 +25,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items // Import this for LazyRow items
+import androidx.compose.foundation.lazy.items // Correctly import items for LazyRow
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -93,7 +93,7 @@ import com.wesleyaldrich.pancook.ui.screens.allRecipes
 import kotlin.math.roundToInt
 
 
-// Helper function for bottom border. Renamed from bottomBorder2 to bottomBorder
+// Helper function for bottom border. Corrected name from bottomBorder2 to bottomBorder
 fun Modifier.bottomBorder2(strokeWidth: Dp, color: Color) = this.then(
     Modifier.drawBehind {
         val strokePx = strokeWidth.toPx()
@@ -207,17 +207,31 @@ fun GroceryScreen(
     // FIX: recipes should be a 'var' state to allow re-assignment and trigger recomposition
     var recipes by remember { mutableStateOf(getDummyRecipes()) }
 
-    // These derived states will recompose automatically when 'recipes' changes
-    val groceryIngredientsMap by remember(recipes) {
-        Log.d("GroceryScreen", "Recomputing groceryIngredientsMap (triggered by recipes change). New recipes size: ${recipes.size}")
+    // FIX: checkedStates should be a 'var' state holding an immutable Map
+    // This ensures its updates reliably trigger recomposition
+    var checkedStates by remember { mutableStateOf(mapOf<String, Boolean>()) }
+
+    // Derived states will recompose automatically when 'recipes' or 'checkedStates' changes
+    val allGroceryIngredientsMap by remember(recipes) {
+        Log.d("GroceryScreen", "Recomputing allGroceryIngredientsMap (triggered by recipes change).")
         mutableStateOf(mapIngredientsToGroceryList(recipes))
     }
-    val groupedIngredients by remember(groceryIngredientsMap) {
-        Log.d("GroceryScreen", "Recomputing groupedIngredients (triggered by groceryIngredientsMap change). Num categories: ${groupGroceryIngredientsByCategory(groceryIngredientsMap).size}")
-        mutableStateOf(groupGroceryIngredientsByCategory(groceryIngredientsMap))
+
+    val neededIngredientsGrouped = remember(allGroceryIngredientsMap, checkedStates) {
+        Log.d("GroceryScreen", "Recomputing neededIngredientsGrouped. Checked items count: ${checkedStates.filter { it.value }.size}")
+        allGroceryIngredientsMap.values
+            .filter { !checkedStates[it.name].orFalse() } // Filter out checked items
+            .groupBy { it.category }
+            .toSortedMap() // Ensure categories are sorted
+    }
+    val gottenIngredientsGrouped = remember(allGroceryIngredientsMap, checkedStates) {
+        Log.d("GroceryScreen", "Recomputing gottenIngredientsGrouped. Checked items count: ${checkedStates.filter { it.value }.size}")
+        allGroceryIngredientsMap.values
+            .filter { checkedStates[it.name].orFalse() } // Only include checked items
+            .groupBy { it.category }
+            .toSortedMap() // Ensure categories are sorted
     }
 
-    val checkedStates = remember { mutableStateMapOf<String, Boolean>() }
 
     Scaffold(
         topBar = {
@@ -336,27 +350,86 @@ fun GroceryScreen(
                 }
             }
 
-            // Column for Ingredient section
+            // Column for NOT ACQUIRED Ingredient section
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .animateContentSize() // Add animateContentSize here for smooth transitions
             ) {
-                groupedIngredients.forEach { (category, ingredientList) ->
-                    CategorySectionHeader(title = category)
-                    ingredientList.forEach { ingredient ->
-                        IngredientCard(
-                            ingredient = ingredient,
-                            isChecked = checkedStates[ingredient.name] ?: false,
-                            onCheckedChange = { newValue ->
-                                checkedStates[ingredient.name] = newValue
-                            }
-                        )
+                if (neededIngredientsGrouped.isEmpty()) {
+                    Text(
+                        text = "All groceries acquired! Add more recipes to get started.",
+                        modifier = Modifier.padding(vertical = 16.dp),
+                        fontFamily = nunito,
+                        color = Color.Gray,
+                        fontSize = 16.sp
+                    )
+                } else {
+                    neededIngredientsGrouped.forEach { (category, ingredientList) ->
+                        CategorySectionHeader(title = category)
+                        ingredientList.forEach { ingredient ->
+                            IngredientCard(
+                                ingredient = ingredient,
+                                isChecked = checkedStates[ingredient.name].orFalse(), // Pass current checked state
+                                onCheckedChange = { newValue ->
+                                    // FIX: Update checkedStates by creating a new map instance
+                                    checkedStates = checkedStates.toMutableMap().also { it[ingredient.name] = newValue }.toMap()
+                                    Log.d("GroceryScreen", "Ingredient ${ingredient.name} checked: $newValue. New checkedStates value: ${checkedStates[ingredient.name]}")
+                                }
+                            )
+                        }
+                    }
+                }
+            }
+
+            // Separator before Acquired Ingredients (only show if there are acquired ingredients)
+            if (gottenIngredientsGrouped.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(16.dp))
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(1.dp)
+                        .background(Color.Gray.copy(alpha = 0.5f))
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Header for Acquired Ingredients
+                Text(
+                    text = "Acquired Ingredients",
+                    fontSize = 20.sp,
+                    fontFamily = poppins,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+
+                // Column for ACQUIRED Ingredient section
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .animateContentSize() // Add animateContentSize here for smooth transitions
+                ) {
+                    gottenIngredientsGrouped.forEach { (category, ingredientList) ->
+                        CategorySectionHeader(title = category) // Reuse category header
+                        ingredientList.forEach { ingredient ->
+                            IngredientCard(
+                                ingredient = ingredient,
+                                isChecked = checkedStates[ingredient.name].orFalse(), // Should be true here
+                                onCheckedChange = { newValue ->
+                                    // FIX: Update checkedStates by creating a new map instance
+                                    checkedStates = checkedStates.toMutableMap().also { it[ingredient.name] = newValue }.toMap()
+                                    Log.d("GroceryScreen", "Ingredient ${ingredient.name} unchecked from Gotten: $newValue. New checkedStates value: ${checkedStates[ingredient.name]}")
+                                }
+                            )
+                        }
                     }
                 }
             }
         }
     }
 }
+
+// Extension function for nullable Boolean to return false if null
+fun Boolean?.orFalse(): Boolean = this ?: false
 
 @Composable
 fun RecipeCardMini(
@@ -478,7 +551,7 @@ fun RecipeCardMini(
                             .size(30.dp)
                             .clip(RoundedCornerShape(20.dp))
                             .background(colorResource(R.color.primary).copy(alpha = 0.75f))
-                            .clickable { onRemoveClick() }, // This calls the onRemoveClick lambda
+                            .clickable { onRemoveClick() },
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
