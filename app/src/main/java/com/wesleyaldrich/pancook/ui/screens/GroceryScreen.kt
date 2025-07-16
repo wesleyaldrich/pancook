@@ -1,5 +1,7 @@
 package com.wesleyaldrich.pancook.ui.screens
 
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Text
@@ -46,10 +48,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
@@ -63,6 +67,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.wesleyaldrich.pancook.R
@@ -74,6 +79,21 @@ import com.wesleyaldrich.pancook.ui.theme.poppins
 import com.wesleyaldrich.pancook.model.Instruction // Import Instruction
 import com.wesleyaldrich.pancook.model.NutritionFact // Import NutritionFact
 import com.wesleyaldrich.pancook.model.Comment // Import Comment
+import kotlin.math.roundToInt
+
+// Helper function for bottom border. Keep this as bottomBorder for CategorySectionHeader
+fun Modifier.bottomBorder2(strokeWidth: Dp, color: Color) = this.then(
+    Modifier.drawBehind {
+        val strokePx = strokeWidth.toPx()
+        val y = size.height - strokePx / 2
+        drawLine(
+            color = color,
+            start = Offset(0f, y),
+            end = Offset(size.width, y),
+            strokeWidth = strokePx
+        )
+    }
+)
 
 fun getDummyRecipes(): Map<Recipe, Int> {
     val ingredientList1 = listOf(
@@ -100,6 +120,12 @@ fun getDummyRecipes(): Map<Recipe, Int> {
         Ingredient(R.drawable.ingredient_tomato, "Olive oil", "Condiments", 1.0f, "tbsp")
     )
 
+    val ingredientList4 = listOf(
+        Ingredient(R.drawable.ingredient_tomato, "Tomato", "Vegetables", 3.0f, "pieces"),
+        Ingredient(R.drawable.ingredient_tomato, "Spaghetti", "Pasta", 100.0f, "g")
+    )
+
+
     val recipe1 = Recipe(
         id = 1,
         title = "Spaghetti Bolognese",
@@ -125,7 +151,7 @@ fun getDummyRecipes(): Map<Recipe, Int> {
             NutritionFact("Carbs", "50g")
         ),
         comments = listOf( // Added for consistency
-            Comment("Pasta Lover", "Classic comfort food, can't go wrong with this!")
+            Comment("Pasta Lover", "Classic comfort food, can't go wrong with this.")
         )
     )
 
@@ -185,30 +211,91 @@ fun getDummyRecipes(): Map<Recipe, Int> {
         )
     )
 
+    val recipe4 = Recipe(
+        id = 4,
+        title = "Tomato Spaghetti",
+        description = "Simple spaghetti with fresh tomato sauce.",
+        image = R.drawable.hash_brown,
+        ingredients = ingredientList4,
+        steps = listOf(
+            Instruction(1, "Cook spaghetti."),
+            Instruction(2, "Prepare tomato sauce."),
+            Instruction(3, "Combine and serve.")
+        ),
+        servings = 1,
+        duration = "20 min",
+        upvoteCount = 90,
+        recipeMaker = "by Veggie Vibes",
+        nutritionFacts = listOf(),
+        comments = listOf()
+    )
+
     return mapOf(
         recipe1 to 4,
         recipe2 to 2,
-        recipe3 to 3
+        recipe3 to 3,
+        recipe4 to 1
     )
 }
 
-fun generateDisplayIngredients(recipeMap: Map<Recipe, Int>): List<DisplayIngredient> {
-    return recipeMap.flatMap { (recipe, _) ->
-        recipe.ingredients.map { ingredient ->
-            DisplayIngredient(
-                imageRes = ingredient.imageRes,
-                name = ingredient.name,
-                category = ingredient.category,
-                qty = ingredient.qty,
-                unitMeasurement = ingredient.unitMeasurement,
-                recipeName = recipe.title
-            )
-        }
+// Data class to hold processed ingredient information
+data class GroceryIngredient(
+    val imageRes: Int,
+    val name: String,
+    val category: String,
+    val totalUnit: Float,
+    val measurement: String,
+    val recipeNames: List<String>
+)
+
+// Helper function for unit conversion (example, you might need a more comprehensive one)
+fun convertToGram(qty: Float, unit: String): Float {
+    return when (unit.lowercase()) {
+        "g" -> qty
+        "kg" -> qty * 1000
+        "ml" -> qty // Assuming 1ml ~ 1g for simplicity for some liquids
+        "l" -> qty * 1000 // Assuming 1l ~ 1000g for simplicity
+        "tbsp" -> qty * 15 // Roughly 15g per tablespoon
+        "tsp" -> qty * 5 // Roughly 5g per teaspoon
+        "pieces", "piece", "cloves", "head" -> qty * 50 // Placeholder for arbitrary units, adjust as needed
+        else -> qty // Default to original quantity if unit is unknown
     }
 }
 
-fun groupIngredientsByCategory(displayIngredients: List<DisplayIngredient>): Map<String, List<DisplayIngredient>> {
-    return displayIngredients.groupBy { it.category }
+fun mapIngredientsToGroceryList(recipeMap: Map<Recipe, Int>): Map<String, GroceryIngredient> {
+    val groceryList = mutableMapOf<String, MutableList<Pair<String, Ingredient>>>()
+
+    recipeMap.forEach { (recipe, serveCount) ->
+        recipe.ingredients.forEach { ingredient ->
+            val key = ingredient.name.lowercase()
+            if (groceryList.containsKey(key)) {
+                groceryList[key]?.add(Pair(recipe.title, ingredient.copy(qty = ingredient.qty * serveCount)))
+            } else {
+                groceryList[key] = mutableListOf(Pair(recipe.title, ingredient.copy(qty = ingredient.qty * serveCount)))
+            }
+        }
+    }
+
+    return groceryList.mapValues { (_, ingredientPairs) ->
+        val firstIngredient = ingredientPairs.first().second
+        val totalUnitInGrams = ingredientPairs.sumOf { (recipeName, ingredient) ->
+            convertToGram(ingredient.qty, ingredient.unitMeasurement).toDouble()
+        }.toFloat()
+        val recipeNames = ingredientPairs.map { it.first }.distinct()
+
+        GroceryIngredient(
+            imageRes = firstIngredient.imageRes,
+            name = firstIngredient.name,
+            category = firstIngredient.category,
+            totalUnit = totalUnitInGrams,
+            measurement = "gram", // Standardize to gram after conversion
+            recipeNames = recipeNames
+        )
+    }.toSortedMap() // Optional: Sort by ingredient name
+}
+
+fun groupGroceryIngredientsByCategory(groceryIngredients: Map<String, GroceryIngredient>): Map<String, List<GroceryIngredient>> {
+    return groceryIngredients.values.groupBy { it.category }
 }
 
 @Composable
@@ -216,13 +303,12 @@ fun GroceryScreen(
     onBackClick: () -> Unit,
     onRecipeClick: (Recipe) -> Unit,
     onRemoveClick: (Recipe) -> Unit
-)
-{
+) {
     val originalMap = getDummyRecipes()
     val recipes = remember { mutableStateMapOf<Recipe, Int>().apply { putAll(originalMap) } }
 
-    val displayIngredients = generateDisplayIngredients(originalMap)
-    val groupedIngredients = groupIngredientsByCategory(displayIngredients)
+    val groceryIngredientsMap = mapIngredientsToGroceryList(recipes)
+    val groupedIngredients = groupGroceryIngredientsByCategory(groceryIngredientsMap)
 
     val checkedStates = remember { mutableStateMapOf<String, Boolean>() }
 
@@ -268,7 +354,7 @@ fun GroceryScreen(
         Spacer(modifier = Modifier.height(2.dp))
 
         // Horizontal carousel
-        LazyRow (
+        LazyRow(
             horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             recipes.forEach { (recipe, serveCount) ->
@@ -301,7 +387,7 @@ fun GroceryScreen(
                 contentColor = Color.White
             )
         ) {
-            Row (
+            Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically
@@ -435,11 +521,13 @@ fun RecipeCardMini(
                             ) {
                                 (1..15).forEach { count ->
                                     DropdownMenuItem(
-                                        text = { Text(
-                                            text = "$count",
-                                            fontFamily = nunito,
-                                            color = Color.White
-                                        ) },
+                                        text = {
+                                            Text(
+                                                text = "$count",
+                                                fontFamily = nunito,
+                                                color = Color.White
+                                            )
+                                        },
                                         onClick = {
                                             onServeCountChange(count)
                                             expanded.value = false
@@ -542,7 +630,7 @@ fun CategorySectionHeader(title: String) {
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 8.dp)
-            .bottomBorder(1.dp, Color.Gray)
+            .bottomBorder(1.dp, Color.Gray) // Use the original bottomBorder for categories
     ) {
         Text(
             text = title,
@@ -554,18 +642,9 @@ fun CategorySectionHeader(title: String) {
     }
 }
 
-data class DisplayIngredient(
-    val imageRes: Int,
-    val name: String,
-    val category: String,
-    val qty: Float,
-    val unitMeasurement: String,
-    val recipeName: String
-)
-
 @Composable
 fun IngredientCard(
-    ingredient: DisplayIngredient,
+    ingredient: GroceryIngredient,
     isChecked: Boolean,
     onCheckedChange: (Boolean) -> Unit
 ) {
@@ -574,6 +653,7 @@ fun IngredientCard(
         label = "IngredientCardAlpha"
     )
     val textDecoration = if (isChecked) TextDecoration.LineThrough else TextDecoration.None
+    var expanded by remember { mutableStateOf(false) }
 
     Box(
         modifier = Modifier
@@ -582,75 +662,126 @@ fun IngredientCard(
                 color = colorResource(R.color.primary),
                 shape = RoundedCornerShape(10.dp)
             )
+            .clickable {
+                // Only toggle expansion if ingredient is used in more than 1 recipe
+                if (ingredient.recipeNames.size > 1) {
+                    expanded = !expanded
+                }
+            }
+            .animateContentSize() // This provides the animation for accordion
     ) {
-        Row(
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 12.dp, vertical = 8.dp),
-            verticalAlignment = Alignment.CenterVertically
+                .padding(horizontal = 12.dp, vertical = 8.dp)
         ) {
-            // Image Container
-            Box(
-                modifier = Modifier
-                    .size(60.dp)
-                    .clip(CircleShape)
-                    .background(Color.Gray.copy(alpha = if (isChecked) 0.3f else 1f))
+            Row(
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Image(
-                    painter = painterResource(id = ingredient.imageRes),
-                    contentDescription = ingredient.name,
-                    modifier = Modifier.fillMaxSize()
+                // Image Container
+                Box(
+                    modifier = Modifier
+                        .size(60.dp)
+                        .clip(CircleShape)
+                        .background(Color.Gray.copy(alpha = if (isChecked) 0.3f else 1f))
+                ) {
+                    Image(
+                        painter = painterResource(id = ingredient.imageRes),
+                        contentDescription = ingredient.name,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                }
+
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight()
+                        .padding(start = 10.dp) // Apply left padding here for content alignment
+                        .alpha(textAlpha),
+                    verticalArrangement = Arrangement.Top,
+                ) {
+                    // Recipe name/count - Conditional display
+                    Text(
+                        text = if (ingredient.recipeNames.size > 1) {
+                            "Used in ${ingredient.recipeNames.size} recipes"
+                        } else {
+                            ingredient.recipeNames.firstOrNull() ?: "N/A" // Display only recipe name
+                        },
+                        fontFamily = nunito,
+                        fontSize = 10.sp,
+                        lineHeight = 10.sp,
+                        color = Color.White,
+                        textDecoration = textDecoration
+                    )
+
+                    // Ingredient Name
+                    Text(
+                        text = ingredient.name,
+                        fontFamily = nunito,
+                        fontWeight = FontWeight.Medium,
+                        fontSize = 16.sp,
+                        lineHeight = 16.sp,
+                        color = Color.White,
+                        textDecoration = textDecoration
+                    )
+
+                    // Ingredient unit and measurement total
+                    Text(
+                        text = "${ingredient.totalUnit.roundToInt()} ${ingredient.measurement}",
+                        fontFamily = nunito,
+                        fontSize = 14.sp,
+                        lineHeight = 14.sp,
+                        color = Color.White,
+                        textDecoration = textDecoration,
+                    )
+                }
+
+                Spacer(modifier = Modifier.width(10.dp))
+
+                CircularCheckbox(
+                    checked = isChecked,
+                    onCheckedChange = onCheckedChange
                 )
             }
 
-            Spacer(modifier = Modifier.width(10.dp))
-
-            Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxHeight()
-                    .fillMaxWidth()
-                    .alpha(textAlpha),
-                verticalArrangement = Arrangement.Top,
-            ) {
-                // Recipe name/count
-                Text(
-                    text = ingredient.recipeName,
-                    fontFamily = nunito,
-                    fontSize = 10.sp,
-                    lineHeight = 10.sp,
-                    color = Color.White,
-                    textDecoration = textDecoration
+            // --- First Separator Line (appears when expanded, below main info) ---
+            if (expanded && ingredient.recipeNames.size > 1) {
+                Spacer(modifier = Modifier.height(8.dp)) // Space above the line
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(1.dp)
+                        .background(Color.White.copy(alpha = 0.5f))
+                        .padding(start = 70.dp) // Indent the line
                 )
-
-                // Ingredient Name
-                Text(
-                    text = ingredient.name,
-                    fontFamily = nunito,
-                    fontWeight = FontWeight.Medium,
-                    fontSize = 16.sp,
-                    lineHeight = 16.sp,
-                    color = Color.White,
-                    textDecoration = textDecoration
-                )
-
-                // Ingredient unit and measurement total
-                Text(
-                    text = "${ingredient.qty} ${ingredient.unitMeasurement}",
-                    fontFamily = nunito,
-                    fontSize = 14.sp,
-                    lineHeight = 14.sp,
-                    color = Color.White,
-                    textDecoration = textDecoration,
-                )
+                Spacer(modifier = Modifier.height(4.dp)) // Space after the line
             }
 
-            Spacer(modifier = Modifier.width(10.dp))
-
-            CircularCheckbox(
-                checked = isChecked,
-                onCheckedChange = onCheckedChange
-            )
+            // --- Accordion Section (list of recipe names) ---
+            if (expanded && ingredient.recipeNames.size > 1) {
+                Column(modifier = Modifier.padding(start = 70.dp)) { // Indent the whole accordion block
+                    ingredient.recipeNames.forEachIndexed { index, recipeName ->
+                        // Add separator line before each recipe name, except the first one
+                        if (index > 0) {
+                            Spacer(modifier = Modifier.height(4.dp)) // Space before the line
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(1.dp)
+                                    .background(Color.White.copy(alpha = 0.5f))
+                            )
+                            Spacer(modifier = Modifier.height(2.dp)) // Space between line and text
+                        }
+                        Text(
+                            text = "Used in: $recipeName",
+                            fontFamily = nunito,
+                            fontSize = 12.sp,
+                            color = Color.White,
+                            textDecoration = textDecoration,
+                        )
+                    }
+                }
+            }
         }
     }
 }
