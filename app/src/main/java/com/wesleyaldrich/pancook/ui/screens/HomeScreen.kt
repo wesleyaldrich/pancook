@@ -87,17 +87,17 @@ val allCategories = listOf(
 )
 
 val recentViewedItems = listOf(
-    Recent("Ayam Geprek", R.drawable.ayam_geprek),
-    Recent("Nasi Bakar", R.drawable.nasi_bakar),
-    Recent("Ketoprak", R.drawable.ketoprak),
-    Recent("Nasi Goreng", R.drawable.nasi_goreng),
-    Recent("Rawon", R.drawable.rawon)
+    Recent("Ayam Geprek", R.drawable.ayam_geprek,6), // ID disesuaikan dengan resep
+    Recent("Nasi Bakar", R.drawable.nasi_bakar,5),
+    Recent("Ketoprak", R.drawable.ketoprak,4),
+    Recent("Nasi Goreng", R.drawable.nasi_goreng,7),
+    Recent("Rawon", R.drawable.rawon,8)
 )
 
 val recipes = listOf(
     Recipe(
         id = 4,
-        title = "Gado-Gado",
+        title = "Delicious Salad",
         description = "A refreshing mix of garden greens.",
         image = R.drawable.ketoprak,
         ingredients = listOf(
@@ -293,25 +293,137 @@ val recipes = listOf(
             Comment("Tom H.", "My kids devour this every time!"),
             Comment("RecipeFan", "Creamy perfection!", isUpvote = true)
         )
+    ),
+    Recipe(
+        id = 103,
+        title = "French Toast",
+        description = "A sweet and savory breakfast classic.",
+        image = R.drawable.hash_brown,
+        ingredients = listOf(
+            Ingredient(R.drawable.ingredient_tomato, "Bread", "Bakery", 4.0f, "slices"),
+            Ingredient(R.drawable.ingredient_tomato, "Large Eggs", "Dairy", 2.0f, "pcs"),
+            Ingredient(R.drawable.ingredient_tomato, "Milk", "Dairy", 100.0f, "ml"),
+            Ingredient(R.drawable.ingredient_tomato, "Granulated Sugar", "Sweeteners", 1.0f, "tbsp"),
+            Ingredient(R.drawable.ingredient_tomato, "Vanilla Extract", "Flavoring", 0.5f, "tsp"),
+            Ingredient(R.drawable.ingredient_tomato, "Cinnamon", "Spices", 0.25f, "tsp"),
+            Ingredient(R.drawable.ingredient_tomato, "Butter", "Dairy", 1.0f, "tbsp")
+        ),
+        steps = listOf(
+            Instruction(1, "In a shallow dish, whisk together eggs, milk, sugar, vanilla extract, and cinnamon until well combined."),
+            Instruction(2, "Heat butter in a large non-stick skillet or griddle over medium heat."),
+            Instruction(3, "Dip each slice of bread into the egg mixture, ensuring both sides are fully coated but not soggy."),
+            Instruction(4, "Place bread slices on the hot skillet. Cook for 2-4 minutes per side, or until golden brown and cooked through."),
+            Instruction(5, "Serve hot with your favorite toppings like syrup, fresh fruit, or powdered sugar.")
+        ),
+        servings = 1,
+        duration = "30 min",
+        upvoteCount = 300,
+        recipeMaker = "by Chef Jane",
+        nutritionFacts = listOf(
+            NutritionFact("Calories", "350 kcal"),
+            NutritionFact("Protein", "10g"),
+            NutritionFact("Fat", "15g"),
+            NutritionFact("Carbs", "40g")
+        ),
+        comments = listOf(
+            Comment("Brunch Fan", "Best French Toast ever, simple and delicious!"),
+            Comment("Sweet Start", "A classic done right.", isUpvote = true)
+        )
+    ),
+    Recipe(
+        id = 101,
+        title = "Hash Browns",
+        description = "Classic crispy potato breakfast.",
+        image = R.drawable.hash_brown,
+        ingredients = listOf(
+            Ingredient(R.drawable.ingredient_tomato, "Potatoes", "Vegetables", 2.0f, "large"),
+            Ingredient(R.drawable.ingredient_tomato, "Butter", "Dairy", 2.0f, "tbsp"),
+            Ingredient(R.drawable.ingredient_tomato, "Salt", "Seasoning", 0.5f, "tsp"),
+            Ingredient(R.drawable.ingredient_tomato, "Black Pepper", "Seasoning", 0.25f, "tsp")
+        ),
+        steps = listOf(
+            Instruction(1, "Peel and grate potatoes. Rinse grated potatoes thoroughly under cold water until water runs clear."),
+            Instruction(2, "Squeeze out as much excess water as possible from the grated potatoes using a clean kitchen towel or paper towels. This is crucial for crispiness!"),
+            Instruction(3, "Season the dried grated potatoes with salt and pepper."),
+            Instruction(4, "Heat butter in a large non-stick skillet over medium heat until melted and slightly browned."),
+            Instruction(5, "Press the grated potatoes into an even layer in the skillet. Cook for 5-7 minutes per side, pressing occasionally with a spatula, until golden brown and crispy."),
+            Instruction(6, "Flip carefully and cook the other side until also golden and crispy."),
+            Instruction(7, "Serve hot immediately, optionally with ketchup or a fried egg.")
+        ),
+        servings = 2,
+        duration = "20 min",
+        upvoteCount = 500,
+        recipeMaker = "by Chef Emily",
+        nutritionFacts = listOf(
+            NutritionFact("Calories", "300 kcal"),
+            NutritionFact("Protein", "5g"),
+            NutritionFact("Fat", "18g"),
+            NutritionFact("Carbs", "30g")
+        ),
+        comments = listOf(
+            Comment("Breakfast King", "Crispy and delicious, a perfect breakfast side!"),
+            Comment("Morning Person", "Can't start my day without these.", isUpvote = true)
+        )
+    ),
+    Recipe(
+        id = 102,
+        title = "Fudgy Brownies",
+        description = "Rich, decadent, and perfectly fudgy.",
+        image = R.drawable.fudgy_brownies,
+        ingredients = listOf(
+            Ingredient(R.drawable.ingredient_tomato, "Unsalted Butter", "Dairy", 100.0f, "g"),
+            Ingredient(R.drawable.ingredient_tomato, "Granulated Sugar", "Sweeteners", 200.0f, "g"),
+            Ingredient(R.drawable.ingredient_tomato, "Unsweetened Cocoa Powder", "Baking", 50.0f, "g"),
+            Ingredient(R.drawable.ingredient_tomato, "Large Eggs", "Dairy", 2.0f, "pcs"),
+            Ingredient(R.drawable.ingredient_tomato, "All-Purpose Flour", "Baking", 60.0f, "g"),
+            Ingredient(R.drawable.ingredient_tomato, "Vanilla Extract", "Flavoring", 1.0f, "tsp"),
+            Ingredient(R.drawable.ingredient_tomato, "Salt", "Seasoning", 0.25f, "tsp")
+        ),
+        steps = listOf(
+            Instruction(1, "Preheat oven to 175°C (350°F). Grease and flour an 8x8 inch baking pan."),
+            Instruction(2, "In a medium saucepan, melt butter over low heat. Remove from heat and stir in sugar until combined."),
+            Instruction(3, "Whisk in cocoa powder. Add eggs one at a time, mixing well after each addition. Stir in vanilla extract."),
+            Instruction(4, "Gradually add flour and salt, mixing until just combined. Do not overmix."),
+            Instruction(5, "Pour batter into the prepared baking pan and spread evenly."),
+            Instruction(6, "Bake for 20-25 minutes, or until a toothpick inserted into the center comes out with moist crumbs (not wet batter)."),
+            Instruction(7, "Let cool completely in the pan on a wire rack before cutting into squares.")
+        ),
+        servings = 2,
+        duration = "1 hour",
+        upvoteCount = 750,
+        recipeMaker = "by Baker John",
+        nutritionFacts = listOf(
+            NutritionFact("Calories", "450 kcal"),
+            NutritionFact("Protein", "5g"),
+            NutritionFact("Fat", "25g"),
+            NutritionFact("Carbs", "60g")
+        ),
+        comments = listOf(
+            Comment("Sweet Tooth", "The fudgiest brownies ever! A must-try."),
+            Comment("Dessert Queen", "Perfect texture and rich chocolate flavor.", isUpvote = true)
+        )
     )
 )
 
 @Composable
-fun HomeScreen() {
+fun HomeScreen(onRecipeClick: (Int) -> Unit) {
     var showDialog by remember { mutableStateOf(false) }
     var searchQuery by remember { mutableStateOf("") }
 
     val displayedCategories = allCategories.take(7)
-    val displayedRecent = recentViewedItems.take(5)
     val scrollState = rememberScrollState()
-    //RECIPE
+
+    val ayamGeprek = recipes.find { it.id == 6 }
+    val nasiBakar = recipes.find { it.id == 5 }
+    val rawon = recipes.find { it.id == 8 }
+    val ketoprak = recipes.find { it.id == 4 }
 
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(scrollState)
-            .padding(20.dp)
+            .padding(15.dp)
     ) {
         //SEARCH BAR HOME
         TextField(
@@ -342,7 +454,11 @@ fun HomeScreen() {
             fontFamily = poppins
         )
 
-        SwipeableCardStack(recipes = recipes, modifier = Modifier.fillMaxSize())
+        SwipeableCardStack(
+            recipes = recipes.take(6),
+            modifier = Modifier.fillMaxSize(),
+            onRecipeClick = onRecipeClick
+        )
 
         // HEADER TITLE "MOST POPULAR"
         Spacer(modifier = Modifier.height(8.dp))
@@ -358,7 +474,7 @@ fun HomeScreen() {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(540.dp) // total tinggi seluruh row
+                .height(540.dp)
 
         ) {
             // Kiri
@@ -367,26 +483,32 @@ fun HomeScreen() {
                     .weight(1f)
                     .fillMaxHeight()
             ) {
-                Box(modifier = Modifier.weight(0.58f)) {
-                    RecipeReusableCard(
-                        imagePainter = painterResource(id = R.drawable.ayam_geprek),
-                        title = "Ayam Geprek",
-                        description = "By Chef Pok",
-                        duration = "30 min",
-                        likeCount = 1500,
-                        imageHeight = 210.dp
-                    )
+                if (ayamGeprek != null) {
+                    Box(modifier = Modifier.weight(0.58f)) {
+                        RecipeReusableCard(
+                            imagePainter = painterResource(id = R.drawable.ayam_geprek),
+                            title = "Ayam Geprek",
+                            description = "By Chef Pok",
+                            duration = "30 min",
+                            likeCount = 1500,
+                            imageHeight = 210.dp,
+                            onClick = { onRecipeClick(ayamGeprek.id) }
+                        )
+                    }
                 }
 
-                Box(modifier = Modifier.weight(0.5f)) {
-                    RecipeReusableCard(
-                        imagePainter = painterResource(id = R.drawable.nasi_bakar),
-                        title = "Nasi Bakar Cumi",
-                        description = "By Chef Jusa",
-                        duration = "15 min",
-                        likeCount = 500,
-                        imageHeight = 150.dp
-                    )
+                if (nasiBakar != null) {
+                    Box(modifier = Modifier.weight(0.5f)) {
+                        RecipeReusableCard(
+                            imagePainter = painterResource(id = R.drawable.nasi_bakar),
+                            title = "Nasi Bakar Cumi",
+                            description = "By Chef Jusa",
+                            duration = "15 min",
+                            likeCount = 500,
+                            imageHeight = 150.dp,
+                            onClick = { onRecipeClick(nasiBakar.id) }
+                        )
+                    }
                 }
             }
 
@@ -398,32 +520,37 @@ fun HomeScreen() {
                     .weight(1f)
                     .fillMaxHeight()
             ) {
-                Box(modifier = Modifier.weight(0.41f)) {
-                    RecipeReusableCard(
-                        imagePainter = painterResource(id = R.drawable.rawon),
-                        title = "Rawon khas Jawa Timur",
-                        description = "By Juseyo",
-                        duration = "15 min",
-                        likeCount = 500,
-                        imageHeight = 150.dp
-                    )
+                if (rawon != null) {
+                    Box(modifier = Modifier.weight(0.41f)) {
+                        RecipeReusableCard(
+                            imagePainter = painterResource(id = R.drawable.rawon),
+                            title = "Rawon khas Jawa Timur",
+                            description = "By Juseyo",
+                            duration = "15 min",
+                            likeCount = 500,
+                            imageHeight = 150.dp,
+                            onClick = { onRecipeClick(rawon.id) }
+                        )
+                    }
                 }
 
-                Box(modifier = Modifier.weight(0.55f)) {
-                    RecipeReusableCard(
-                        imagePainter = painterResource(id = R.drawable.ketoprak),
-                        title = "Ketoprak Bandung",
-                        description = "By kai",
-                        duration = "30 min",
-                        likeCount = 1500,
-                        imageHeight = 210.dp
-                    )
+                if (ketoprak != null) {
+                    Box(modifier = Modifier.weight(0.55f)) {
+                        RecipeReusableCard(
+                            imagePainter = painterResource(id = R.drawable.ketoprak),
+                            title = "Ketoprak Bandung",
+                            description = "By kai",
+                            duration = "30 min",
+                            likeCount = 1500,
+                            imageHeight = 210.dp,
+                            onClick = { onRecipeClick(ketoprak.id) }
+                        )
+                    }
                 }
             }
         }
 
         //HEADER TITLE CATEGORY
-//        Spacer(modifier = Modifier.height(2.dp))
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
 
             Text(
@@ -450,14 +577,19 @@ fun HomeScreen() {
             items(displayedCategories) { category ->
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Box(
-                        modifier = Modifier.size(80.dp).clip(CircleShape).background(Color.LightGray),
+                        modifier = Modifier
+                            .size(80.dp)
+                            .clip(CircleShape)
+                            .background(Color.LightGray),
                         contentAlignment = Alignment.Center
                     ) {
                         Image(
                             painter = painterResource(id = category.imageRes),
                             contentDescription = null,
                             contentScale = ContentScale.Crop,
-                            modifier = Modifier.size(80.dp).clip(CircleShape)
+                            modifier = Modifier
+                                .size(80.dp)
+                                .clip(CircleShape)
                         )
                     }
                     Spacer(modifier = Modifier.height(4.dp))
@@ -466,7 +598,7 @@ fun HomeScreen() {
             }
         }
 
-        // DETAIL CATEGORY
+        // DETAIL CATEGORY DIALOG
         if (showDialog) {
             Dialog(
                 onDismissRequest = { showDialog = false },
@@ -494,8 +626,11 @@ fun HomeScreen() {
                                 fontSize = 20.sp,
                                 modifier = Modifier.clickable {
                                     showDialog = false
+
                                 }
+
                             )
+
                         }
 
                         Spacer(modifier = Modifier.height(8.dp))
@@ -507,7 +642,6 @@ fun HomeScreen() {
                             fontWeight = FontWeight.Bold,
                             color = Color.White
                         )
-
                         Spacer(modifier = Modifier.height(16.dp))
 
                         // Search Bar
@@ -518,19 +652,16 @@ fun HomeScreen() {
                             leadingIcon = {
                                 Icon(imageVector = Icons.Default.Search, contentDescription = null)
                             },
-
                             colors = TextFieldDefaults.colors(
                                 focusedIndicatorColor = Color.Transparent,
                                 unfocusedIndicatorColor = Color.Transparent
                             ),
-
                             shape = CircleShape,
                             singleLine = true,
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(56.dp)
                         )
-
                         Spacer(modifier = Modifier.height(24.dp))
 
                         // Subtitle
@@ -540,7 +671,6 @@ fun HomeScreen() {
                             fontWeight = FontWeight.Bold,
                             fontSize = 18.sp
                         )
-
                         Spacer(modifier = Modifier.height(16.dp))
 
                         // Grid kategori
@@ -595,21 +725,28 @@ fun HomeScreen() {
 
 
         LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            items(displayedRecent) { recent ->
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Box(
-                        modifier = Modifier.size(width = 160.dp, height = 110.dp).clip(RoundedCornerShape(16.dp)).background(Color.LightGray),
-                        contentAlignment = Alignment.Center
+            items(recentViewedItems) { recent ->
+                Box(modifier = Modifier.clickable { onRecipeClick(recent.recipeId) }) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Image(
-                            painter = painterResource(id = recent.imageRes),
-                            contentDescription = null,
-                            contentScale = ContentScale.Crop,
-                            modifier = Modifier.fillMaxSize()
-                        )
+                        Box(
+                            modifier = Modifier
+                                .size(width = 160.dp, height = 110.dp)
+                                .clip(RoundedCornerShape(16.dp))
+                                .background(Color.LightGray),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Image(
+                                painter = painterResource(id = recent.imageRes),
+                                contentDescription = null,
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier.fillMaxSize()
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(recent.name, fontSize = 12.sp, fontFamily = poppins, fontWeight = FontWeight.SemiBold)
                     }
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(recent.name, fontSize = 12.sp, fontFamily = poppins, fontWeight = FontWeight.SemiBold)
                 }
             }
         }
@@ -622,18 +759,13 @@ fun HomeScreen() {
             fontWeight = FontWeight.Bold,
             fontFamily = poppins
         )
-
         Spacer(modifier = Modifier.height(8.dp))
-
-        RecipeGridSection(recipes)
-
-
-
+        RecipeGridSection(recipes, onRecipeClick = onRecipeClick)
     }
 }
 
 @Composable
-fun RecipeGridSection(recipes: List<Recipe>) {
+fun RecipeGridSection(recipes: List<Recipe>, onRecipeClick: (Int) -> Unit) {
     Column(
         verticalArrangement = Arrangement.spacedBy(3.dp),
         modifier = Modifier.fillMaxWidth()
@@ -654,7 +786,8 @@ fun RecipeGridSection(recipes: List<Recipe>) {
                             title = recipe.title,
                             description = recipe.recipeMaker,
                             duration = recipe.duration,
-                            likeCount = recipe.upvoteCount
+                            likeCount = recipe.upvoteCount,
+                            onClick = { onRecipeClick(recipe.id) }
                         )
                     }
                 }
@@ -670,7 +803,8 @@ fun RecipeGridSection(recipes: List<Recipe>) {
 @Composable
 fun SwipeableCardStack(
     recipes: List<Recipe>,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onRecipeClick: (Int) -> Unit
 ) {
     val cardStack = remember { mutableStateListOf<Recipe>().apply { addAll(recipes) } }
     val swipedCards = remember { mutableStateListOf<Recipe>() }
@@ -681,8 +815,7 @@ fun SwipeableCardStack(
     var restoring by remember { mutableStateOf(false) }
     val restoreOffsetX = remember { Animatable(0f) }
 
-    Box(modifier = modifier .padding(start = 20.dp)) {
-
+    Box(modifier = modifier.padding(start = 20.dp)) {
 
         if (restoring && swipedCards.isNotEmpty()) {
             val recipe = swipedCards.last()
@@ -710,13 +843,16 @@ fun SwipeableCardStack(
                     .zIndex(cardStack.size + 1f)
             ) {
                 RecipeReusableCard(
-                    modifier = Modifier.fillMaxWidth().height(320.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(320.dp),
                     imagePainter = painterResource(id = recipe.image),
                     title = recipe.title,
                     description = recipe.recipeMaker,
                     duration = recipe.duration,
                     likeCount = recipe.upvoteCount,
-                    imageHeight = 230.dp
+                    imageHeight = 230.dp,
+                    onClick = { onRecipeClick(recipe.id) }
                 )
             }
         }
@@ -732,13 +868,12 @@ fun SwipeableCardStack(
                 modifier = Modifier
                     .fillMaxWidth(0.85f)
                     .graphicsLayer {
-                        translationX = cardOffset
+                        translationX = if (isTop) offsetX.value else cardOffset
                         scaleX = cardScale
                         scaleY = cardScale
                         shadowElevation = 0f
                     }
                     .zIndex(index.toFloat())
-                    .offset { IntOffset(offsetX.value.toInt(), 0) }
                     .pointerInput(isTop) {
                         if (isTop) {
                             detectDragGestures(
@@ -747,7 +882,6 @@ fun SwipeableCardStack(
                                     coroutineScope.launch {
                                         val newX = offsetX.value + dragAmount.x
                                         if (newX <= 0f) {
-                                            // geser kiri
                                             offsetX.snapTo(newX)
                                         } else if (dragAmount.x > 0 && swipedCards.isNotEmpty() && !restoring) {
                                             restoring = true
@@ -759,6 +893,7 @@ fun SwipeableCardStack(
                                         if (offsetX.value < -300f && cardStack.size > 1) {
                                             offsetX.animateTo(-1000f, tween(300))
                                             swipedCards.add(cardStack.removeLast())
+                                            offsetX.snapTo(0f) // Reset offset for the new top card
                                         } else {
                                             offsetX.animateTo(0f, tween(300))
                                         }
@@ -767,9 +902,12 @@ fun SwipeableCardStack(
                             )
                         }
                     }
+                    .clickable(enabled = isTop) { onRecipeClick(recipe.id) }
             ) {
                 RecipeReusableCard(
-                    modifier = Modifier.fillMaxWidth().height(320.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(320.dp),
                     imagePainter = painterResource(id = recipe.image),
                     title = recipe.title,
                     description = recipe.recipeMaker,
@@ -787,6 +925,6 @@ fun SwipeableCardStack(
 @Composable
 fun HomepageScreenPreview() {
     PancookTheme {
-        HomeScreen()
+        HomeScreen(onRecipeClick = {})
     }
 }
