@@ -25,6 +25,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items // Import this for LazyRow items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -92,7 +93,7 @@ import com.wesleyaldrich.pancook.ui.screens.allRecipes
 import kotlin.math.roundToInt
 
 
-// Helper function for bottom border. Keep this as bottomBorder for CategorySectionHeader
+// Helper function for bottom border. Renamed from bottomBorder2 to bottomBorder
 fun Modifier.bottomBorder2(strokeWidth: Dp, color: Color) = this.then(
     Modifier.drawBehind {
         val strokePx = strokeWidth.toPx()
@@ -203,11 +204,18 @@ fun GroceryScreen(
     navController: NavController,
     onRemoveClick: (Recipe) -> Unit
 ) {
-    val originalMap = getDummyRecipes()
-    val recipes = remember { mutableStateMapOf<Recipe, Int>().apply { putAll(originalMap) } }
+    // FIX: recipes should be a 'var' state to allow re-assignment and trigger recomposition
+    var recipes by remember { mutableStateOf(getDummyRecipes()) }
 
-    val groceryIngredientsMap = mapIngredientsToGroceryList(recipes)
-    val groupedIngredients = groupGroceryIngredientsByCategory(groceryIngredientsMap)
+    // These derived states will recompose automatically when 'recipes' changes
+    val groceryIngredientsMap by remember(recipes) {
+        Log.d("GroceryScreen", "Recomputing groceryIngredientsMap (triggered by recipes change). New recipes size: ${recipes.size}")
+        mutableStateOf(mapIngredientsToGroceryList(recipes))
+    }
+    val groupedIngredients by remember(groceryIngredientsMap) {
+        Log.d("GroceryScreen", "Recomputing groupedIngredients (triggered by groceryIngredientsMap change). Num categories: ${groupGroceryIngredientsByCategory(groceryIngredientsMap).size}")
+        mutableStateOf(groupGroceryIngredientsByCategory(groceryIngredientsMap))
+    }
 
     val checkedStates = remember { mutableStateMapOf<String, Boolean>() }
 
@@ -228,7 +236,6 @@ fun GroceryScreen(
                         )
                     }
                 },
-                // FIX: Set containerColor to Color.White for a solid background
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.White)
             )
         }
@@ -240,9 +247,6 @@ fun GroceryScreen(
                 .padding(paddingValues) // Apply padding from Scaffold
                 .padding(horizontal = 16.dp) // Re-apply horizontal padding
         ) {
-            // No Spacer needed here as TopAppBar provides its own height
-            // And original padding(16.dp) is now split into paddingValues + horizontal(16.dp)
-
             // 94. Grocery list header
             Text(
                 text = "Groceries To Get",
@@ -267,23 +271,32 @@ fun GroceryScreen(
             LazyRow (
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
             ) {
-                recipes.forEach { (recipe, serveCount) ->
-                    item {
-                        RecipeCardMini(
-                            recipe = recipe,
-                            serveCount = serveCount,
-                            imagePainter = painterResource(id = recipe.image),
-                            onClick = {
-                                // Log the ID being sent before navigating
-                                Log.d("GroceryScreen", "Attempting navigation to DetailRecipe with ID: ${recipe.id}")
-                                navController.navigate(Screen.DetailRecipe.createRoute(recipe.id))
-                            },
-                            onRemoveClick = { onRemoveClick(recipe) },
-                            onServeCountChange = { newCount ->
-                                recipes[recipe] = newCount
-                            }
-                        )
-                    }
+                // Use items from LazyRow dsl directly for more stable list items
+                items(
+                    items = recipes.entries.toList(), // Use items parameter
+                    key = { it.key.id } // Provide a unique key for each item
+                ) { (recipe, serveCount) -> // Destructure the Map.Entry
+                    RecipeCardMini(
+                        recipe = recipe,
+                        serveCount = serveCount,
+                        imagePainter = painterResource(id = recipe.image),
+                        onClick = {
+                            Log.d("GroceryScreen", "Attempting navigation to DetailRecipe with ID: ${recipe.id}")
+                            navController.navigate(Screen.DetailRecipe.createRoute(recipe.id))
+                        },
+                        onRemoveClick = {
+                            val removedRecipeTitle = recipe.title
+                            // FIX: To trigger recomposition reliably, create a new map instance
+                            // by filtering out the removed recipe and re-assign it.
+                            recipes = recipes.toMutableMap().also { it.remove(recipe) }.toMap()
+                            Log.d("GroceryScreen", "Recipe '$removedRecipeTitle' removed. Recipes map new size: ${recipes.size}")
+                        },
+                        onServeCountChange = { newCount ->
+                            // FIX: Update serve count by creating a new map instance
+                            recipes = recipes.toMutableMap().also { it[recipe] = newCount }.toMap()
+                            Log.d("GroceryScreen", "Recipe '${recipe.title}' serve count changed to $newCount. Recipes map new size: ${recipes.size}")
+                        }
+                    )
                 }
             }
 
@@ -341,7 +354,6 @@ fun GroceryScreen(
                     }
                 }
             }
-
         }
     }
 }
@@ -373,7 +385,7 @@ fun RecipeCardMini(
                     .fillMaxWidth()
                     .height(110.dp)
                     .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
-                    .clickable { onClick() } // This onClick triggers navigation
+                    .clickable { onClick() }
             ) {
                 Image(
                     painter = imagePainter,
@@ -466,7 +478,7 @@ fun RecipeCardMini(
                             .size(30.dp)
                             .clip(RoundedCornerShape(20.dp))
                             .background(colorResource(R.color.primary).copy(alpha = 0.75f))
-                            .clickable { onRemoveClick() },
+                            .clickable { onRemoveClick() }, // This calls the onRemoveClick lambda
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
