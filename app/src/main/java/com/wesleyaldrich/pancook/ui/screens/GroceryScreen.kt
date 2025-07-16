@@ -1,5 +1,6 @@
 package com.wesleyaldrich.pancook.ui.screens
 
+import android.util.Log // Import Log for debugging
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.layout.Box
@@ -41,9 +42,13 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api // Import ExperimentalMaterial3Api for TopAppBar
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold // Import Scaffold
+import androidx.compose.material3.TopAppBar // Import TopAppBar
+import androidx.compose.material3.TopAppBarDefaults // Import TopAppBarDefaults
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
@@ -70,6 +75,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.wesleyaldrich.pancook.R
 import com.wesleyaldrich.pancook.model.Ingredient
 import com.wesleyaldrich.pancook.model.Recipe
@@ -79,7 +86,11 @@ import com.wesleyaldrich.pancook.ui.theme.poppins
 import com.wesleyaldrich.pancook.model.Instruction // Import Instruction
 import com.wesleyaldrich.pancook.model.NutritionFact // Import NutritionFact
 import com.wesleyaldrich.pancook.model.Comment // Import Comment
+import com.wesleyaldrich.pancook.ui.navigation.Screen // Ensure this import path is correct
+// IMPORTANT: Import allRecipes from the MyRecipeScreen file
+import com.wesleyaldrich.pancook.ui.screens.allRecipes
 import kotlin.math.roundToInt
+
 
 // Helper function for bottom border. Keep this as bottomBorder for CategorySectionHeader
 fun Modifier.bottomBorder2(strokeWidth: Dp, color: Color) = this.then(
@@ -96,146 +107,33 @@ fun Modifier.bottomBorder2(strokeWidth: Dp, color: Color) = this.then(
 )
 
 fun getDummyRecipes(): Map<Recipe, Int> {
-    val ingredientList1 = listOf(
-        Ingredient(R.drawable.ingredient_tomato, "Spaghetti", "Pasta", 200.0f, "g"),
-        Ingredient(R.drawable.ingredient_tomato, "Ground Beef", "Meat", 150.0f, "g"),
-        Ingredient(R.drawable.ingredient_tomato, "Tomato Sauce", "Condiments", 100.0f, "ml"),
-        Ingredient(R.drawable.ingredient_tomato, "Onion", "Vegetables", 1.0f, "piece"),
-        Ingredient(R.drawable.ingredient_tomato, "Garlic", "Spices", 2.0f, "cloves")
-    )
+    // This function now fetches recipes directly from the 'allRecipes' list
+    // defined in MyRecipeScreen.kt, ensuring consistent IDs.
+    val selectedRecipesWithServeCount = mutableMapOf<Recipe, Int>()
 
-    val ingredientList2 = listOf(
-        Ingredient(R.drawable.ingredient_tomato, "Lettuce", "Vegetables", 1.0f, "head"),
-        Ingredient(R.drawable.ingredient_tomato, "Tomato", "Vegetables", 2.0f, "pieces"),
-        Ingredient(R.drawable.ingredient_tomato, "Cucumber", "Vegetables", 1.0f, "piece"),
-        Ingredient(R.drawable.ingredient_tomato, "Olive oil", "Condiments", 2.0f, "tbsp"),
-        Ingredient(R.drawable.ingredient_tomato, "Feta cheese", "Dairy", 50.0f, "g")
-    )
+    // Log the size of allRecipes when getDummyRecipes is called
+    Log.d("GroceryScreen", "getDummyRecipes: allRecipes size = ${allRecipes.size}")
 
-    val ingredientList3 = listOf(
-        Ingredient(R.drawable.ingredient_tomato, "Chicken Breast", "Meat", 200.0f, "g"),
-        Ingredient(R.drawable.ingredient_tomato, "Salt", "Spices", 1.0f, "tsp"),
-        Ingredient(R.drawable.ingredient_tomato, "Pepper", "Spices", 1.0f, "tsp"),
-        Ingredient(R.drawable.ingredient_tomato, "Rosemary", "Herbs", 1.0f, "tsp"),
-        Ingredient(R.drawable.ingredient_tomato, "Olive oil", "Condiments", 1.0f, "tbsp")
-    )
+    // Select specific recipes by their IDs from the 'allRecipes' list.
+    // These IDs correspond to the recipes provided in MyRecipeScreen.kt.
+    allRecipes.find { it.id == 1 }?.let { recipe ->
+        selectedRecipesWithServeCount[recipe] = 4 // Spaghetti Bolognese
+    }
+    allRecipes.find { it.id == 2 }?.let { recipe ->
+        selectedRecipesWithServeCount[recipe] = 2 // Fresh Garden Salad (Grocery)
+    }
+    allRecipes.find { it.id == 4 }?.let { recipe ->
+        selectedRecipesWithServeCount[recipe] = 3 // Delicious Salad
+    }
+    allRecipes.find { it.id == 11 }?.let { recipe ->
+        selectedRecipesWithServeCount[recipe] = 1 // Beef Stew
+    }
+    allRecipes.find { it.id == 12 }?.let { recipe ->
+        selectedRecipesWithServeCount[recipe] = 2 // Tomato Soup
+    }
 
-    val ingredientList4 = listOf(
-        Ingredient(R.drawable.ingredient_tomato, "Tomato", "Vegetables", 3.0f, "pieces"),
-        Ingredient(R.drawable.ingredient_tomato, "Spaghetti", "Pasta", 100.0f, "g")
-    )
-
-
-    val recipe1 = Recipe(
-        id = 1,
-        title = "Spaghetti Bolognese",
-        description = "A classic Italian pasta dish with rich meat sauce.",
-        image = R.drawable.hash_brown,
-        ingredients = ingredientList1,
-        steps = listOf(
-            Instruction(1, "Cook spaghetti according to package directions. Drain and set aside."),
-            Instruction(2, "In a large skillet or pot, brown ground beef over medium heat. Drain excess fat."),
-            Instruction(3, "Add chopped onion and minced garlic to the beef. Cook until onion is softened and transparent."),
-            Instruction(4, "Stir in tomato sauce and bring to a simmer. Reduce heat and let it simmer for at least 15 minutes to meld flavors (longer for richer taste)."),
-            Instruction(5, "Season the sauce with salt, pepper, and any other desired herbs (e.g., oregano, basil)."),
-            Instruction(6, "Serve the bolognese sauce over the cooked spaghetti. Garnish with Parmesan cheese if desired.")
-        ),
-        servings = 2,
-        duration = "30 min",
-        upvoteCount = 124,
-        recipeMaker = "by Mia's Meals",
-        nutritionFacts = listOf( // Added for consistency
-            NutritionFact("Calories", "600 kcal"),
-            NutritionFact("Protein", "30g"),
-            NutritionFact("Fat", "25g"),
-            NutritionFact("Carbs", "50g")
-        ),
-        comments = listOf( // Added for consistency
-            Comment("Pasta Lover", "Classic comfort food, can't go wrong with this.")
-        )
-    )
-
-    val recipe2 = Recipe(
-        id = 2,
-        title = "Fresh Garden Salad", // Changed to "Fresh Garden Salad" for consistency with MyRecipeScreen
-        description = "A light and healthy salad perfect for any meal.", // Updated description
-        image = R.drawable.salad,
-        ingredients = ingredientList2,
-        steps = listOf(
-            Instruction(1, "Wash and pat dry all vegetables. Tear or chop lettuce into bite-sized pieces."),
-            Instruction(2, "Slice tomatoes and cucumber into desired shapes."),
-            Instruction(3, "Combine lettuce, tomatoes, and cucumber in a large salad bowl."),
-            Instruction(4, "Crumble feta cheese over the vegetables."),
-            Instruction(5, "Drizzle with olive oil. Add salt and pepper to taste."),
-            Instruction(6, "Toss gently until all ingredients are well combined. Serve fresh.")
-        ),
-        servings = 1,
-        duration = "15 min",
-        upvoteCount = 89,
-        recipeMaker = "by Jake's Plates",
-        nutritionFacts = listOf( // Added for consistency
-            NutritionFact("Calories", "150 kcal"),
-            NutritionFact("Protein", "5g"),
-            NutritionFact("Fat", "10g"),
-            NutritionFact("Carbs", "10g")
-        ),
-        comments = listOf( // Added for consistency
-            Comment("Salad Fan", "Fresh and light, great for lunch.")
-        )
-    )
-
-    val recipe3 = Recipe(
-        id = 3,
-        title = "Grilled Chicken",
-        description = "Simple, juicy grilled chicken breast.",
-        image = R.drawable.fudgy_brownies, // Using fudgy_brownies as placeholder image based on MyRecipeScreen
-        ingredients = ingredientList3,
-        steps = listOf(
-            Instruction(1, "Pat chicken breasts dry with paper towels. Season generously with salt, pepper, and rosemary on both sides."),
-            Instruction(2, "Heat olive oil in a grill pan or outdoor grill over medium-high heat."),
-            Instruction(3, "Place chicken breasts on the hot grill. Cook for about 6-8 minutes per side, or until internal temperature reaches 165°F (74°C) and juices run clear."),
-            Instruction(4, "Remove from grill and let rest for 5 minutes before slicing or serving. This helps keep the chicken juicy.")
-        ),
-        servings = 2,
-        duration = "25 min",
-        upvoteCount = 176,
-        recipeMaker = "by Mia's Meals",
-        nutritionFacts = listOf( // Added for consistency
-            NutritionFact("Calories", "280 kcal"),
-            NutritionFact("Protein", "40g"),
-            NutritionFact("Fat", "12g"),
-            NutritionFact("Carbs", "0g")
-        ),
-        comments = listOf( // Added for consistency
-            Comment("Grill Master", "Perfectly grilled chicken every time!")
-        )
-    )
-
-    val recipe4 = Recipe(
-        id = 4,
-        title = "Tomato Spaghetti",
-        description = "Simple spaghetti with fresh tomato sauce.",
-        image = R.drawable.hash_brown,
-        ingredients = ingredientList4,
-        steps = listOf(
-            Instruction(1, "Cook spaghetti."),
-            Instruction(2, "Prepare tomato sauce."),
-            Instruction(3, "Combine and serve.")
-        ),
-        servings = 1,
-        duration = "20 min",
-        upvoteCount = 90,
-        recipeMaker = "by Veggie Vibes",
-        nutritionFacts = listOf(),
-        comments = listOf()
-    )
-
-    return mapOf(
-        recipe1 to 4,
-        recipe2 to 2,
-        recipe3 to 3,
-        recipe4 to 1
-    )
+    Log.d("GroceryScreen", "getDummyRecipes: Selected ${selectedRecipesWithServeCount.size} dummy recipes.")
+    return selectedRecipesWithServeCount
 }
 
 // Data class to hold processed ingredient information
@@ -257,7 +155,7 @@ fun convertToGram(qty: Float, unit: String): Float {
         "l" -> qty * 1000 // Assuming 1l ~ 1000g for simplicity
         "tbsp" -> qty * 15 // Roughly 15g per tablespoon
         "tsp" -> qty * 5 // Roughly 5g per teaspoon
-        "pieces", "piece", "cloves", "head" -> qty * 50 // Placeholder for arbitrary units, adjust as needed
+        "pieces", "piece", "cloves", "head", "medium", "pcs", "stalks", "large", "cup" -> qty * 50 // Placeholder for arbitrary units, adjust as needed
         else -> qty // Default to original quantity if unit is unknown
     }
 }
@@ -298,10 +196,11 @@ fun groupGroceryIngredientsByCategory(groceryIngredients: Map<String, GroceryIng
     return groceryIngredients.values.groupBy { it.category }
 }
 
+@OptIn(ExperimentalMaterial3Api::class) // Needed for TopAppBar
 @Composable
 fun GroceryScreen(
     onBackClick: () -> Unit,
-    onRecipeClick: (Recipe) -> Unit,
+    navController: NavController,
     onRemoveClick: (Recipe) -> Unit
 ) {
     val originalMap = getDummyRecipes()
@@ -312,122 +211,138 @@ fun GroceryScreen(
 
     val checkedStates = remember { mutableStateMapOf<String, Boolean>() }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(16.dp)
-    ) {
-        // Back Button
-        IconButton(onClick = onBackClick) {
-            Icon(
-                imageVector = Icons.Filled.PlayArrow,
-                contentDescription = "Back",
-                modifier = Modifier
-                    .size(50.dp)
-                    .graphicsLayer {
-                        scaleX = -1f
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { /* No title needed based on your current UI */ },
+                navigationIcon = {
+                    IconButton(onClick = onBackClick) {
+                        Icon(
+                            imageVector = Icons.Filled.PlayArrow,
+                            contentDescription = "Back",
+                            modifier = Modifier
+                                .size(50.dp)
+                                .graphicsLayer {
+                                    scaleX = -1f // Flips the arrow to point left
+                                }
+                        )
                     }
+                },
+                // FIX: Set containerColor to Color.White for a solid background
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.White)
             )
         }
-
-        Spacer(modifier = Modifier.height(0.dp))
-
-        // 94. Grocery list header
-        Text(
-            text = "Groceries To Get",
-            fontSize = 24.sp,
-            fontFamily = poppins,
-            fontWeight = FontWeight.Bold
-        )
-
-        Spacer(modifier = Modifier.height(0.dp))
-
-        // 95. Recipe Section Header
-        Text(
-            text = "Recipes",
-            fontSize = 18.sp,
-            fontFamily = poppins,
-            fontWeight = FontWeight.SemiBold
-        )
-
-        Spacer(modifier = Modifier.height(2.dp))
-
-        // Horizontal carousel
-        LazyRow(
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
-            recipes.forEach { (recipe, serveCount) ->
-                item {
-                    RecipeCardMini(
-                        recipe = recipe,
-                        serveCount = serveCount,
-                        imagePainter = painterResource(id = recipe.image),
-                        onClick = { onRecipeClick(recipe) },
-                        onRemoveClick = { onRemoveClick(recipe) },
-                        onServeCountChange = { newCount ->
-                            recipes[recipe] = newCount
-                        }
-                    )
-                }
-            }
-        }
-
-        Spacer(modifier = Modifier.height(5.dp))
-
-        // Add ingredient button
-        Button(
-            onClick = {},
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 5.dp),
-            shape = RoundedCornerShape(12.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = colorResource(R.color.primary),
-                contentColor = Color.White
-            )
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Add,
-                    contentDescription = "Add Ingredient",
-                    modifier = Modifier
-                        .size(18.dp)
-                )
-                Spacer(modifier = Modifier.width(5.dp))
-                Text(
-                    text = "Add Ingredient",
-                    fontFamily = poppins,
-                    fontWeight = FontWeight.SemiBold,
-                    fontSize = 16.sp,
-                    modifier = Modifier.fillMaxHeight()
-                )
-            }
-        }
-
-        // Column for Ingredient section
+    ) { paddingValues ->
         Column(
             modifier = Modifier
-                .fillMaxWidth()
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(paddingValues) // Apply padding from Scaffold
+                .padding(horizontal = 16.dp) // Re-apply horizontal padding
         ) {
-            groupedIngredients.forEach { (category, ingredientList) ->
-                CategorySectionHeader(title = category)
-                ingredientList.forEach { ingredient ->
-                    IngredientCard(
-                        ingredient = ingredient,
-                        isChecked = checkedStates[ingredient.name] ?: false,
-                        onCheckedChange = { newValue ->
-                            checkedStates[ingredient.name] = newValue
-                        }
+            // No Spacer needed here as TopAppBar provides its own height
+            // And original padding(16.dp) is now split into paddingValues + horizontal(16.dp)
+
+            // 94. Grocery list header
+            Text(
+                text = "Groceries To Get",
+                fontSize = 24.sp,
+                fontFamily = poppins,
+                fontWeight = FontWeight.Bold
+            )
+
+            Spacer(modifier = Modifier.height(0.dp))
+
+            // 95. Recipe Section Header
+            Text(
+                text = "Recipes",
+                fontSize = 18.sp,
+                fontFamily = poppins,
+                fontWeight = FontWeight.SemiBold
+            )
+
+            Spacer(modifier = Modifier.height(2.dp))
+
+            // Horizontal carousel
+            LazyRow (
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
+                recipes.forEach { (recipe, serveCount) ->
+                    item {
+                        RecipeCardMini(
+                            recipe = recipe,
+                            serveCount = serveCount,
+                            imagePainter = painterResource(id = recipe.image),
+                            onClick = {
+                                // Log the ID being sent before navigating
+                                Log.d("GroceryScreen", "Attempting navigation to DetailRecipe with ID: ${recipe.id}")
+                                navController.navigate(Screen.DetailRecipe.createRoute(recipe.id))
+                            },
+                            onRemoveClick = { onRemoveClick(recipe) },
+                            onServeCountChange = { newCount ->
+                                recipes[recipe] = newCount
+                            }
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(5.dp))
+
+            // Add ingredient button
+            Button(
+                onClick = {},
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 5.dp),
+                shape = RoundedCornerShape(12.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = colorResource(R.color.primary),
+                    contentColor = Color.White
+                )
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = "Add Ingredient",
+                        modifier = Modifier
+                            .size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(5.dp))
+                    Text(
+                        text = "Add Ingredient",
+                        fontFamily = poppins,
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 16.sp,
+                        modifier = Modifier.fillMaxHeight()
                     )
                 }
             }
-        }
 
+            // Column for Ingredient section
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+            ) {
+                groupedIngredients.forEach { (category, ingredientList) ->
+                    CategorySectionHeader(title = category)
+                    ingredientList.forEach { ingredient ->
+                        IngredientCard(
+                            ingredient = ingredient,
+                            isChecked = checkedStates[ingredient.name] ?: false,
+                            onCheckedChange = { newValue ->
+                                checkedStates[ingredient.name] = newValue
+                            }
+                        )
+                    }
+                }
+            }
+
+        }
     }
 }
 
@@ -458,7 +373,7 @@ fun RecipeCardMini(
                     .fillMaxWidth()
                     .height(110.dp)
                     .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
-                    .clickable { onClick() }
+                    .clickable { onClick() } // This onClick triggers navigation
             ) {
                 Image(
                     painter = imagePainter,
@@ -630,7 +545,7 @@ fun CategorySectionHeader(title: String) {
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 8.dp)
-            .bottomBorder(1.dp, Color.Gray) // Use the original bottomBorder for categories
+            .bottomBorder(1.dp, Color.Gray)
     ) {
         Text(
             text = title,
@@ -791,8 +706,8 @@ fun IngredientCard(
 private fun GroceryPreview() {
     PancookTheme {
         GroceryScreen(
-            onBackClick = {},
-            onRecipeClick = {},
+            onBackClick = {}, // For preview, this can remain empty as it's not a real navigation context
+            navController = rememberNavController(),
             onRemoveClick = {},
         )
     }
