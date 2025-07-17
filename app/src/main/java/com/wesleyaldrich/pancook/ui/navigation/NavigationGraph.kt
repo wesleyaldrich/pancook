@@ -31,7 +31,13 @@ fun NavigationGraph(navController: NavHostController, modifier: Modifier = Modif
         popEnterTransition = { EnterTransition.None  },
         popExitTransition  = { ExitTransition.None   },
     ) {
-        composable(Screen.Home.route) { HomeScreen() }
+        composable(Screen.Home.route) {
+            HomeScreen(onRecipeClick = { recipeId ->
+                // Ini adalah implementasi callback.
+                // Saat kartu diklik di HomeScreen, kode ini yang akan berjalan.
+                navController.navigate("detail_recipe/$recipeId")
+            })
+        }
         composable(Screen.MyRecipe.route) { MyRecipeScreen(navController = navController) }
         composable(
             route = Screen.DetailRecipe.route,

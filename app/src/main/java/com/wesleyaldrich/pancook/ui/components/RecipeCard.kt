@@ -2,6 +2,7 @@ package com.wesleyaldrich.pancook.ui.components
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
@@ -24,6 +25,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.ThumbUp
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -53,12 +55,13 @@ fun RecipeReusableCard(
     description: String,
     duration: String,
     likeCount: Int,
-    imageHeight: Dp = 180.dp
+    imageHeight: Dp = 180.dp,
+    onClick: () -> Unit = {}
 ) {
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .padding(8.dp),
+            .padding(8.dp).clickable(onClick = onClick),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = colorResource(R.color.white)),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
@@ -132,8 +135,8 @@ fun RecipeReusableCard(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Favorite,
-                        contentDescription = "Likes",
+                        imageVector = Icons.Default.ThumbUp,
+                        contentDescription = "upvote",
                         tint = colorResource(R.color.accent_yellow),
                         modifier = Modifier.size(14.dp)
                     )
