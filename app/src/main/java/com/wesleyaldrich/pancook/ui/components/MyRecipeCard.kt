@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import com.wesleyaldrich.pancook.R
 import com.wesleyaldrich.pancook.ui.theme.PancookTheme
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.ThumbUp // Changed to ThumbUp
 import androidx.compose.ui.res.colorResource
@@ -103,7 +104,7 @@ fun ReusableCard(
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
-                                imageVector = Icons.Filled.ThumbUp, // Changed to ThumbUp
+                                imageVector = Icons.Filled.Bookmark, // Changed to ThumbUp
                                 contentDescription = "Upvote", // Changed contentDescription
                                 tint = colorResource(R.color.accent_yellow),
                                 modifier = Modifier.size(16.dp)
