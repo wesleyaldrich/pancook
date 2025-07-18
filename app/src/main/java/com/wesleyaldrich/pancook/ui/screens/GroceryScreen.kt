@@ -29,6 +29,7 @@ import androidx.compose.foundation.lazy.items // Correctly import items for Lazy
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions // This import is from your provided code
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -92,8 +93,21 @@ import com.wesleyaldrich.pancook.ui.navigation.Screen // Ensure this import path
 import com.wesleyaldrich.pancook.ui.screens.allRecipes
 import kotlin.math.roundToInt
 
+// Imports for ModalBottomSheet
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.material3.TextField
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.TextFieldDefaults // Import TextFieldDefaults
+import androidx.compose.material3.OutlinedTextFieldDefaults // Import OutlinedTextFieldDefaults
+import androidx.compose.ui.text.input.KeyboardType
+import kotlinx.coroutines.launch // For coroutine scope
+import androidx.compose.runtime.rememberCoroutineScope // For coroutine scope
 
-// Helper function for bottom border. Corrected name from bottomBorder2 to bottomBorder
+
+// Helper function for bottom border. (bottomBorder2 in your provided code, keeping it for adherence)
 fun Modifier.bottomBorder2(strokeWidth: Dp, color: Color) = this.then(
     Modifier.drawBehind {
         val strokePx = strokeWidth.toPx()
@@ -106,6 +120,9 @@ fun Modifier.bottomBorder2(strokeWidth: Dp, color: Color) = this.then(
         )
     }
 )
+
+// Define a unique ID for manually added ingredients recipe
+const val MANUAL_ENTRY_RECIPE_ID = -1
 
 fun getDummyRecipes(): Map<Recipe, Int> {
     // This function now fetches recipes directly from the 'allRecipes' list
@@ -132,6 +149,28 @@ fun getDummyRecipes(): Map<Recipe, Int> {
     allRecipes.find { it.id == 12 }?.let { recipe ->
         selectedRecipesWithServeCount[recipe] = 2 // Tomato Soup
     }
+
+    // Add a placeholder recipe for manual entries if it doesn't exist already
+    // This ensures there's always a container for manually added ingredients
+    val manualEntryRecipe = Recipe(
+        id = MANUAL_ENTRY_RECIPE_ID,
+        title = "Personal Ingredients", // Changed from "Manual Entries"
+        description = "Ingredients added manually",
+        image = R.drawable.rawon, // Use a generic add icon or placeholder
+        ingredients = emptyList(), // Starts empty, will be populated dynamically
+        steps = emptyList(),
+        servings = 1,
+        duration = "",
+        upvoteCount = 0,
+        recipeMaker = "You",
+        nutritionFacts = emptyList(),
+        comments = emptyList()
+    )
+    // Add to the map if not already present (e.g., from a previous session state)
+    if (!selectedRecipesWithServeCount.keys.any { it.id == MANUAL_ENTRY_RECIPE_ID }) {
+        selectedRecipesWithServeCount[manualEntryRecipe] = 1
+    }
+
 
     Log.d("GroceryScreen", "getDummyRecipes: Selected ${selectedRecipesWithServeCount.size} dummy recipes.")
     return selectedRecipesWithServeCount
@@ -197,19 +236,24 @@ fun groupGroceryIngredientsByCategory(groceryIngredients: Map<String, GroceryIng
     return groceryIngredients.values.groupBy { it.category }
 }
 
-@OptIn(ExperimentalMaterial3Api::class) // Needed for TopAppBar
+@OptIn(ExperimentalMaterial3Api::class) // Needed for TopAppBar, ModalBottomSheet
 @Composable
 fun GroceryScreen(
     onBackClick: () -> Unit,
     navController: NavController,
     onRemoveClick: (Recipe) -> Unit
 ) {
-    // FIX: recipes should be a 'var' state to allow re-assignment and trigger recomposition
+    // recipes is now a 'var' state to allow re-assignment and trigger recomposition
     var recipes by remember { mutableStateOf(getDummyRecipes()) }
 
-    // FIX: checkedStates should be a 'var' state holding an immutable Map
-    // This ensures its updates reliably trigger recomposition
+    // checkedStates is a 'var' state holding an immutable Map
     var checkedStates by remember { mutableStateOf(mapOf<String, Boolean>()) }
+
+    // State for the "Add Ingredient" form visibility
+    var showAddIngredientForm by remember { mutableStateOf(false) }
+    val sheetState = rememberModalBottomSheetState()
+    val scope = rememberCoroutineScope()
+
 
     // Derived states will recompose automatically when 'recipes' or 'checkedStates' changes
     val allGroceryIngredientsMap by remember(recipes) {
@@ -218,14 +262,14 @@ fun GroceryScreen(
     }
 
     val neededIngredientsGrouped = remember(allGroceryIngredientsMap, checkedStates) {
-        Log.d("GroceryScreen", "Recomputing neededIngredientsGrouped. Checked items count: ${checkedStates.filter { it.value }.size}")
+        Log.d("GroceryScreen", "Recomputing neededIngredientsGrouped. Current checked items count: ${checkedStates.filter { it.value }.size}")
         allGroceryIngredientsMap.values
             .filter { !checkedStates[it.name].orFalse() } // Filter out checked items
             .groupBy { it.category }
             .toSortedMap() // Ensure categories are sorted
     }
     val gottenIngredientsGrouped = remember(allGroceryIngredientsMap, checkedStates) {
-        Log.d("GroceryScreen", "Recomputing gottenIngredientsGrouped. Checked items count: ${checkedStates.filter { it.value }.size}")
+        Log.d("GroceryScreen", "Recomputing gottenIngredientsGrouped. Current checked items count: ${checkedStates.filter { it.value }.size}")
         allGroceryIngredientsMap.values
             .filter { checkedStates[it.name].orFalse() } // Only include checked items
             .groupBy { it.category }
@@ -240,7 +284,7 @@ fun GroceryScreen(
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(
-                            imageVector = Icons.Filled.PlayArrow,
+                            imageVector = Icons.Default.PlayArrow, // Using PlayArrow as per your original code
                             contentDescription = "Back",
                             modifier = Modifier
                                 .size(50.dp)
@@ -318,7 +362,7 @@ fun GroceryScreen(
 
             // Add ingredient button
             Button(
-                onClick = {},
+                onClick = { showAddIngredientForm = true }, // Show the form
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 5.dp),
@@ -420,6 +464,304 @@ fun GroceryScreen(
                                     Log.d("GroceryScreen", "Ingredient ${ingredient.name} unchecked from Gotten: $newValue. New checkedStates value: ${checkedStates[ingredient.name]}")
                                 }
                             )
+                        }
+                    }
+                }
+            }
+        }
+
+        // Add Ingredient Modal Bottom Sheet
+        if (showAddIngredientForm) {
+            ModalBottomSheet(
+                onDismissRequest = {
+                    // Reset form fields on dismiss
+                    scope.launch { sheetState.hide() }.invokeOnCompletion {
+                        if (!sheetState.isVisible) {
+                            showAddIngredientForm = false
+                        }
+                    }
+                },
+                sheetState = sheetState,
+                containerColor = MaterialTheme.colorScheme.surfaceVariant // Adjust color as needed
+            ) {
+                // State for form inputs
+                var ingredientNameInput by remember { mutableStateOf("") }
+                var unitAmountInput by remember { mutableStateOf("") }
+                val unitMeasurements = listOf(
+                    "gram", "kilogram", "onz", "ml", "cup", "for taste", "as needed", "oz", "l", "bar", "pcs", "piece", "cloves", "head", "medium", "stalks", "large"
+                )
+                var selectedUnitMeasurement by remember { mutableStateOf(unitMeasurements[0]) }
+
+                // Define category choices
+                val categories = listOf(
+                    "Vegetable", "Pasta", "Meat", "Spices", "Condiments", "Dairy", "Grains", "Herbs", "Fruit", "Seafood", "Bakery", "Sweeteners", "Baking", "Flavoring", "Seasoning", "Other"
+                )
+                var selectedCategory by remember { mutableStateOf(categories[0]) } // Initialize with first category
+                var expandedCategoryDropdown by remember { mutableStateOf(false) }
+
+                var expandedUnitDropdown by remember { mutableStateOf(false) } // Renamed for clarity
+
+                // Define common TextFieldColors for this form
+                // Uses @Composable context via colorResource
+                val formFieldColors = TextFieldDefaults.colors(
+                    focusedContainerColor = colorResource(R.color.primary),
+                    unfocusedContainerColor = colorResource(R.color.primary),
+                    disabledContainerColor = colorResource(R.color.primary),
+                    errorContainerColor = colorResource(R.color.primary),
+
+                    focusedTextColor = Color.White,
+                    unfocusedTextColor = Color.White,
+                    disabledTextColor = Color.White,
+                    errorTextColor = Color.White,
+
+                    focusedLabelColor = Color.White.copy(alpha = 0.7f),
+                    unfocusedLabelColor = Color.White.copy(alpha = 0.7f),
+                    disabledLabelColor = Color.White.copy(alpha = 0.5f),
+                    errorLabelColor = Color.White,
+
+                    cursorColor = Color.White,
+                    // For TextField, these control the underline indicator
+                    focusedIndicatorColor = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent,
+                    disabledIndicatorColor = Color.Transparent,
+                    errorIndicatorColor = Color.Transparent,
+
+                    focusedTrailingIconColor = Color.White,
+                    unfocusedTrailingIconColor = Color.White,
+                    disabledTrailingIconColor = Color.White,
+                    errorTrailingIconColor = Color.White,
+                )
+
+                // Define common OutlinedTextFieldColors for this form
+                // Uses @Composable context via colorResource
+                val formOutlinedFieldColors = OutlinedTextFieldDefaults.colors(
+                    focusedContainerColor = colorResource(R.color.primary),
+                    unfocusedContainerColor = colorResource(R.color.primary),
+                    disabledContainerColor = colorResource(R.color.primary),
+                    errorContainerColor = colorResource(R.color.primary),
+
+                    focusedTextColor = Color.White,
+                    unfocusedTextColor = Color.White,
+                    disabledTextColor = Color.White,
+                    errorTextColor = Color.White,
+
+                    focusedLabelColor = Color.White.copy(alpha = 0.7f),
+                    unfocusedLabelColor = Color.White.copy(alpha = 0.7f),
+                    disabledLabelColor = Color.White.copy(alpha = 0.5f),
+                    errorLabelColor = Color.White,
+
+                    cursorColor = Color.White,
+                    // For OutlinedTextField, these control the border color
+                    focusedBorderColor = Color.Transparent,
+                    unfocusedBorderColor = Color.Transparent,
+                    disabledBorderColor = Color.Transparent,
+                    errorBorderColor = Color.Transparent,
+
+                    focusedTrailingIconColor = Color.White,
+                    unfocusedTrailingIconColor = Color.White,
+                    disabledTrailingIconColor = Color.White,
+                    errorTrailingIconColor = Color.White,
+                )
+
+
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .fillMaxHeight()
+                        .padding(16.dp)
+                        .verticalScroll(rememberScrollState()), // Allow scrolling if content is long
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    Text(
+                        text = "Add New Ingredient",
+                        style = MaterialTheme.typography.headlineSmall.copy(fontFamily = nunito), // Apply font
+                        fontWeight = FontWeight.Bold,
+                        color = colorResource(R.color.primary)
+                    )
+
+                    TextField(
+                        value = ingredientNameInput,
+                        onValueChange = { ingredientNameInput = it },
+                        label = { Text("Ingredient Name", fontFamily = nunito) }, // Apply font
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(8.dp)), // Apply rounded corner
+                        colors = formFieldColors // Apply custom colors
+                    )
+
+                    OutlinedTextField(
+                        value = unitAmountInput,
+                        onValueChange = { newValue ->
+                            // Allow only numerical input (digits and a single decimal point)
+                            if (newValue.all { it.isDigit() || (it == '.' && !unitAmountInput.contains('.')) }) {
+                                unitAmountInput = newValue
+                            }
+                        },
+                        label = { Text("Unit Amount", fontFamily = nunito) }, // Apply font
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), // Corrected KeyboardOptions usage
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(8.dp)), // Apply rounded corner
+                        colors = formOutlinedFieldColors // Apply custom colors
+                    )
+
+                    // NEW: Category Dropdown
+                    ExposedDropdownMenuBox(
+                        expanded = expandedCategoryDropdown,
+                        onExpandedChange = { expandedCategoryDropdown = !expandedCategoryDropdown },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        OutlinedTextField(
+                            value = selectedCategory,
+                            onValueChange = {},
+                            readOnly = true,
+                            label = { Text("Category", fontFamily = nunito) }, // Apply font
+                            trailingIcon = {
+                                ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedCategoryDropdown)
+                            },
+                            modifier = Modifier
+                                .menuAnchor() // This is important for the dropdown to anchor correctly
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(8.dp)), // Apply rounded corner
+                            colors = formOutlinedFieldColors // Apply custom colors
+                        )
+                        ExposedDropdownMenu(
+                            expanded = expandedCategoryDropdown,
+                            onDismissRequest = { expandedCategoryDropdown = false }
+                        ) {
+                            categories.forEach { selectionOption ->
+                                DropdownMenuItem(
+                                    text = { Text(selectionOption, fontFamily = nunito) }, // Apply font
+                                    onClick = {
+                                        selectedCategory = selectionOption
+                                        expandedCategoryDropdown = false
+                                    }
+                                )
+                            }
+                        }
+                    }
+
+                    // Existing Unit Measurement Dropdown
+                    ExposedDropdownMenuBox(
+                        expanded = expandedUnitDropdown, // Renamed variable
+                        onExpandedChange = { expandedUnitDropdown = !expandedUnitDropdown }, // Renamed variable
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        OutlinedTextField(
+                            value = selectedUnitMeasurement,
+                            onValueChange = {},
+                            readOnly = true,
+                            label = { Text("Unit Measurement", fontFamily = nunito) }, // Apply font
+                            trailingIcon = {
+                                ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedUnitDropdown) // Renamed variable
+                            },
+                            modifier = Modifier
+                                .menuAnchor() // This is important for the dropdown to anchor correctly
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(8.dp)), // Apply rounded corner
+                            colors = formOutlinedFieldColors // Apply custom colors
+                        )
+                        ExposedDropdownMenu(
+                            expanded = expandedUnitDropdown, // Renamed variable
+                            onDismissRequest = { expandedUnitDropdown = false } // Renamed variable
+                        ) {
+                            unitMeasurements.forEach { selectionOption ->
+                                DropdownMenuItem(
+                                    text = { Text(selectionOption, fontFamily = nunito) }, // Apply font
+                                    onClick = {
+                                        selectedUnitMeasurement = selectionOption
+                                        expandedUnitDropdown = false // Renamed variable
+                                    }
+                                )
+                            }
+                        }
+                    }
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceAround,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Button(
+                            onClick = {
+                                // Reset all form fields before closing
+                                ingredientNameInput = ""
+                                unitAmountInput = ""
+                                selectedUnitMeasurement = unitMeasurements[0]
+                                selectedCategory = categories[0] // Reset category
+                                scope.launch { sheetState.hide() }.invokeOnCompletion {
+                                    if (!sheetState.isVisible) {
+                                        showAddIngredientForm = false
+                                    }
+                                }
+                            }, // Close button
+                            colors = ButtonDefaults.buttonColors(containerColor = Color.Gray)
+                        ) {
+                            Text("Cancel", fontFamily = nunito) // Apply font
+                        }
+
+                        Button(
+                            onClick = {
+                                // Validate input
+                                val name = ingredientNameInput.trim()
+                                val amount = unitAmountInput.toFloatOrNull()
+                                val measurement = selectedUnitMeasurement
+                                val category = selectedCategory // Get selected category
+
+                                if (name.isNotEmpty() && amount != null && amount > 0) {
+                                    val newIngredient = Ingredient(
+                                        imageRes = R.drawable.ingredient_tomato, // Default image for manual entries
+                                        name = name,
+                                        category = category, // Use the selected category here
+                                        qty = amount,
+                                        unitMeasurement = measurement
+                                    )
+
+                                    // Find the manual entry recipe or create it
+                                    val currentManualEntryRecipe = recipes.keys.find { it.id == MANUAL_ENTRY_RECIPE_ID }
+                                    if (currentManualEntryRecipe != null) {
+                                        val updatedIngredients = currentManualEntryRecipe.ingredients.toMutableList().apply {
+                                            add(newIngredient)
+                                        }
+                                        val updatedManualEntryRecipe = currentManualEntryRecipe.copy(ingredients = updatedIngredients)
+                                        // Update the recipes map with the new instance of the manual entry recipe
+                                        recipes = recipes.toMutableMap().also {
+                                            it[updatedManualEntryRecipe] = recipes[currentManualEntryRecipe] ?: 1
+                                        }.toMap()
+                                        Log.d("GroceryScreen", "Added personal ingredient: $name. Personal Ingredients recipe updated.")
+                                    } else {
+                                        // Fallback: This case should ideally not be hit if getDummyRecipes initializes it.
+                                        val newManualEntryRecipe = Recipe(
+                                            id = MANUAL_ENTRY_RECIPE_ID,
+                                            title = "Personal Ingredients", // Use the correct title
+                                            description = "Ingredients added manually",
+                                            image = R.drawable.rawon,
+                                            ingredients = listOf(newIngredient),
+                                            steps = emptyList(), servings = 1, duration = "", upvoteCount = 0, recipeMaker = "You", nutritionFacts = emptyList(), comments = emptyList()
+                                        )
+                                        recipes = recipes.toMutableMap().also { it[newManualEntryRecipe] = 1 }.toMap()
+                                        Log.d("GroceryScreen", "Added personal ingredient: $name. New Personal Ingredients recipe created.")
+                                    }
+
+                                    // Reset form fields and close sheet
+                                    ingredientNameInput = ""
+                                    unitAmountInput = ""
+                                    selectedUnitMeasurement = unitMeasurements[0]
+                                    selectedCategory = categories[0] // Reset category
+                                    scope.launch { sheetState.hide() }.invokeOnCompletion {
+                                        if (!sheetState.isVisible) {
+                                            showAddIngredientForm = false
+                                        }
+                                    }
+                                } else {
+                                    // Show a toast or message for invalid input
+                                    Log.w("GroceryScreen", "Invalid input for adding ingredient: Name:'$name', Amount:'$amount'.")
+                                }
+                            },
+                            colors = ButtonDefaults.buttonColors(containerColor = colorResource(R.color.primary))
+                        ) {
+                            Text("Add Ingredient", fontFamily = nunito) // Apply font
                         }
                     }
                 }
@@ -663,7 +1005,7 @@ fun IngredientCard(
                 shape = RoundedCornerShape(10.dp)
             )
             .clickable {
-                // Only toggle expansion if ingredient is used in more than 1 recipe
+                // Only toggle expansion if ingredient is used by > 1 recipes
                 if (ingredient.recipeNames.size > 1) {
                     expanded = !expanded
                 }
