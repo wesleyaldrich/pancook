@@ -2,6 +2,7 @@ package com.wesleyaldrich.pancook.ui.components
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
@@ -23,22 +24,26 @@ import com.wesleyaldrich.pancook.ui.theme.PancookTheme
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.ThumbUp // Changed to ThumbUp
+import androidx.compose.material.icons.filled.ThumbUp
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import com.wesleyaldrich.pancook.ui.theme.nunito
 import com.wesleyaldrich.pancook.ui.theme.poppins
+import androidx.compose.ui.graphics.Color
 
 /**
- * A reusable card component for displaying content with an image, title, and a toggle switch.
+ * A reusable card component for displaying content with an image, title, and actions.
  *
  * @param modifier Modifier to be applied to the card.
  * @param imagePainter The painter for the image to display.
  * @param title The main title text for the card.
  * @param description A short description text for the card.
  * @param duration The duration text for the recipe (e.g., "30 min").
- * @param upvoteCount The number of upvotes for the item. // Changed to upvoteCount
+ * @param upvoteCount The number of upvotes for the item.
+ * @param isBookmarked Boolean to indicate if the recipe is bookmarked.
+ * @param onBookmarkClick Lambda to handle bookmark icon clicks.
+ * @param onDeleteClick Lambda to handle delete icon clicks.
  */
 @Composable
 fun ReusableCard(
@@ -47,7 +52,10 @@ fun ReusableCard(
     title: String,
     description: String,
     duration: String,
-    upvoteCount: Int, // Changed to upvoteCount
+    upvoteCount: Int,
+    isBookmarked: Boolean = false,
+    onBookmarkClick: () -> Unit = {},
+    onDeleteClick: () -> Unit = {}
 ) {
     Card(
         modifier = modifier
@@ -96,26 +104,38 @@ fun ReusableCard(
                             .padding(horizontal = 6.dp, vertical = 2.dp)
                     )
                     Row {
+                        // Bookmark button with layered icons for border effect
                         Box(
                             modifier = Modifier
                                 .size(30.dp)
                                 .clip(RoundedCornerShape(20.dp))
-                                .background(colorResource(R.color.primary).copy(alpha = 0.75f)),
+                                .background(colorResource(R.color.primary).copy(alpha = 0.75f))
+                                .clickable { onBookmarkClick() },
                             contentAlignment = Alignment.Center
                         ) {
+                            // Border Icon (always white, slightly larger)
                             Icon(
-                                imageVector = Icons.Filled.Bookmark, // Changed to ThumbUp
-                                contentDescription = "Upvote", // Changed contentDescription
-                                tint = colorResource(R.color.accent_yellow),
-                                modifier = Modifier.size(16.dp)
+                                imageVector = Icons.Filled.Bookmark,
+                                contentDescription = "Bookmark Border",
+                                tint = Color.White, // Fixed white for the border
+                                modifier = Modifier.size(20.dp) // Slightly larger than the fill icon
+                            )
+                            // Fill Icon (dynamic color, slightly smaller)
+                            Icon(
+                                imageVector = Icons.Filled.Bookmark,
+                                contentDescription = "Bookmark Fill",
+                                tint = if (isBookmarked) colorResource(R.color.accent_yellow) else colorResource(R.color.primary).copy(alpha = 0.75f), // Red when bookmarked, transparent when not
+                                modifier = Modifier.size(16.dp) // Smaller than the border icon
                             )
                         }
                         Spacer(modifier = Modifier.width(8.dp))
+                        // Delete button
                         Box(
                             modifier = Modifier
                                 .size(30.dp)
                                 .clip(RoundedCornerShape(20.dp))
-                                .background(colorResource(R.color.primary).copy(alpha = 0.75f)),
+                                .background(colorResource(R.color.primary).copy(alpha = 0.75f))
+                                .clickable { onDeleteClick() },
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
@@ -140,14 +160,14 @@ fun ReusableCard(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
-                        imageVector = Icons.Filled.ThumbUp, // Changed to ThumbUp
-                        contentDescription = "Upvotes", // Changed contentDescription
+                        imageVector = Icons.Filled.ThumbUp,
+                        contentDescription = "Upvotes",
                         tint = colorResource(R.color.accent_yellow),
                         modifier = Modifier.size(14.dp)
                     )
                     Spacer(modifier = Modifier.width(3.dp))
                     Text(
-                        text = if (upvoteCount >= 1000) { // Changed to upvoteCount
+                        text = if (upvoteCount >= 1000) {
                             "${upvoteCount / 1000}k"
                         } else {
                             "$upvoteCount"
@@ -201,7 +221,10 @@ fun ReusableCardPreview() {
                 title = "Delicious Salad",
                 description = "by Nunuk",
                 duration = "15 min",
-                upvoteCount = 1234 // Changed to upvoteCount
+                upvoteCount = 1234,
+                isBookmarked = true,
+                onBookmarkClick = {},
+                onDeleteClick = {}
             )
             Spacer(modifier = Modifier.height(16.dp))
             ReusableCard(
@@ -209,7 +232,10 @@ fun ReusableCardPreview() {
                 title = "Another Delicious Dish",
                 description = "by Chef John",
                 duration = "45 min",
-                upvoteCount = 987 // Changed to upvoteCount
+                upvoteCount = 987,
+                isBookmarked = false,
+                onBookmarkClick = {},
+                onDeleteClick = {}
             )
             Spacer(modifier = Modifier.height(16.dp))
             ReusableCard(
@@ -217,7 +243,21 @@ fun ReusableCardPreview() {
                 title = "Quick Snack",
                 description = "by Mary",
                 duration = "5 min",
-                upvoteCount = 10000 // Changed to upvoteCount
+                upvoteCount = 10000,
+                isBookmarked = true,
+                onBookmarkClick = {},
+                onDeleteClick = {}
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            ReusableCard(
+                imagePainter = painterResource(id = R.drawable.salad),
+                title = "Long Cook Meal",
+                description = "by Chef Gordon",
+                duration = "2 hours",
+                upvoteCount = 5000,
+                isBookmarked = true,
+                onBookmarkClick = {},
+                onDeleteClick = {}
             )
         }
     }

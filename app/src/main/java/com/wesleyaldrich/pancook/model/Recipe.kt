@@ -4,12 +4,12 @@ data class Recipe(
     val id: Int,
     val title: String,
     val description: String,
-    val image: Int,
+    val image: Int, // Resource ID for the image
     val ingredients: List<Ingredient>,
     val steps: List<Instruction>,
     val servings: Int,
     val duration: String,
-    val upvoteCount: Int = 0,
+    var upvoteCount: Int, // Make upvoteCount mutable
     val recipeMaker: String,
     val nutritionFacts: List<NutritionFact>,
     val comments: List<Comment>

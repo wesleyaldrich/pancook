@@ -1,6 +1,5 @@
 package com.wesleyaldrich.pancook.ui.screens
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -21,8 +20,9 @@ import com.wesleyaldrich.pancook.model.Ingredient
 import com.wesleyaldrich.pancook.model.Recipe
 import com.wesleyaldrich.pancook.ui.navigation.Screen
 import com.wesleyaldrich.pancook.model.Instruction
-import com.wesleyaldrich.pancook.model.NutritionFact // Import NutritionFact
-import com.wesleyaldrich.pancook.model.Comment // Import Comment
+import com.wesleyaldrich.pancook.model.NutritionFact
+import com.wesleyaldrich.pancook.model.Comment
+import androidx.compose.runtime.remember
 
 // Global/Shared data source (for demonstration; use ViewModel/Repository in real app)
 // This list is initialized once when the application starts.
@@ -51,7 +51,7 @@ val allRecipes = mutableStateListOf<Recipe>().apply {
                     Instruction(2, "Halve the cherry tomatoes. Dice the cucumber and finely slice the red onion."),
                     Instruction(3, "Add the tomatoes, cucumber, and red onion to the salad bowl with the lettuce."),
                     Instruction(4, "Crumble the feta cheese over the vegetables."),
-                    Instruction(5, "Boil 2 large eggs for 8-10 minutes for a hard-boiled consistency. Let them cool, peel, and quarter them.", timerSeconds = 480),
+                    Instruction(5, "Boil 2 large eggs for 8-10 minutes for a hard-boiled consistency. Let them cool, peel, and quarter them.", timerSeconds = 480), // 8 minutes * 60 seconds
                     Instruction(6, "In a small bowl, whisk together the olive oil, lemon juice, salt, and black pepper to make the dressing."),
                     Instruction(7, "Pour the dressing over the salad. Toss gently to combine all ingredients evenly."),
                     Instruction(8, "Add the quartered boiled eggs to the salad."),
@@ -79,10 +79,10 @@ val allRecipes = mutableStateListOf<Recipe>().apply {
                 title = "Spicy Noodles",
                 description = "Quick and flavorful, with a kick.",
                 steps = listOf(
-                    Instruction(1, "Boil noodles according to package instructions. Drain and set aside."),
+                    Instruction(1, "Boil noodles according to package instructions. Drain and set aside.", timerSeconds = 180), // 3 minutes
                     Instruction(2, "In a wok or large pan, heat a tablespoon of oil over medium-high heat."),
-                    Instruction(3, "Add minced garlic and ginger, stir-fry until fragrant (about 30 seconds)."),
-                    Instruction(4, "Add sliced chili peppers (adjust to taste) and your choice of vegetables (e.g., bell peppers, carrots, snap peas). Stir-fry for 2-3 minutes until tender-crisp."),
+                    Instruction(3, "Add minced garlic and ginger, stir-fry until fragrant (about 30 seconds).", timerSeconds = 30),
+                    Instruction(4, "Add sliced chili peppers (adjust to taste) and your choice of vegetables (e.g., bell peppers, carrots, snap peas). Stir-fry for 2-3 minutes until tender-crisp.", timerSeconds = 180), // 3 minutes
                     Instruction(5, "Push vegetables to one side, add a protein like chicken or tofu if desired, cook until browned."),
                     Instruction(6, "Pour in soy sauce, oyster sauce (optional), and a dash of sesame oil. Stir to combine with vegetables and protein."),
                     Instruction(7, "Add the cooked noodles to the wok. Toss everything together until the noodles are well coated with the sauce."),
@@ -120,10 +120,11 @@ val allRecipes = mutableStateListOf<Recipe>().apply {
                 steps = listOf(
                     Instruction(1, "Slice chicken breast into thin strips. Marinate with soy sauce and cornstarch for 10 minutes."),
                     Instruction(2, "Chop desired vegetables (broccoli, bell peppers, snap peas, carrots) into bite-sized pieces."),
-                    Instruction(3, "Heat oil in a large skillet or wok over high heat. Add chicken and stir-fry until browned and cooked through. Remove chicken and set aside."),
-                    Instruction(4, "Add chopped vegetables to the same skillet. Stir-fry for 3-5 minutes until tender-crisp."),
-                    Instruction(5, "Return chicken to the skillet. Pour in stir-fry sauce (mix soy sauce, ginger, garlic, honey, and sesame oil)."),
-                    Instruction(6, "Toss everything together until coated and heated through. Serve immediately with rice.")
+                    Instruction(3, "Heat oil in a large skillet or wok over high heat. Add chicken and stir-fry until browned and cooked through. Remove chicken and set aside.", timerSeconds = 300), // 5 minutes
+                    Instruction(4, "Add chopped vegetables to the same skillet. Stir-fry for 3-5 minutes until tender-crisp.", timerSeconds = 300), // 5 minutes
+                    Instruction(5, "Push vegetables to one side, add a protein like chicken or tofu if desired, cook until browned."),
+                    Instruction(6, "Pour in stir-fry sauce (mix soy sauce, ginger, garlic, honey, and sesame oil)."),
+                    Instruction(7, "Toss everything together until coated and heated through. Serve immediately with rice.")
                 ),
                 ingredients = listOf(
                     Ingredient(R.drawable.ingredient_tomato, "Chicken Breast", "Meat", 300.0f, "g"),
@@ -156,11 +157,11 @@ val allRecipes = mutableStateListOf<Recipe>().apply {
                 title = "Vegetable Curry",
                 description = "Aromatic and hearty vegetarian dish.",
                 steps = listOf(
-                    Instruction(1, "Heat oil in a large pot or Dutch oven over medium heat. Add chopped onion and cook until softened."),
-                    Instruction(2, "Stir in garlic, ginger, and curry powder. Cook for 1 minute until fragrant."),
-                    Instruction(3, "Add chopped vegetables (potatoes, carrots, bell peppers) and cook for 5 minutes."),
+                    Instruction(1, "Heat oil in a large pot or Dutch oven over medium heat. Add chopped onion and cook until softened.", timerSeconds = 300), // 5 minutes
+                    Instruction(2, "Stir in garlic, ginger, and curry powder. Cook for 1 minute until fragrant.", timerSeconds = 60),
+                    Instruction(3, "Add chopped vegetables (potatoes, carrots, bell peppers) and cook for 5 minutes.", timerSeconds = 300), // 5 minutes
                     Instruction(4, "Pour in vegetable broth and coconut milk. Bring to a simmer."),
-                    Instruction(5, "Cover and cook for 15-20 minutes, or until vegetables are tender."),
+                    Instruction(5, "Cover and cook for 15-20 minutes, or until vegetables are tender.", timerSeconds = 1200), // 20 minutes
                     Instruction(6, "Stir in spinach and cook until wilted. Season with salt and pepper to taste."),
                     Instruction(7, "Serve hot with rice or naan bread.")
                 ),
@@ -197,9 +198,9 @@ val allRecipes = mutableStateListOf<Recipe>().apply {
                 title = "Creamy Pasta",
                 description = "Rich and comforting, a family favorite.",
                 steps = listOf(
-                    Instruction(1, "Cook pasta according to package directions. Reserve 1 cup pasta water before draining."),
-                    Instruction(2, "In a large skillet, melt butter over medium heat. Add minced garlic and cook until fragrant (1 minute)."),
-                    Instruction(3, "Stir in heavy cream and Parmesan cheese. Cook, stirring, until cheese is melted and sauce thickens slightly."),
+                    Instruction(1, "Cook pasta according to package directions. Reserve 1 cup pasta water before draining.", timerSeconds = 600), // 10 minutes
+                    Instruction(2, "In a large skillet, melt butter over medium heat. Add minced garlic and cook until fragrant (1 minute).", timerSeconds = 60),
+                    Instruction(3, "Stir in heavy cream and Parmesan cheese. Cook, stirring, until cheese is melted and sauce thickens slightly.", timerSeconds = 300), // 5 minutes
                     Instruction(4, "Add the cooked pasta to the skillet. Toss to coat with the sauce."),
                     Instruction(5, "If sauce is too thick, add reserved pasta water, a little at a time, until desired consistency is reached."),
                     Instruction(6, "Season with salt and black pepper. Garnish with fresh parsley or more Parmesan.")
@@ -236,7 +237,7 @@ val allRecipes = mutableStateListOf<Recipe>().apply {
                 steps = listOf(
                     Instruction(1, "Pat fish fillets dry with paper towels. Season both sides with salt, pepper, and lemon zest."),
                     Instruction(2, "Preheat grill to medium-high heat. Lightly oil the grill grates."),
-                    Instruction(3, "Grill fish for 3-5 minutes per side, depending on thickness, until opaque and flakes easily with a fork."),
+                    Instruction(3, "Grill fish for 3-5 minutes per side, depending on thickness, until opaque and flakes easily with a fork.", timerSeconds = 300), // 5 minutes
                     Instruction(4, "Squeeze fresh lemon juice over the grilled fish before serving."),
                     Instruction(5, "Serve with a side of steamed vegetables or a fresh salad.")
                 ),
@@ -269,11 +270,11 @@ val allRecipes = mutableStateListOf<Recipe>().apply {
                 description = "Hearty and comforting, ideal for cold days.",
                 steps = listOf(
                     Instruction(1, "Pat beef chunks dry. Season with salt and pepper."),
-                    Instruction(2, "Heat oil in a large Dutch oven over medium-high heat. Brown beef in batches, then set aside."),
-                    Instruction(3, "Add chopped onion, carrots, and celery to the pot. Cook until softened (5-7 minutes)."),
-                    Instruction(4, "Stir in minced garlic and cook for 1 minute until fragrant."),
+                    Instruction(2, "Heat oil in a large Dutch oven over medium-high heat. Brown beef in batches, then set aside.", timerSeconds = 600), // 10 minutes
+                    Instruction(3, "Add chopped onion, carrots, and celery to the pot. Cook until softened (5-7 minutes).", timerSeconds = 420), // 7 minutes
+                    Instruction(4, "Stir in minced garlic and cook for 1 minute until fragrant.", timerSeconds = 60),
                     Instruction(5, "Return beef to the pot. Add beef broth, diced tomatoes, herbs (thyme, bay leaf), and potatoes."),
-                    Instruction(6, "Bring to a simmer, then reduce heat to low, cover, and cook for 1.5-2 hours, or until beef is very tender."),
+                    Instruction(6, "Bring to a simmer, then reduce heat to low, cover, and cook for 1.5-2 hours, or until beef is very tender.", timerSeconds = 7200), // 2 hours
                     Instruction(7, "Thicken with a cornstarch slurry if desired. Serve hot with crusty bread.")
                 ),
                 ingredients = listOf(
@@ -309,10 +310,10 @@ val allRecipes = mutableStateListOf<Recipe>().apply {
                 title = "Tomato Soup",
                 description = "Classic comfort, warm and delicious.",
                 steps = listOf(
-                    Instruction(1, "Melt butter in a pot over medium heat. Add chopped onion and cook until softened (5 minutes)."),
-                    Instruction(2, "Stir in minced garlic and cook for 1 minute until fragrant."),
+                    Instruction(1, "Melt butter in a pot over medium heat. Add chopped onion and cook until softened (5 minutes).", timerSeconds = 300), // 5 minutes
+                    Instruction(2, "Stir in minced garlic and cook for 1 minute until fragrant.", timerSeconds = 60),
                     Instruction(3, "Add crushed tomatoes, vegetable broth, and basil. Bring to a simmer."),
-                    Instruction(4, "Reduce heat, cover, and cook for 15-20 minutes to allow flavors to meld."),
+                    Instruction(4, "Reduce heat, cover, and cook for 15-20 minutes to allow flavors to meld.", timerSeconds = 1200), // 20 minutes
                     Instruction(5, "Carefully blend the soup with an immersion blender until smooth, or transfer to a regular blender."),
                     Instruction(6, "Stir in a splash of cream or milk (optional) for richness. Season with salt and pepper to taste."),
                     Instruction(7, "Serve hot with croutons or grilled cheese.")
@@ -355,10 +356,10 @@ val allRecipes = mutableStateListOf<Recipe>().apply {
                     Ingredient(R.drawable.ingredient_tomato, "Garlic", "Spices", 2.0f, "cloves")
                 ),
                 steps = listOf(
-                    Instruction(1, "Cook spaghetti according to package directions. Drain and set aside."),
-                    Instruction(2, "In a large skillet or pot, brown ground beef over medium heat. Drain excess fat."),
-                    Instruction(3, "Add chopped onion and minced garlic to the beef. Cook until onion is softened and transparent."),
-                    Instruction(4, "Stir in tomato sauce and bring to a simmer. Reduce heat and let it simmer for at least 15 minutes to meld flavors (longer for richer taste)."),
+                    Instruction(1, "Cook spaghetti according to package directions. Drain and set aside.", timerSeconds = 600), // 10 minutes
+                    Instruction(2, "In a large skillet or pot, brown ground beef over medium heat. Drain excess fat.", timerSeconds = 420), // 7 minutes
+                    Instruction(3, "Add chopped onion and minced garlic to the beef. Cook until onion is softened and transparent.", timerSeconds = 300), // 5 minutes
+                    Instruction(4, "Stir in tomato sauce and bring to a simmer. Reduce heat and let it simmer for at least 15 minutes to meld flavors (longer for richer taste).", timerSeconds = 900), // 15 minutes
                     Instruction(5, "Season the sauce with salt, pepper, and any other desired herbs (e.g., oregano, basil)."),
                     Instruction(6, "Serve the bolognese sauce over the cooked spaghetti. Garnish with Parmesan cheese if desired.")
                 ),
@@ -427,8 +428,8 @@ val allRecipes = mutableStateListOf<Recipe>().apply {
                 steps = listOf(
                     Instruction(1, "Pat chicken breasts dry with paper towels. Season generously with salt, pepper, and rosemary on both sides."),
                     Instruction(2, "Heat olive oil in a grill pan or outdoor grill over medium-high heat."),
-                    Instruction(3, "Place chicken breasts on the hot grill. Cook for about 6-8 minutes per side, or until internal temperature reaches 165°F (74°C) and juices run clear."),
-                    Instruction(4, "Remove from grill and let rest for 5 minutes before slicing or serving. This helps keep the chicken juicy.")
+                    Instruction(3, "Place chicken breasts on the hot grill. Cook for about 6-8 minutes per side, or until internal temperature reaches 165°F (74°C) and juices run clear.", timerSeconds = 480), // 8 minutes
+                    Instruction(4, "Remove from grill and let rest for 5 minutes before slicing or serving. This helps keep the chicken juicy.", timerSeconds = 300) // 5 minutes
                 ),
                 servings = 2,
                 duration = "25 min",
@@ -462,8 +463,8 @@ val allRecipes = mutableStateListOf<Recipe>().apply {
                     Instruction(2, "Squeeze out as much excess water as possible from the grated potatoes using a clean kitchen towel or paper towels. This is crucial for crispiness!"),
                     Instruction(3, "Season the dried grated potatoes with salt and pepper."),
                     Instruction(4, "Heat butter in a large non-stick skillet over medium heat until melted and slightly browned."),
-                    Instruction(5, "Press the grated potatoes into an even layer in the skillet. Cook for 5-7 minutes per side, pressing occasionally with a spatula, until golden brown and crispy."),
-                    Instruction(6, "Flip carefully and cook the other side until also golden and crispy."),
+                    Instruction(5, "Press the grated potatoes into an even layer in the skillet. Cook for 5-7 minutes per side, pressing occasionally with a spatula, until golden brown and crispy.", timerSeconds = 420), // 7 minutes
+                    Instruction(6, "Flip carefully and cook the other side until also golden and crispy.", timerSeconds = 420), // 7 minutes
                     Instruction(7, "Serve hot immediately, optionally with ketchup or a fried egg.")
                 ),
                 servings = 2,
@@ -501,7 +502,7 @@ val allRecipes = mutableStateListOf<Recipe>().apply {
                     Instruction(3, "Whisk in cocoa powder. Add eggs one at a time, mixing well after each addition. Stir in vanilla extract."),
                     Instruction(4, "Gradually add flour and salt, mixing until just combined. Do not overmix."),
                     Instruction(5, "Pour batter into the prepared baking pan and spread evenly."),
-                    Instruction(6, "Bake for 20-25 minutes, or until a toothpick inserted into the center comes out with moist crumbs (not wet batter)."),
+                    Instruction(6, "Bake for 20-25 minutes, or until a toothpick inserted into the center comes out with moist crumbs (not wet batter).", timerSeconds = 1500), // 25 minutes
                     Instruction(7, "Let cool completely in the pan on a wire rack before cutting into squares.")
                 ),
                 servings = 2,
@@ -537,7 +538,7 @@ val allRecipes = mutableStateListOf<Recipe>().apply {
                     Instruction(1, "In a shallow dish, whisk together eggs, milk, sugar, vanilla extract, and cinnamon until well combined."),
                     Instruction(2, "Heat butter in a large non-stick skillet or griddle over medium heat."),
                     Instruction(3, "Dip each slice of bread into the egg mixture, ensuring both sides are fully coated but not soggy."),
-                    Instruction(4, "Place bread slices on the hot skillet. Cook for 2-4 minutes per side, or until golden brown and cooked through."),
+                    Instruction(4, "Place bread slices on the hot skillet. Cook for 2-4 minutes per side, or until golden brown and cooked through.", timerSeconds = 240), // 4 minutes
                     Instruction(5, "Serve hot with your favorite toppings like syrup, fresh fruit, or powdered sugar.")
                 ),
                 servings = 1,
@@ -559,6 +560,17 @@ val allRecipes = mutableStateListOf<Recipe>().apply {
     )
 }
 
+// Global mutable list to store bookmarked recipes
+val bookmarkedRecipes = mutableStateListOf<Recipe>().apply {
+    // Initialize with some bookmarked recipes for demonstration
+    // These IDs correspond to recipes in 'allRecipes'
+    add(allRecipes.find { it.id == 4 }!!) // Delicious Salad
+    add(allRecipes.find { it.id == 6 }!!) // Chicken Stir-fry
+    add(allRecipes.find { it.id == 102 }!!) // Fudgy Brownies
+    add(allRecipes.find { it.id == 5 }!!) // Spicy Noodles
+    add(allRecipes.find { it.id == 9 }!!) // Grilled Fish
+}
+
 @Composable
 fun MyRecipeScreen(navController: NavController) {
     Column(modifier = Modifier.fillMaxSize()) {
@@ -570,14 +582,29 @@ fun MyRecipeScreen(navController: NavController) {
             modifier = Modifier.fillMaxSize()
         ) {
             items(allRecipes) { recipe ->
+                // Directly check the global bookmarkedRecipes list for the current bookmark status
+                val isBookmarked = bookmarkedRecipes.contains(recipe)
                 ReusableCard(
                     imagePainter = painterResource(id = recipe.image),
                     title = recipe.title,
                     description = recipe.recipeMaker,
                     duration = recipe.duration,
                     upvoteCount = recipe.upvoteCount,
+                    isBookmarked = isBookmarked, // Pass the live bookmark status
+                    onBookmarkClick = {
+                        // Toggle bookmark status directly on the global list
+                        if (bookmarkedRecipes.contains(recipe)) {
+                            bookmarkedRecipes.remove(recipe)
+                        } else {
+                            bookmarkedRecipes.add(recipe)
+                        }
+                    },
+                    onDeleteClick = {
+                        allRecipes.remove(recipe)
+                        bookmarkedRecipes.remove(recipe) // Ensure it's removed from bookmarks too
+                    },
                     modifier = Modifier.clickable {
-                        navController.navigate(Screen.DetailRecipe.createRoute(recipe.id)) // Pass only ID
+                        navController.navigate(Screen.DetailRecipe.createRoute(recipe.id))
                     }
                 )
             }

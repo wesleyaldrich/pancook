@@ -37,6 +37,7 @@ import com.wesleyaldrich.pancook.ui.theme.PancookTheme
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.foundation.lazy.LazyColumn
 import com.wesleyaldrich.pancook.model.Comment // Import Comment
+import com.wesleyaldrich.pancook.ui.screens.allRecipes // Updated import
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

@@ -41,6 +41,7 @@ import kotlin.math.max
 import com.wesleyaldrich.pancook.ui.navigation.Screen // Import the Screen object
 import androidx.compose.ui.graphics.Brush // Import Brush for gradient background
 import com.wesleyaldrich.pancook.model.Instruction // Import Instruction
+import com.wesleyaldrich.pancook.ui.screens.allRecipes // Updated import
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -72,7 +73,7 @@ fun InstructionScreen(recipeId: Int, navController: NavController) {
     // Reset timer state when currentStepIndex changes
     LaunchedEffect(currentStepIndex, instructions) { // Depend on instructions too if list changes dynamically
         val currentInstruction = instructions.getOrNull(currentStepIndex)
-        if (currentInstruction != null && currentInstruction.timerSeconds > 0) {
+        if (currentInstruction != null && currentInstruction.timerSeconds != null && currentInstruction.timerSeconds > 0) {
             timerValueSeconds = currentInstruction.timerSeconds
             isTimerRunning = false
             isTimerPaused = false
@@ -173,7 +174,7 @@ fun InstructionScreen(recipeId: Int, navController: NavController) {
 
                     // Conditional Timer section
                     val currentInstruction = instructions.getOrNull(currentStepIndex)
-                    if (currentInstruction != null && currentInstruction.timerSeconds > 0) { // Check if the current instruction has a timer
+                    if (currentInstruction != null && currentInstruction.timerSeconds != null && currentInstruction.timerSeconds > 0) { // Check if the current instruction has a timer
                         Card(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -297,7 +298,7 @@ fun InstructionScreen(recipeId: Int, navController: NavController) {
                                                 isTimerRunning = true
                                                 isTimerPaused = false
                                             } else {
-                                                timerValueSeconds = currentInstruction.timerSeconds // Reset to initial value or 0
+                                                timerValueSeconds = currentInstruction.timerSeconds ?: 0 // Reset to initial value or 0
                                                 isTimerPaused = false // Make sure it's not paused after reset
                                             }
                                         } else {
@@ -328,7 +329,7 @@ fun InstructionScreen(recipeId: Int, navController: NavController) {
                                     Spacer(modifier = Modifier.height(8.dp))
                                     Button(
                                         onClick = {
-                                            timerValueSeconds = currentInstruction.timerSeconds // Reset to initial value or 0
+                                            timerValueSeconds = currentInstruction.timerSeconds ?: 0 // Reset to initial value or 0
                                             isTimerRunning = false
                                             isTimerPaused = false
                                         },

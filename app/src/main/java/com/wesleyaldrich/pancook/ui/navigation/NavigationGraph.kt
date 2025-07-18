@@ -16,7 +16,7 @@ import com.wesleyaldrich.pancook.ui.screens.PlannerScreen
 import com.wesleyaldrich.pancook.ui.screens.GroceryScreen
 import com.wesleyaldrich.pancook.ui.screens.ProfileScreen
 import com.wesleyaldrich.pancook.ui.screens.DetailRecipeScreen
-import com.wesleyaldrich.pancook.ui.screens.SavedRecipeScreen
+import com.wesleyaldrich.pancook.ui.screens.SavedRecipeScreen // Import SavedRecipeScreen
 import com.wesleyaldrich.pancook.ui.screens.InstructionScreen
 import com.wesleyaldrich.pancook.ui.screens.RecipeCompletionScreen
 
@@ -49,12 +49,12 @@ fun NavigationGraph(navController: NavHostController, modifier: Modifier = Modif
         composable(Screen.Add.route) { AddRecipeScreen() }
         composable(Screen.Planner.route) { PlannerScreen() }
         composable(Screen.GroceryList.route) { GroceryScreen(
-            onBackClick = {},
-            onRecipeClick = {},
-            onRemoveClick = {},
+            onBackClick = { navController.popBackStack() }, // Added popBackStack
+            onRecipeClick = { recipe -> navController.navigate(Screen.DetailRecipe.createRoute(recipe.id)) }, // Added navigation
+            onRemoveClick = { recipe -> /* Handle remove from grocery list */ }, // Added placeholder
         ) }
         composable(Screen.Profile.route) { ProfileScreen() }
-        composable(Screen.SavedRecipe.route) { SavedRecipeScreen() }
+        composable(Screen.SavedRecipe.route) { SavedRecipeScreen(navController = navController) } // Pass navController
         // Instruction Screen now only takes recipeId
         composable(
             route = Screen.Instruction.route,
