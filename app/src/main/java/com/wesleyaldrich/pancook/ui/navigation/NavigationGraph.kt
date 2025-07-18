@@ -9,6 +9,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import androidx.navigation.NavType // Import NavType
+import androidx.navigation.compose.rememberNavController
 import com.wesleyaldrich.pancook.ui.screens.AddRecipeScreen
 import com.wesleyaldrich.pancook.ui.screens.HomeScreen
 import com.wesleyaldrich.pancook.ui.screens.MyRecipeScreen
@@ -48,11 +49,13 @@ fun NavigationGraph(navController: NavHostController, modifier: Modifier = Modif
         }
         composable(Screen.Add.route) { AddRecipeScreen() }
         composable(Screen.Planner.route) { PlannerScreen() }
-        composable(Screen.GroceryList.route) { GroceryScreen(
-            onBackClick = {},
-            onRecipeClick = {},
-            onRemoveClick = {},
-        ) }
+        composable(Screen.GroceryList.route) {
+            GroceryScreen(
+                onBackClick = { navController.popBackStack() },
+                navController = navController,
+                onRemoveClick = {},
+            )
+        }
         composable(Screen.Profile.route) { ProfileScreen() }
         composable(Screen.SavedRecipe.route) { SavedRecipeScreen() }
         // Instruction Screen now only takes recipeId
