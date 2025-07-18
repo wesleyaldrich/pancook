@@ -24,7 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext // Import LocalContext
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -38,10 +38,11 @@ import com.wesleyaldrich.pancook.model.Recipe
 import com.wesleyaldrich.pancook.ui.theme.PancookTheme
 import kotlinx.coroutines.delay
 import kotlin.math.max
-import com.wesleyaldrich.pancook.ui.navigation.Screen // Import the Screen object
-import androidx.compose.ui.graphics.Brush // Import Brush for gradient background
-import com.wesleyaldrich.pancook.model.Instruction // Import Instruction
-import com.wesleyaldrich.pancook.ui.screens.allRecipes // Updated import
+import com.wesleyaldrich.pancook.ui.navigation.Screen
+import androidx.compose.ui.graphics.Brush
+import com.wesleyaldrich.pancook.model.Instruction
+import com.wesleyaldrich.pancook.ui.screens.allRecipes
+import kotlin.random.Random
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -61,26 +62,45 @@ fun InstructionScreen(recipeId: Int, navController: NavController) {
 
     // Use properties from currentRecipe
     val instructions = currentRecipe.steps
-    val currentRecipeMainImage = currentRecipe.image // Using the main image from the actual recipe
 
+    // Declare currentStepIndex and timer variables before their first use [cite: user]
     var currentStepIndex by rememberSaveable { mutableStateOf(0) }
     var timerValueSeconds by rememberSaveable { mutableStateOf(0) }
     var isTimerRunning by rememberSaveable { mutableStateOf(false) }
     var isTimerPaused by rememberSaveable { mutableStateOf(false) }
 
+    // State for the current instruction image, chosen randomly
+    // Uses remember(currentStepIndex, currentRecipe.images) to re-select image only when step or recipe images change.
+    // This prevents unnecessary re-randomization and helps manage memory.
+    var currentInstructionImage by remember(currentStepIndex, currentRecipe.images) {
+        mutableStateOf(
+            if (currentRecipe.images.isNotEmpty()) {
+                currentRecipe.images[Random.nextInt(currentRecipe.images.size)]
+            } else {
+                R.drawable.salad // Fallback placeholder if no images are available
+            }
+        )
+    }
+
     val context = LocalContext.current // Get the current context
 
-    // Reset timer state when currentStepIndex changes
-    LaunchedEffect(currentStepIndex, instructions) { // Depend on instructions too if list changes dynamically
-        val currentInstruction = instructions.getOrNull(currentStepIndex)
-        if (currentInstruction != null && currentInstruction.timerSeconds != null && currentInstruction.timerSeconds > 0) {
-            timerValueSeconds = currentInstruction.timerSeconds
+    // Reset timer state and pick a new random image when currentStepIndex changes
+    LaunchedEffect(currentStepIndex, instructions) {
+        val instruction = instructions.getOrNull(currentStepIndex)
+        if (instruction != null && instruction.timerSeconds != null && instruction.timerSeconds > 0) {
+            timerValueSeconds = instruction.timerSeconds
             isTimerRunning = false
             isTimerPaused = false
         } else {
             timerValueSeconds = 0
             isTimerRunning = false
             isTimerPaused = false
+        }
+        // Update currentInstructionImage with a new random image from the recipe's images list
+        if (currentRecipe.images.isNotEmpty()) {
+            currentInstructionImage = currentRecipe.images[Random.nextInt(currentRecipe.images.size)]
+        } else {
+            currentInstructionImage = R.drawable.salad // Fallback
         }
     }
 
@@ -144,7 +164,7 @@ fun InstructionScreen(recipeId: Int, navController: NavController) {
                         contentAlignment = Alignment.Center
                     ) {
                         Image(
-                            painter = painterResource(id = currentRecipeMainImage), // Use the actual recipe's main image
+                            painter = painterResource(id = currentInstructionImage), // Use the randomly selected instruction image
                             contentDescription = "Instruction Image",
                             modifier = Modifier.fillMaxSize(),
                             contentScale = ContentScale.Crop

@@ -44,6 +44,7 @@ import androidx.compose.ui.graphics.Color
  * @param isBookmarked Boolean to indicate if the recipe is bookmarked.
  * @param onBookmarkClick Lambda to handle bookmark icon clicks.
  * @param onDeleteClick Lambda to handle delete icon clicks.
+ * @param hideDeleteButton Boolean to control the visibility of the delete button.
  */
 @Composable
 fun ReusableCard(
@@ -55,7 +56,8 @@ fun ReusableCard(
     upvoteCount: Int,
     isBookmarked: Boolean = false,
     onBookmarkClick: () -> Unit = {},
-    onDeleteClick: () -> Unit = {}
+    onDeleteClick: () -> Unit = {},
+    hideDeleteButton: Boolean = false // New parameter
 ) {
     Card(
         modifier = modifier
@@ -129,21 +131,23 @@ fun ReusableCard(
                             )
                         }
                         Spacer(modifier = Modifier.width(8.dp))
-                        // Delete button
-                        Box(
-                            modifier = Modifier
-                                .size(30.dp)
-                                .clip(RoundedCornerShape(20.dp))
-                                .background(colorResource(R.color.primary).copy(alpha = 0.75f))
-                                .clickable { onDeleteClick() },
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Delete,
-                                contentDescription = "Delete",
-                                tint = colorResource(R.color.accent_yellow),
-                                modifier = Modifier.size(16.dp)
-                            )
+                        // Delete button (conditionally visible)
+                        if (!hideDeleteButton) { // Apply the new parameter here
+                            Box(
+                                modifier = Modifier
+                                    .size(30.dp)
+                                    .clip(RoundedCornerShape(20.dp))
+                                    .background(colorResource(R.color.primary).copy(alpha = 0.75f))
+                                    .clickable { onDeleteClick() },
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Delete,
+                                    contentDescription = "Delete",
+                                    tint = colorResource(R.color.accent_yellow),
+                                    modifier = Modifier.size(16.dp)
+                                )
+                            }
                         }
                     }
                 }
@@ -235,7 +239,8 @@ fun ReusableCardPreview() {
                 upvoteCount = 987,
                 isBookmarked = false,
                 onBookmarkClick = {},
-                onDeleteClick = {}
+                onDeleteClick = {},
+                hideDeleteButton = true // Example of hidden delete button
             )
             Spacer(modifier = Modifier.height(16.dp))
             ReusableCard(

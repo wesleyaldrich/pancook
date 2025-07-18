@@ -8,7 +8,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import androidx.navigation.NavType // Import NavType
+import androidx.navigation.NavType
 import androidx.navigation.compose.rememberNavController
 import com.wesleyaldrich.pancook.ui.screens.AddRecipeScreen
 import com.wesleyaldrich.pancook.ui.screens.HomeScreen
@@ -17,9 +17,10 @@ import com.wesleyaldrich.pancook.ui.screens.PlannerScreen
 import com.wesleyaldrich.pancook.ui.screens.GroceryScreen
 import com.wesleyaldrich.pancook.ui.screens.ProfileScreen
 import com.wesleyaldrich.pancook.ui.screens.DetailRecipeScreen
-import com.wesleyaldrich.pancook.ui.screens.SavedRecipeScreen // Import SavedRecipeScreen
+import com.wesleyaldrich.pancook.ui.screens.SavedRecipeScreen
 import com.wesleyaldrich.pancook.ui.screens.InstructionScreen
 import com.wesleyaldrich.pancook.ui.screens.RecipeCompletionScreen
+import com.wesleyaldrich.pancook.ui.screens.CategoryScreen // Import the new CategoryScreen
 
 @Composable
 fun NavigationGraph(navController: NavHostController, modifier: Modifier = Modifier) {
@@ -33,11 +34,8 @@ fun NavigationGraph(navController: NavHostController, modifier: Modifier = Modif
         popExitTransition  = { ExitTransition.None   },
     ) {
         composable(Screen.Home.route) {
-            HomeScreen(onRecipeClick = { recipeId ->
-                // Ini adalah implementasi callback.
-                // Saat kartu diklik di HomeScreen, kode ini yang akan berjalan.
-                navController.navigate("detail_recipe/$recipeId")
-            })
+            // Corrected: Pass navController directly to HomeScreen
+            HomeScreen(navController = navController)
         }
         composable(Screen.MyRecipe.route) { MyRecipeScreen(navController = navController) }
         composable(
@@ -57,14 +55,13 @@ fun NavigationGraph(navController: NavHostController, modifier: Modifier = Modif
             )
         }
         composable(Screen.Profile.route) { ProfileScreen() }
-        composable(Screen.SavedRecipe.route) { SavedRecipeScreen(navController = navController) } // Pass navController
-        // Instruction Screen now only takes recipeId
+        composable(Screen.SavedRecipe.route) { SavedRecipeScreen(navController = navController) }
         composable(
             route = Screen.Instruction.route,
             arguments = listOf(navArgument("recipeId") { type = NavType.IntType })
         ) { backStackEntry ->
             val recipeId = backStackEntry.arguments?.getInt("recipeId") ?: 0
-            InstructionScreen(recipeId = recipeId, navController = navController) // Removed instructions list from parameter
+            InstructionScreen(recipeId = recipeId, navController = navController)
         }
         composable(
             route = Screen.RecipeCompletion.route,
@@ -72,6 +69,14 @@ fun NavigationGraph(navController: NavHostController, modifier: Modifier = Modif
         ) { backStackEntry ->
             val recipeId = backStackEntry.arguments?.getInt("recipeId") ?: 0
             RecipeCompletionScreen(recipeId = recipeId, navController = navController)
+        }
+        // New Category Screen composable
+        composable(
+            route = Screen.Category.route,
+            arguments = listOf(navArgument("categoryName") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val categoryName = backStackEntry.arguments?.getString("categoryName") ?: ""
+            CategoryScreen(categoryName = categoryName, navController = navController)
         }
     }
 }

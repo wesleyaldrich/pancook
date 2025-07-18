@@ -35,6 +35,7 @@ import com.wesleyaldrich.pancook.model.Recipe
 import com.wesleyaldrich.pancook.ui.navigation.Screen.Home.title
 import com.wesleyaldrich.pancook.ui.theme.nunito
 import com.wesleyaldrich.pancook.ui.theme.poppins
+import androidx.compose.ui.graphics.Color // Import Color for explicit tinting
 
 /**
  * A reusable card component for displaying content with an image, title, and a toggle switch.
@@ -45,6 +46,10 @@ import com.wesleyaldrich.pancook.ui.theme.poppins
  * @param description A short description text for the card.
  * @param duration The duration text for the recipe (e.g., "30 min").
  * @param likeCount The number of likes for the item.
+ * @param imageHeight The height of the image.
+ * @param onClick Lambda to handle card clicks.
+ * @param isBookmarked Boolean to indicate if the recipe is bookmarked.
+ * @param onBookmarkClick Lambda to handle bookmark icon clicks.
  */
 
 @Composable
@@ -56,7 +61,9 @@ fun RecipeReusableCard(
     duration: String,
     likeCount: Int,
     imageHeight: Dp = 180.dp,
-    onClick: () -> Unit = {}
+    onClick: () -> Unit = {},
+    isBookmarked: Boolean = false,
+    onBookmarkClick: () -> Unit = {}
 ) {
     Card(
         modifier = modifier
@@ -105,21 +112,31 @@ fun RecipeReusableCard(
                             .padding(horizontal = 6.dp, vertical = 2.dp)
                     )
                     Row {
+                        // Bookmark button with layered icons for border effect
                         Box(
                             modifier = Modifier
                                 .size(30.dp)
                                 .clip(RoundedCornerShape(20.dp))
-                                .background(colorResource(R.color.primary).copy(alpha = 0.75f)),
+                                .background(colorResource(R.color.primary).copy(alpha = 0.75f))
+                                .clickable { onBookmarkClick() },
                             contentAlignment = Alignment.Center
                         ) {
+                            // Border Icon (always white, slightly larger)
                             Icon(
-                                imageVector = Icons.Default.Bookmark,
-                                contentDescription = "Save",
-                                tint = colorResource(R.color.accent_yellow),
-                                modifier = Modifier.size(16.dp)
+                                imageVector = Icons.Filled.Bookmark,
+                                contentDescription = "Bookmark Border",
+                                tint = Color.White, // Fixed white for the border
+                                modifier = Modifier.size(20.dp) // Slightly larger than the fill icon
+                            )
+                            // Fill Icon (dynamic color, slightly smaller)
+                            Icon(
+                                imageVector = Icons.Filled.Bookmark,
+                                contentDescription = "Bookmark Fill",
+                                // Corrected tinting to match MyRecipeCard.kt [cite: user]
+                                tint = if (isBookmarked) colorResource(R.color.accent_yellow) else colorResource(R.color.primary).copy(alpha = 0.75f),
+                                modifier = Modifier.size(16.dp) // Smaller than the border icon
                             )
                         }
-
                     }
                 }
 
@@ -198,7 +215,8 @@ fun RecipeReusableCardPreview() {
                 title = "Delicious Salad",
                 description = "by Nunuk",
                 duration = "15 min",
-                likeCount = 1234 // This will now show as "1k Likes"
+                likeCount = 1234, // This will now show as "1k Likes"
+                isBookmarked = true // Preview with bookmarked state
             )
             Spacer(modifier = Modifier.height(16.dp))
             RecipeReusableCard(
@@ -206,7 +224,8 @@ fun RecipeReusableCardPreview() {
                 title = "Another Delicious Dish",
                 description = "by Chef John",
                 duration = "45 min",
-                likeCount = 987 // This will remain "987 Likes"
+                likeCount = 987, // This will remain "987 Likes"
+                isBookmarked = false // Preview with unbookmarked state
             )
             Spacer(modifier = Modifier.height(16.dp))
             RecipeReusableCard(
@@ -214,7 +233,8 @@ fun RecipeReusableCardPreview() {
                 title = "Quick Snack",
                 description = "by Mary",
                 duration = "5 min",
-                likeCount = 10000 // This will show as "10k Likes"
+                likeCount = 10000, // This will show as "10k Likes"
+                isBookmarked = true // Preview with bookmarked state
             )
         }
     }

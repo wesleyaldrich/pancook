@@ -1,3 +1,4 @@
+// SavedRecipeScreen.kt
 package com.wesleyaldrich.pancook.ui.screens
 
 import androidx.compose.foundation.clickable
@@ -42,7 +43,7 @@ fun SavedRecipeScreen(navController: NavController) {
                 items(bookmarkedRecipes) { recipe ->
                     val isBookmarked = remember(recipe.id) { bookmarkedRecipes.contains(recipe) }
                     ReusableCard(
-                        imagePainter = painterResource(id = recipe.image),
+                        imagePainter = painterResource(id = recipe.images.first()), // Use first image from list
                         title = recipe.title,
                         description = recipe.recipeMaker,
                         duration = recipe.duration,
@@ -56,12 +57,14 @@ fun SavedRecipeScreen(navController: NavController) {
                                 bookmarkedRecipes.add(recipe)
                             }
                         },
+                        // The onDeleteClick lambda is still provided, but the button will be hidden
                         onDeleteClick = {
                             // Deleting from saved recipes means removing from bookmarkedRecipes
                             bookmarkedRecipes.remove(recipe)
                             // If you want deleting from saved also to delete from allRecipes:
                             // allRecipes.remove(recipe)
                         },
+                        hideDeleteButton = true, // Set this to true to hide the delete button
                         modifier = Modifier.clickable {
                             navController.navigate(Screen.DetailRecipe.createRoute(recipe.id))
                         }

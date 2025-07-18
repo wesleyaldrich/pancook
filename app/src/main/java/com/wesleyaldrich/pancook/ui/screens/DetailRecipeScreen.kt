@@ -1,3 +1,4 @@
+// DetailRecipeScreen.kt - CORRECTED
 package com.wesleyaldrich.pancook.ui.screens
 
 import android.content.Intent
@@ -43,8 +44,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.wesleyaldrich.pancook.R
@@ -65,6 +64,9 @@ import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.IntOffset
 import kotlin.math.roundToInt
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+
 
 /**
  * A reusable, auto-scrolling image carousel with infinite loop behavior and indicator dots.
@@ -99,31 +101,32 @@ fun AutoScrollingImageCarousel(
 
     // Auto-scroll logic with user interaction pause
     LaunchedEffect(autoScrollKey, isDragged, isPressed, images.size) {
-        if (images.isNotEmpty() && !isDragged && !isPressed) {
-            // Calculate an initial index that's "far enough" to give the illusion of infinite scroll
-            // and ensure it starts at a valid image index.
-            val initialOffset = Int.MAX_VALUE / 2
-            val initialItem = initialOffset - (initialOffset % images.size)
-            lazyListState.scrollToItem(initialItem)
+        if (images.isNotEmpty()) { // Ensure images list is not empty
+            // Initialize or reset scroll position to give an infinite loop illusion
+            if (!lazyListState.isScrollInProgress && lazyListState.firstVisibleItemIndex == 0) {
+                // When starting or resetting, jump to a "middle" point for infinite scroll effect
+                val initialIndex = Int.MAX_VALUE / 2 - (Int.MAX_VALUE / 2 % images.size)
+                lazyListState.scrollToItem(initialIndex)
+            }
 
-            while (true) {
-                delay(autoScrollDelay)
-                // Only auto-scroll if user is not dragging or pressing and not already scrolling
-                if (!isDragged && !isPressed && !lazyListState.isScrollInProgress) {
-                    val nextIndex = lazyListState.firstVisibleItemIndex + 1
+            // Only auto-scroll if user is not dragging or pressing and not already scrolling
+            if (!isDragged && !isPressed && !lazyListState.isScrollInProgress) {
+                while (true) {
+                    delay(autoScrollDelay)
+                    // Calculate next index to scroll, ensuring it wraps around for infinite effect
+                    val nextIndex = (lazyListState.firstVisibleItemIndex + 1)
                     lazyListState.animateScrollToItem(nextIndex)
-                } else {
-                    break // Exit the current while loop, the LaunchedEffect will restart if conditions allow
                 }
             }
         }
     }
 
     // Listener for scroll state changes to reset autoScrollKey when user stops scrolling
+    // This is crucial to re-initiate auto-scroll if the user stopped it by dragging/pressing
     LaunchedEffect(lazyListState.isScrollInProgress, isDragged, isPressed) {
         if (!lazyListState.isScrollInProgress && !isDragged && !isPressed) {
             // Small delay to ensure user has fully stopped interacting
-            delay(500)
+            delay(500) // Give a brief moment for the user to fully release/stop
             autoScrollKey++ // Increment key to re-trigger the auto-scroll LaunchedEffect
         }
     }
@@ -187,25 +190,29 @@ fun AutoScrollingImageCarousel(
                                 indication = null
                             ) {
                                 coroutineScope.launch {
-                                    val currentFirstVisibleItem = lazyListState.firstVisibleItemIndex
-                                    val currentVisibleImageIndex = currentFirstVisibleItem % images.size
-                                    val targetImageIndex = index
+                                    if (images.isNotEmpty()) {
+                                        val currentFirstVisibleItem = lazyListState.firstVisibleItemIndex
+                                        val currentVisibleImageIndex = currentFirstVisibleItem % images.size
+                                        val targetImageIndex = index
 
-                                    // Calculate the optimal scroll direction (forward or backward)
-                                    // to reach the targetImageIndex from the current visible image index.
-                                    val totalItems = images.size
-                                    val forwardScroll = (targetImageIndex - currentVisibleImageIndex + totalItems) % totalItems
-                                    val backwardScroll = (currentVisibleImageIndex - targetImageIndex + totalItems) % totalItems
+                                        // Calculate the optimal scroll direction (forward or backward)
+                                        // to reach the targetImageIndex from the current visible image index.
+                                        val totalItems = images.size
+                                        val forwardScroll = (targetImageIndex - currentVisibleImageIndex + totalItems) % totalItems
+                                        val backwardScroll = (currentVisibleImageIndex - targetImageIndex + totalItems) % totalItems
 
-                                    val targetScrollIndex: Int =
+                                        val targetScrollOffset: Int // Relative offset from currentFirstVisibleItem to target image
                                         if (forwardScroll <= backwardScroll) {
-                                            currentFirstVisibleItem + forwardScroll
+                                            targetScrollOffset = forwardScroll
                                         } else {
-                                            currentFirstVisibleItem - backwardScroll
+                                            targetScrollOffset = -backwardScroll
                                         }
 
-                                    lazyListState.animateScrollToItem(targetScrollIndex)
-                                    autoScrollKey++ // Reset auto-scroll after manual interaction
+                                        // Animate to the relative target index, which will correctly wrap around.
+                                        lazyListState.animateScrollToItem(currentFirstVisibleItem + targetScrollOffset)
+
+                                        autoScrollKey++ // Reset auto-scroll after manual interaction
+                                    }
                                 }
                             }
                     )
@@ -239,8 +246,8 @@ fun DetailRecipeScreen(recipeId: Int, navController: NavController) {
         mutableStateOf(bookmarkedRecipes.contains(currentRecipe))
     }
 
-    val displayImages = remember(currentRecipe.image) {
-        listOf(currentRecipe.image, R.drawable.salad, R.drawable.fudgy_brownies)
+    val displayImages = remember(currentRecipe.images) { // Corrected to use currentRecipe.images
+        currentRecipe.images
     }
 
     fun formatCount(count: Int): String {
@@ -249,6 +256,41 @@ fun DetailRecipeScreen(recipeId: Int, navController: NavController) {
         val units = arrayOf("", "k", "M", "B", "T")
         val formattedValue = String.format("%.1f", count / Math.pow(1000.0, exp.toDouble()))
         return formattedValue.replace(".0", "") + units[exp]
+    }
+
+    // Function to format ingredient quantity based on international standards
+    fun formatIngredientQuantity(qty: Double, unit: String): Pair<String, String> {
+        val calculatedQty = qty * servingCount
+        val formattedNumber = if (calculatedQty % 1.0 == 0.0) { // Check if it's a whole number
+            "%.0f".format(calculatedQty)
+        } else {
+            "%.2f".format(calculatedQty)
+        }
+
+        return when (unit.lowercase()) {
+            "g" -> {
+                if (calculatedQty >= 750) { // If 750g or more, convert to kg
+                    "%.2f".format(calculatedQty / 1000.0).removeSuffix(".00") to "kg"
+                } else {
+                    formattedNumber to "g" // Use formattedNumber for g, without .00 if whole
+                }
+            }
+            "ml" -> {
+                if (calculatedQty >= 750) { // If 750ml or more, convert to L
+                    "%.2f".format(calculatedQty / 1000.0).removeSuffix(".00") to "L"
+                } else {
+                    formattedNumber to "ml" // Use formattedNumber for ml, without .00 if whole
+                }
+            }
+            "pcs", "items" -> {
+                // Keep 'pcs' and 'items' as they are, no conversion to dozens
+                formattedNumber to unit // Use formattedNumber for pcs/items, without .00 if whole
+            }
+            else -> {
+                // For other units, just format the number
+                formattedNumber to unit // Use formattedNumber for others, without .00 if whole
+            }
+        }
     }
 
     Scaffold(
@@ -330,6 +372,7 @@ fun DetailRecipeScreen(recipeId: Int, navController: NavController) {
                                         Text(text = currentRecipe.duration, style = MaterialTheme.typography.bodyMedium.copy(fontSize = 16.sp))
                                     }
                                 }
+                                Spacer(modifier = Modifier.height(8.dp)) // Added space here to push description down
                             }
 
                             Row(
@@ -370,14 +413,14 @@ fun DetailRecipeScreen(recipeId: Int, navController: NavController) {
                                         ) {
                                             Icon(
                                                 imageVector = Icons.Filled.Bookmark,
-                                                contentDescription = "Bookmark Border",
-                                                tint = colorResource(R.color.primary),
+                                                contentDescription = "Bookmark Icon",
+                                                tint = colorResource(R.color.primary), // Apply primary color when bookmarked, else background color
                                                 modifier = Modifier.size(24.dp)
                                             )
                                             Icon(
                                                 imageVector = Icons.Filled.Bookmark,
-                                                contentDescription = "Bookmark Fill",
-                                                tint = if (isBookmarked) colorResource(R.color.primary) else colorResource(R.color.accent_yellow),
+                                                contentDescription = "Bookmark Icon",
+                                                tint = if (isBookmarked) colorResource(R.color.primary) else MaterialTheme.colorScheme.surface, // Apply primary color when bookmarked, else background color
                                                 modifier = Modifier.size(20.dp)
                                             )
                                         }
@@ -473,6 +516,7 @@ fun DetailRecipeScreen(recipeId: Int, navController: NavController) {
 
                             Column(modifier = Modifier.padding(start = 8.dp)) {
                                 currentRecipe.ingredients.forEach { ingredient ->
+                                    val (formattedQty, formattedUnit) = formatIngredientQuantity(ingredient.qty, ingredient.unitMeasurement)
                                     Row(
                                         modifier = Modifier
                                             .fillMaxWidth()
@@ -487,7 +531,7 @@ fun DetailRecipeScreen(recipeId: Int, navController: NavController) {
                                             contentAlignment = Alignment.CenterEnd
                                         ) {
                                             Text(
-                                                text = "%.2f".format(ingredient.qty * servingCount),
+                                                text = formattedQty,
                                                 style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold, fontSize = 11.sp),
                                                 color = colorResource(R.color.accent_yellow).copy(alpha = 1f),
                                                 textAlign = TextAlign.End,
@@ -499,7 +543,7 @@ fun DetailRecipeScreen(recipeId: Int, navController: NavController) {
                                         Spacer(modifier = Modifier.width(indentSpacerWidth))
 
                                         Text(
-                                            text = ingredient.unitMeasurement,
+                                            text = formattedUnit,
                                             style = MaterialTheme.typography.bodySmall.copy(fontSize = 14.sp),
                                             fontWeight = FontWeight.Normal,
                                             color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -528,11 +572,13 @@ fun DetailRecipeScreen(recipeId: Int, navController: NavController) {
                         colors = CardDefaults.cardColors(containerColor = Color.Transparent)
                     ) {
                         Column(modifier = Modifier.padding(16.dp)) {
-                            Text(
-                                text = "Nutrition",
-                                style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold, fontSize = 20.sp, color = colorResource(R.color.primary).copy(alpha = 1f)),
-                                modifier = Modifier.padding(bottom = 8.dp)
-                            )
+                            Row(verticalAlignment = Alignment.Bottom) { // Aligns children baselines at the bottom
+                                Text(
+                                    text = "Nutrition",
+                                    style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold, fontSize = 20.sp, color = colorResource(R.color.primary).copy(alpha = 1f)),
+                                    // Remove bottom padding, rely on Row's alignment
+                                )
+                            }
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.SpaceAround,
@@ -830,7 +876,8 @@ fun DetailRecipeScreen(recipeId: Int, navController: NavController) {
                                 modifier = Modifier.padding(vertical = 16.dp)
                             )
 
-                            val shareLink = "https://pancook.app/recipe/${currentRecipe.id}"
+                            // Changed shareLink to use a custom scheme for internal app navigation
+                            val shareLink = "app://pancook.recipe/${currentRecipe.id}"
 
                             LazyRow(
                                 modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
