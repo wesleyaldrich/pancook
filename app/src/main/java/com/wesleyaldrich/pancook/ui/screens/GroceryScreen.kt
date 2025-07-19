@@ -1,13 +1,12 @@
 package com.wesleyaldrich.pancook.ui.screens
 
-import android.util.Log // Import Log for debugging
-import androidx.compose.animation.animateContentSize // Import animateContentSize
+import android.util.Log
+import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -25,11 +24,11 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items // Correctly import items for LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions // This import is from your provided code
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -44,13 +43,13 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api // Import ExperimentalMaterial3Api for TopAppBar
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold // Import Scaffold
-import androidx.compose.material3.TopAppBar // Import TopAppBar
-import androidx.compose.material3.TopAppBarDefaults // Import TopAppBarDefaults
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
@@ -85,11 +84,10 @@ import com.wesleyaldrich.pancook.model.Recipe
 import com.wesleyaldrich.pancook.ui.theme.PancookTheme
 import com.wesleyaldrich.pancook.ui.theme.nunito
 import com.wesleyaldrich.pancook.ui.theme.poppins
-import com.wesleyaldrich.pancook.model.Instruction // Import Instruction
-import com.wesleyaldrich.pancook.model.NutritionFact // Import NutritionFact
-import com.wesleyaldrich.pancook.model.Comment // Import Comment
-import com.wesleyaldrich.pancook.ui.navigation.Screen // Ensure this import path is correct
-// IMPORTANT: Import allRecipes from the MyRecipeScreen file
+import com.wesleyaldrich.pancook.model.Instruction
+import com.wesleyaldrich.pancook.model.NutritionFact
+import com.wesleyaldrich.pancook.model.Comment
+import com.wesleyaldrich.pancook.ui.navigation.Screen
 import com.wesleyaldrich.pancook.ui.screens.allRecipes
 import kotlin.math.roundToInt
 
@@ -100,14 +98,19 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
-import androidx.compose.material3.TextFieldDefaults // Import TextFieldDefaults
-import androidx.compose.material3.OutlinedTextFieldDefaults // Import OutlinedTextFieldDefaults
+import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.ui.text.input.KeyboardType
-import kotlinx.coroutines.launch // For coroutine scope
-import androidx.compose.runtime.rememberCoroutineScope // For coroutine scope
+import kotlinx.coroutines.launch
+import androidx.compose.runtime.rememberCoroutineScope
+
+// Import missing composables from the same package (assuming they are in PlannerScreen.kt)
+import com.wesleyaldrich.pancook.ui.screens.CategorySectionHeader // Added missing import
+import com.wesleyaldrich.pancook.ui.screens.IngredientCard // Added missing import
+import com.wesleyaldrich.pancook.ui.screens.CircularCheckbox // Added missing import (used in IngredientCard)
 
 
-// Helper function for bottom border. (bottomBorder2 in your provided code, keeping it for adherence)
+// Helper function for bottom border.
 fun Modifier.bottomBorder2(strokeWidth: Dp, color: Color) = this.then(
     Modifier.drawBehind {
         val strokePx = strokeWidth.toPx()
@@ -125,39 +128,33 @@ fun Modifier.bottomBorder2(strokeWidth: Dp, color: Color) = this.then(
 const val MANUAL_ENTRY_RECIPE_ID = -1
 
 fun getDummyRecipes(): Map<Recipe, Int> {
-    // This function now fetches recipes directly from the 'allRecipes' list
-    // defined in MyRecipeScreen.kt, ensuring consistent IDs.
     val selectedRecipesWithServeCount = mutableMapOf<Recipe, Int>()
 
-    // Log the size of allRecipes when getDummyRecipes is called
     Log.d("GroceryScreen", "getDummyRecipes: allRecipes size = ${allRecipes.size}")
 
-    // Select specific recipes by their IDs from the 'allRecipes' list.
-    // These IDs correspond to the recipes provided in MyRecipeScreen.kt.
     allRecipes.find { it.id == 1 }?.let { recipe ->
-        selectedRecipesWithServeCount[recipe] = 4 // Spaghetti Bolognese
+        selectedRecipesWithServeCount[recipe] = 4
     }
     allRecipes.find { it.id == 2 }?.let { recipe ->
-        selectedRecipesWithServeCount[recipe] = 2 // Fresh Garden Salad (Grocery)
+        selectedRecipesWithServeCount[recipe] = 2
     }
     allRecipes.find { it.id == 4 }?.let { recipe ->
-        selectedRecipesWithServeCount[recipe] = 3 // Delicious Salad
+        selectedRecipesWithServeCount[recipe] = 3
     }
     allRecipes.find { it.id == 11 }?.let { recipe ->
-        selectedRecipesWithServeCount[recipe] = 1 // Beef Stew
+        selectedRecipesWithServeCount[recipe] = 1
     }
     allRecipes.find { it.id == 12 }?.let { recipe ->
-        selectedRecipesWithServeCount[recipe] = 2 // Tomato Soup
+        selectedRecipesWithServeCount[recipe] = 2
     }
 
     // Add a placeholder recipe for manual entries if it doesn't exist already
-    // This ensures there's always a container for manually added ingredients
     val manualEntryRecipe = Recipe(
         id = MANUAL_ENTRY_RECIPE_ID,
-        title = "Personal Ingredients", // Changed from "Manual Entries"
+        title = "Personal Ingredients",
         description = "Ingredients added manually",
-        image = R.drawable.rawon, // Use a generic add icon or placeholder
-        ingredients = emptyList(), // Starts empty, will be populated dynamically
+        images = listOf(R.drawable.rawon), // Used rawon.jpg as per your files
+        ingredients = emptyList(),
         steps = emptyList(),
         servings = 1,
         duration = "",
@@ -166,11 +163,9 @@ fun getDummyRecipes(): Map<Recipe, Int> {
         nutritionFacts = emptyList(),
         comments = emptyList()
     )
-    // Add to the map if not already present (e.g., from a previous session state)
     if (!selectedRecipesWithServeCount.keys.any { it.id == MANUAL_ENTRY_RECIPE_ID }) {
         selectedRecipesWithServeCount[manualEntryRecipe] = 1
     }
-
 
     Log.d("GroceryScreen", "getDummyRecipes: Selected ${selectedRecipesWithServeCount.size} dummy recipes.")
     return selectedRecipesWithServeCount
@@ -181,13 +176,13 @@ data class GroceryIngredient(
     val imageRes: Int,
     val name: String,
     val category: String,
-    val totalUnit: Float,
+    val totalUnit: Double, // Changed to Double
     val measurement: String,
     val recipeNames: List<String>
 )
 
 // Helper function for unit conversion (example, you might need a more comprehensive one)
-fun convertToGram(qty: Float, unit: String): Float {
+fun convertToGram(qty: Double, unit: String): Double { // Changed qty to Double, return to Double
     return when (unit.lowercase()) {
         "g" -> qty
         "kg" -> qty * 1000
@@ -195,7 +190,7 @@ fun convertToGram(qty: Float, unit: String): Float {
         "l" -> qty * 1000 // Assuming 1l ~ 1000g for simplicity
         "tbsp" -> qty * 15 // Roughly 15g per tablespoon
         "tsp" -> qty * 5 // Roughly 5g per teaspoon
-        "pieces", "piece", "cloves", "head", "medium", "pcs", "stalks", "large", "cup" -> qty * 50 // Placeholder for arbitrary units, adjust as needed
+        "pieces", "piece", "cloves", "head", "medium", "pcs", "stalks", "large", "cup" -> qty * 50.0 // Placeholder for arbitrary units, adjust as needed, added .0 for Double
         else -> qty // Default to original quantity if unit is unknown
     }
 }
@@ -217,9 +212,10 @@ fun mapIngredientsToGroceryList(recipeMap: Map<Recipe, Int>): Map<String, Grocer
     return groceryList.mapValues { (_, ingredientPairs) ->
         val firstIngredient = ingredientPairs.first().second
         val totalUnitInGrams = ingredientPairs.sumOf { (recipeName, ingredient) ->
-            convertToGram(ingredient.qty, ingredient.unitMeasurement).toDouble()
-        }.toFloat()
-        val recipeNames = ingredientPairs.map { it.first }.distinct()
+            convertToGram(ingredient.qty, ingredient.unitMeasurement)
+        }
+        // DEFINE recipeNames HERE, BEFORE GroceryIngredient constructor
+        val recipeNames = ingredientPairs.map { it.first }.distinct() // This line was missing or misplaced
 
         GroceryIngredient(
             imageRes = firstIngredient.imageRes,
@@ -227,35 +223,28 @@ fun mapIngredientsToGroceryList(recipeMap: Map<Recipe, Int>): Map<String, Grocer
             category = firstIngredient.category,
             totalUnit = totalUnitInGrams,
             measurement = "gram", // Standardize to gram after conversion
-            recipeNames = recipeNames
+            recipeNames = recipeNames // Now recipeNames is resolved
         )
-    }.toSortedMap() // Optional: Sort by ingredient name
+    }.toSortedMap()
 }
 
 fun groupGroceryIngredientsByCategory(groceryIngredients: Map<String, GroceryIngredient>): Map<String, List<GroceryIngredient>> {
     return groceryIngredients.values.groupBy { it.category }
 }
 
-@OptIn(ExperimentalMaterial3Api::class) // Needed for TopAppBar, ModalBottomSheet
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GroceryScreen(
     onBackClick: () -> Unit,
     navController: NavController,
     onRemoveClick: (Recipe) -> Unit
 ) {
-    // recipes is now a 'var' state to allow re-assignment and trigger recomposition
     var recipes by remember { mutableStateOf(getDummyRecipes()) }
-
-    // checkedStates is a 'var' state holding an immutable Map
     var checkedStates by remember { mutableStateOf(mapOf<String, Boolean>()) }
-
-    // State for the "Add Ingredient" form visibility
     var showAddIngredientForm by remember { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState()
     val scope = rememberCoroutineScope()
 
-
-    // Derived states will recompose automatically when 'recipes' or 'checkedStates' changes
     val allGroceryIngredientsMap by remember(recipes) {
         Log.d("GroceryScreen", "Recomputing allGroceryIngredientsMap (triggered by recipes change).")
         mutableStateOf(mapIngredientsToGroceryList(recipes))
@@ -264,32 +253,32 @@ fun GroceryScreen(
     val neededIngredientsGrouped = remember(allGroceryIngredientsMap, checkedStates) {
         Log.d("GroceryScreen", "Recomputing neededIngredientsGrouped. Current checked items count: ${checkedStates.filter { it.value }.size}")
         allGroceryIngredientsMap.values
-            .filter { !checkedStates[it.name].orFalse() } // Filter out checked items
+            .filter { !checkedStates[it.name].orFalse() }
             .groupBy { it.category }
-            .toSortedMap() // Ensure categories are sorted
+            .toSortedMap()
     }
     val gottenIngredientsGrouped = remember(allGroceryIngredientsMap, checkedStates) {
         Log.d("GroceryScreen", "Recomputing gottenIngredientsGrouped. Current checked items count: ${checkedStates.filter { it.value }.size}")
         allGroceryIngredientsMap.values
-            .filter { checkedStates[it.name].orFalse() } // Only include checked items
+            .filter { checkedStates[it.name].orFalse() }
             .groupBy { it.category }
-            .toSortedMap() // Ensure categories are sorted
+            .toSortedMap()
     }
 
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { /* No title needed based on your current UI */ },
+                title = { },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(
-                            imageVector = Icons.Default.PlayArrow, // Using PlayArrow as per your original code
+                            imageVector = Icons.Default.PlayArrow,
                             contentDescription = "Back",
                             modifier = Modifier
                                 .size(50.dp)
                                 .graphicsLayer {
-                                    scaleX = -1f // Flips the arrow to point left
+                                    scaleX = -1f
                                 }
                         )
                     }
@@ -302,10 +291,9 @@ fun GroceryScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
-                .padding(paddingValues) // Apply padding from Scaffold
-                .padding(horizontal = 16.dp) // Re-apply horizontal padding
+                .padding(paddingValues)
+                .padding(horizontal = 16.dp)
         ) {
-            // 94. Grocery list header
             Text(
                 text = "Groceries To Get",
                 fontSize = 24.sp,
@@ -315,7 +303,6 @@ fun GroceryScreen(
 
             Spacer(modifier = Modifier.height(0.dp))
 
-            // 95. Recipe Section Header
             Text(
                 text = "Recipes",
                 fontSize = 18.sp,
@@ -325,32 +312,27 @@ fun GroceryScreen(
 
             Spacer(modifier = Modifier.height(2.dp))
 
-            // Horizontal carousel
             LazyRow (
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
             ) {
-                // Use items from LazyRow dsl directly for more stable list items
                 items(
-                    items = recipes.entries.toList(), // Use items parameter
-                    key = { it.key.id } // Provide a unique key for each item
-                ) { (recipe, serveCount) -> // Destructure the Map.Entry
+                    items = recipes.entries.toList(),
+                    key = { it.key.id }
+                ) { (recipe, serveCount) ->
                     RecipeCardMini(
                         recipe = recipe,
                         serveCount = serveCount,
-                        imagePainter = painterResource(id = recipe.image),
+                        imagePainter = painterResource(id = recipe.images.first()), // Use the first image from the list
                         onClick = {
                             Log.d("GroceryScreen", "Attempting navigation to DetailRecipe with ID: ${recipe.id}")
                             navController.navigate(Screen.DetailRecipe.createRoute(recipe.id))
                         },
                         onRemoveClick = {
                             val removedRecipeTitle = recipe.title
-                            // FIX: To trigger recomposition reliably, create a new map instance
-                            // by filtering out the removed recipe and re-assign it.
                             recipes = recipes.toMutableMap().also { it.remove(recipe) }.toMap()
                             Log.d("GroceryScreen", "Recipe '$removedRecipeTitle' removed. Recipes map new size: ${recipes.size}")
                         },
                         onServeCountChange = { newCount ->
-                            // FIX: Update serve count by creating a new map instance
                             recipes = recipes.toMutableMap().also { it[recipe] = newCount }.toMap()
                             Log.d("GroceryScreen", "Recipe '${recipe.title}' serve count changed to $newCount. Recipes map new size: ${recipes.size}")
                         }
@@ -360,9 +342,8 @@ fun GroceryScreen(
 
             Spacer(modifier = Modifier.height(5.dp))
 
-            // Add ingredient button
             Button(
-                onClick = { showAddIngredientForm = true }, // Show the form
+                onClick = { showAddIngredientForm = true },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 5.dp),
@@ -394,11 +375,10 @@ fun GroceryScreen(
                 }
             }
 
-            // Column for NOT ACQUIRED Ingredient section
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .animateContentSize() // Add animateContentSize here for smooth transitions
+                    .animateContentSize()
             ) {
                 if (neededIngredientsGrouped.isEmpty()) {
                     Text(
@@ -414,9 +394,8 @@ fun GroceryScreen(
                         ingredientList.forEach { ingredient ->
                             IngredientCard(
                                 ingredient = ingredient,
-                                isChecked = checkedStates[ingredient.name].orFalse(), // Pass current checked state
-                                onCheckedChange = { newValue ->
-                                    // FIX: Update checkedStates by creating a new map instance
+                                isChecked = checkedStates[ingredient.name].orFalse(),
+                                onCheckedChange = { newValue: Boolean -> // Explicitly specify type for clarity
                                     checkedStates = checkedStates.toMutableMap().also { it[ingredient.name] = newValue }.toMap()
                                     Log.d("GroceryScreen", "Ingredient ${ingredient.name} checked: $newValue. New checkedStates value: ${checkedStates[ingredient.name]}")
                                 }
@@ -426,7 +405,6 @@ fun GroceryScreen(
                 }
             }
 
-            // Separator before Acquired Ingredients (only show if there are acquired ingredients)
             if (gottenIngredientsGrouped.isNotEmpty()) {
                 Spacer(modifier = Modifier.height(16.dp))
                 Box(
@@ -437,7 +415,6 @@ fun GroceryScreen(
                 )
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Header for Acquired Ingredients
                 Text(
                     text = "Acquired Ingredients",
                     fontSize = 20.sp,
@@ -446,20 +423,18 @@ fun GroceryScreen(
                     modifier = Modifier.padding(bottom = 8.dp)
                 )
 
-                // Column for ACQUIRED Ingredient section
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .animateContentSize() // Add animateContentSize here for smooth transitions
+                        .animateContentSize()
                 ) {
                     gottenIngredientsGrouped.forEach { (category, ingredientList) ->
-                        CategorySectionHeader(title = category) // Reuse category header
+                        CategorySectionHeader(title = category)
                         ingredientList.forEach { ingredient ->
                             IngredientCard(
                                 ingredient = ingredient,
-                                isChecked = checkedStates[ingredient.name].orFalse(), // Should be true here
-                                onCheckedChange = { newValue ->
-                                    // FIX: Update checkedStates by creating a new map instance
+                                isChecked = checkedStates[ingredient.name].orFalse(),
+                                onCheckedChange = { newValue: Boolean -> // Explicitly specify type for clarity
                                     checkedStates = checkedStates.toMutableMap().also { it[ingredient.name] = newValue }.toMap()
                                     Log.d("GroceryScreen", "Ingredient ${ingredient.name} unchecked from Gotten: $newValue. New checkedStates value: ${checkedStates[ingredient.name]}")
                                 }
@@ -470,11 +445,9 @@ fun GroceryScreen(
             }
         }
 
-        // Add Ingredient Modal Bottom Sheet
         if (showAddIngredientForm) {
             ModalBottomSheet(
                 onDismissRequest = {
-                    // Reset form fields on dismiss
                     scope.launch { sheetState.hide() }.invokeOnCompletion {
                         if (!sheetState.isVisible) {
                             showAddIngredientForm = false
@@ -482,9 +455,8 @@ fun GroceryScreen(
                     }
                 },
                 sheetState = sheetState,
-                containerColor = MaterialTheme.colorScheme.surfaceVariant // Adjust color as needed
+                containerColor = MaterialTheme.colorScheme.surfaceVariant
             ) {
-                // State for form inputs
                 var ingredientNameInput by remember { mutableStateOf("") }
                 var unitAmountInput by remember { mutableStateOf("") }
                 val unitMeasurements = listOf(
@@ -492,17 +464,14 @@ fun GroceryScreen(
                 )
                 var selectedUnitMeasurement by remember { mutableStateOf(unitMeasurements[0]) }
 
-                // Define category choices
                 val categories = listOf(
                     "Vegetable", "Pasta", "Meat", "Spices", "Condiments", "Dairy", "Grains", "Herbs", "Fruit", "Seafood", "Bakery", "Sweeteners", "Baking", "Flavoring", "Seasoning", "Other"
                 )
-                var selectedCategory by remember { mutableStateOf(categories[0]) } // Initialize with first category
+                var selectedCategory by remember { mutableStateOf(categories[0]) }
                 var expandedCategoryDropdown by remember { mutableStateOf(false) }
 
-                var expandedUnitDropdown by remember { mutableStateOf(false) } // Renamed for clarity
+                var expandedUnitDropdown by remember { mutableStateOf(false) }
 
-                // Define common TextFieldColors for this form
-                // Uses @Composable context via colorResource
                 val formFieldColors = TextFieldDefaults.colors(
                     focusedContainerColor = colorResource(R.color.primary),
                     unfocusedContainerColor = colorResource(R.color.primary),
@@ -520,7 +489,6 @@ fun GroceryScreen(
                     errorLabelColor = Color.White,
 
                     cursorColor = Color.White,
-                    // For TextField, these control the underline indicator
                     focusedIndicatorColor = Color.Transparent,
                     unfocusedIndicatorColor = Color.Transparent,
                     disabledIndicatorColor = Color.Transparent,
@@ -532,8 +500,6 @@ fun GroceryScreen(
                     errorTrailingIconColor = Color.White,
                 )
 
-                // Define common OutlinedTextFieldColors for this form
-                // Uses @Composable context via colorResource
                 val formOutlinedFieldColors = OutlinedTextFieldDefaults.colors(
                     focusedContainerColor = colorResource(R.color.primary),
                     unfocusedContainerColor = colorResource(R.color.primary),
@@ -551,7 +517,6 @@ fun GroceryScreen(
                     errorLabelColor = Color.White,
 
                     cursorColor = Color.White,
-                    // For OutlinedTextField, these control the border color
                     focusedBorderColor = Color.Transparent,
                     unfocusedBorderColor = Color.Transparent,
                     disabledBorderColor = Color.Transparent,
@@ -569,13 +534,13 @@ fun GroceryScreen(
                         .fillMaxWidth()
                         .fillMaxHeight()
                         .padding(16.dp)
-                        .verticalScroll(rememberScrollState()), // Allow scrolling if content is long
+                        .verticalScroll(rememberScrollState()),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     Text(
                         text = "Add New Ingredient",
-                        style = MaterialTheme.typography.headlineSmall.copy(fontFamily = nunito), // Apply font
+                        style = MaterialTheme.typography.headlineSmall.copy(fontFamily = nunito),
                         fontWeight = FontWeight.Bold,
                         color = colorResource(R.color.primary)
                     )
@@ -583,30 +548,29 @@ fun GroceryScreen(
                     TextField(
                         value = ingredientNameInput,
                         onValueChange = { ingredientNameInput = it },
-                        label = { Text("Ingredient Name", fontFamily = nunito) }, // Apply font
+                        label = { Text("Ingredient Name", fontFamily = nunito) },
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clip(RoundedCornerShape(8.dp)), // Apply rounded corner
-                        colors = formFieldColors // Apply custom colors
+                            .clip(RoundedCornerShape(8.dp)),
+                        colors = formFieldColors
                     )
 
                     OutlinedTextField(
                         value = unitAmountInput,
                         onValueChange = { newValue ->
-                            // Allow only numerical input (digits and a single decimal point)
+                            // Allow only digits and a single decimal point
                             if (newValue.all { it.isDigit() || (it == '.' && !unitAmountInput.contains('.')) }) {
                                 unitAmountInput = newValue
                             }
                         },
-                        label = { Text("Unit Amount", fontFamily = nunito) }, // Apply font
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), // Corrected KeyboardOptions usage
+                        label = { Text("Unit Amount", fontFamily = nunito) },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clip(RoundedCornerShape(8.dp)), // Apply rounded corner
-                        colors = formOutlinedFieldColors // Apply custom colors
+                            .clip(RoundedCornerShape(8.dp)),
+                        colors = formOutlinedFieldColors
                     )
 
-                    // NEW: Category Dropdown
                     ExposedDropdownMenuBox(
                         expanded = expandedCategoryDropdown,
                         onExpandedChange = { expandedCategoryDropdown = !expandedCategoryDropdown },
@@ -616,15 +580,15 @@ fun GroceryScreen(
                             value = selectedCategory,
                             onValueChange = {},
                             readOnly = true,
-                            label = { Text("Category", fontFamily = nunito) }, // Apply font
+                            label = { Text("Category", fontFamily = nunito) },
                             trailingIcon = {
                                 ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedCategoryDropdown)
                             },
                             modifier = Modifier
-                                .menuAnchor() // This is important for the dropdown to anchor correctly
+                                .menuAnchor()
                                 .fillMaxWidth()
-                                .clip(RoundedCornerShape(8.dp)), // Apply rounded corner
-                            colors = formOutlinedFieldColors // Apply custom colors
+                                .clip(RoundedCornerShape(8.dp)),
+                            colors = formOutlinedFieldColors
                         )
                         ExposedDropdownMenu(
                             expanded = expandedCategoryDropdown,
@@ -632,7 +596,7 @@ fun GroceryScreen(
                         ) {
                             categories.forEach { selectionOption ->
                                 DropdownMenuItem(
-                                    text = { Text(selectionOption, fontFamily = nunito) }, // Apply font
+                                    text = { Text(selectionOption, fontFamily = nunito) },
                                     onClick = {
                                         selectedCategory = selectionOption
                                         expandedCategoryDropdown = false
@@ -642,36 +606,35 @@ fun GroceryScreen(
                         }
                     }
 
-                    // Existing Unit Measurement Dropdown
                     ExposedDropdownMenuBox(
-                        expanded = expandedUnitDropdown, // Renamed variable
-                        onExpandedChange = { expandedUnitDropdown = !expandedUnitDropdown }, // Renamed variable
+                        expanded = expandedUnitDropdown,
+                        onExpandedChange = { expandedUnitDropdown = !expandedUnitDropdown },
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         OutlinedTextField(
                             value = selectedUnitMeasurement,
                             onValueChange = {},
                             readOnly = true,
-                            label = { Text("Unit Measurement", fontFamily = nunito) }, // Apply font
+                            label = { Text("Unit Measurement", fontFamily = nunito) },
                             trailingIcon = {
-                                ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedUnitDropdown) // Renamed variable
+                                ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedUnitDropdown)
                             },
                             modifier = Modifier
-                                .menuAnchor() // This is important for the dropdown to anchor correctly
+                                .menuAnchor()
                                 .fillMaxWidth()
-                                .clip(RoundedCornerShape(8.dp)), // Apply rounded corner
-                            colors = formOutlinedFieldColors // Apply custom colors
+                                .clip(RoundedCornerShape(8.dp)),
+                            colors = formOutlinedFieldColors
                         )
                         ExposedDropdownMenu(
-                            expanded = expandedUnitDropdown, // Renamed variable
-                            onDismissRequest = { expandedUnitDropdown = false } // Renamed variable
+                            expanded = expandedUnitDropdown,
+                            onDismissRequest = { expandedUnitDropdown = false }
                         ) {
                             unitMeasurements.forEach { selectionOption ->
                                 DropdownMenuItem(
-                                    text = { Text(selectionOption, fontFamily = nunito) }, // Apply font
+                                    text = { Text(selectionOption, fontFamily = nunito) },
                                     onClick = {
                                         selectedUnitMeasurement = selectionOption
-                                        expandedUnitDropdown = false // Renamed variable
+                                        expandedUnitDropdown = false
                                     }
                                 )
                             }
@@ -685,58 +648,53 @@ fun GroceryScreen(
                     ) {
                         Button(
                             onClick = {
-                                // Reset all form fields before closing
                                 ingredientNameInput = ""
                                 unitAmountInput = ""
                                 selectedUnitMeasurement = unitMeasurements[0]
-                                selectedCategory = categories[0] // Reset category
+                                selectedCategory = categories[0]
                                 scope.launch { sheetState.hide() }.invokeOnCompletion {
                                     if (!sheetState.isVisible) {
                                         showAddIngredientForm = false
                                     }
                                 }
-                            }, // Close button
+                            },
                             colors = ButtonDefaults.buttonColors(containerColor = Color.Gray)
                         ) {
-                            Text("Cancel", fontFamily = nunito) // Apply font
+                            Text("Cancel", fontFamily = nunito)
                         }
 
                         Button(
                             onClick = {
-                                // Validate input
                                 val name = ingredientNameInput.trim()
-                                val amount = unitAmountInput.toFloatOrNull()
+                                val amount = unitAmountInput.toDoubleOrNull()
                                 val measurement = selectedUnitMeasurement
-                                val category = selectedCategory // Get selected category
+                                val category = selectedCategory
 
                                 if (name.isNotEmpty() && amount != null && amount > 0) {
                                     val newIngredient = Ingredient(
-                                        imageRes = R.drawable.ingredient_tomato, // Default image for manual entries
+                                        imageRes = R.drawable.ingredient_tomato, // Keeping generic tomato for all ingredients
                                         name = name,
-                                        category = category, // Use the selected category here
+                                        category = category,
                                         qty = amount,
                                         unitMeasurement = measurement
                                     )
 
-                                    // Find the manual entry recipe or create it
                                     val currentManualEntryRecipe = recipes.keys.find { it.id == MANUAL_ENTRY_RECIPE_ID }
                                     if (currentManualEntryRecipe != null) {
                                         val updatedIngredients = currentManualEntryRecipe.ingredients.toMutableList().apply {
                                             add(newIngredient)
                                         }
                                         val updatedManualEntryRecipe = currentManualEntryRecipe.copy(ingredients = updatedIngredients)
-                                        // Update the recipes map with the new instance of the manual entry recipe
                                         recipes = recipes.toMutableMap().also {
                                             it[updatedManualEntryRecipe] = recipes[currentManualEntryRecipe] ?: 1
                                         }.toMap()
                                         Log.d("GroceryScreen", "Added personal ingredient: $name. Personal Ingredients recipe updated.")
                                     } else {
-                                        // Fallback: This case should ideally not be hit if getDummyRecipes initializes it.
                                         val newManualEntryRecipe = Recipe(
                                             id = MANUAL_ENTRY_RECIPE_ID,
-                                            title = "Personal Ingredients", // Use the correct title
+                                            title = "Personal Ingredients",
                                             description = "Ingredients added manually",
-                                            image = R.drawable.rawon,
+                                            images = listOf(R.drawable.rawon), // Use rawon.jpg as per your files
                                             ingredients = listOf(newIngredient),
                                             steps = emptyList(), servings = 1, duration = "", upvoteCount = 0, recipeMaker = "You", nutritionFacts = emptyList(), comments = emptyList()
                                         )
@@ -744,24 +702,22 @@ fun GroceryScreen(
                                         Log.d("GroceryScreen", "Added personal ingredient: $name. New Personal Ingredients recipe created.")
                                     }
 
-                                    // Reset form fields and close sheet
                                     ingredientNameInput = ""
                                     unitAmountInput = ""
                                     selectedUnitMeasurement = unitMeasurements[0]
-                                    selectedCategory = categories[0] // Reset category
+                                    selectedCategory = categories[0]
                                     scope.launch { sheetState.hide() }.invokeOnCompletion {
                                         if (!sheetState.isVisible) {
                                             showAddIngredientForm = false
                                         }
                                     }
                                 } else {
-                                    // Show a toast or message for invalid input
                                     Log.w("GroceryScreen", "Invalid input for adding ingredient: Name:'$name', Amount:'$amount'.")
                                 }
                             },
                             colors = ButtonDefaults.buttonColors(containerColor = colorResource(R.color.primary))
                         ) {
-                            Text("Add Ingredient", fontFamily = nunito) // Apply font
+                            Text("Add Ingredient", fontFamily = nunito)
                         }
                     }
                 }
@@ -770,7 +726,6 @@ fun GroceryScreen(
     }
 }
 
-// Extension function for nullable Boolean to return false if null
 fun Boolean?.orFalse(): Boolean = this ?: false
 
 @Composable
@@ -849,7 +804,7 @@ fun RecipeCardMini(
                                 .onGloballyPositioned { coordinates ->
                                     val originalOffset = coordinates.localToWindow(Offset.Zero)
                                     val shiftedOffset =
-                                        originalOffset.copy(x = originalOffset.x - 500) // shift left by 50 pixels
+                                        originalOffset.copy(x = originalOffset.x - 500)
                                     dropdownAnchor.value = shiftedOffset
                                 }
                         ) {
@@ -877,7 +832,7 @@ fun RecipeCardMini(
                                     )
                                 }
                             }
-                            Icon( // Moved Icon inside the Box with onGloballyPositioned
+                            Icon(
                                 imageVector = Icons.Default.ArrowDropDown,
                                 contentDescription = "Change Serve Count",
                                 tint = colorResource(R.color.accent_yellow),
@@ -905,7 +860,6 @@ fun RecipeCardMini(
                     }
                 }
 
-                // Like count
                 Row(
                     modifier = Modifier
                         .align(Alignment.BottomStart)
@@ -966,13 +920,16 @@ fun RecipeCardMini(
     }
 }
 
+// These composables are assumed to be in the same package (com.wesleyaldrich.pancook.ui.screens)
+// or a common components package. If they are in a different package,
+// you would need to adjust the import statements accordingly.
 @Composable
 fun CategorySectionHeader(title: String) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 8.dp)
-            .bottomBorder(1.dp, Color.Gray)
+            .bottomBorder2(1.dp, Color.Gray) // Using bottomBorder2 as defined in GroceryScreen.kt
     ) {
         Text(
             text = title,
@@ -1010,7 +967,7 @@ fun IngredientCard(
                     expanded = !expanded
                 }
             }
-            .animateContentSize() // This provides the animation for accordion
+            .animateContentSize()
     ) {
         Column(
             modifier = Modifier
@@ -1038,7 +995,7 @@ fun IngredientCard(
                     modifier = Modifier
                         .weight(1f)
                         .fillMaxHeight()
-                        .padding(start = 10.dp) // Apply left padding here for content alignment
+                        .padding(start = 10.dp)
                         .alpha(textAlpha),
                     verticalArrangement = Arrangement.Top,
                 ) {
@@ -1047,7 +1004,7 @@ fun IngredientCard(
                         text = if (ingredient.recipeNames.size > 1) {
                             "Used in ${ingredient.recipeNames.size} recipes"
                         } else {
-                            ingredient.recipeNames.firstOrNull() ?: "N/A" // Display only recipe name
+                            ingredient.recipeNames.firstOrNull() ?: "N/A"
                         },
                         fontFamily = nunito,
                         fontSize = 10.sp,
@@ -1088,31 +1045,30 @@ fun IngredientCard(
 
             // --- First Separator Line (appears when expanded, below main info) ---
             if (expanded && ingredient.recipeNames.size > 1) {
-                Spacer(modifier = Modifier.height(8.dp)) // Space above the line
+                Spacer(modifier = Modifier.height(8.dp))
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(1.dp)
                         .background(Color.White.copy(alpha = 0.5f))
-                        .padding(start = 70.dp) // Indent the line
+                        .padding(start = 70.dp)
                 )
-                Spacer(modifier = Modifier.height(4.dp)) // Space after the line
+                Spacer(modifier = Modifier.height(4.dp))
             }
 
             // --- Accordion Section (list of recipe names) ---
             if (expanded && ingredient.recipeNames.size > 1) {
-                Column(modifier = Modifier.padding(start = 70.dp)) { // Indent the whole accordion block
+                Column(modifier = Modifier.padding(start = 70.dp)) {
                     ingredient.recipeNames.forEachIndexed { index, recipeName ->
-                        // Add separator line before each recipe name, except the first one
                         if (index > 0) {
-                            Spacer(modifier = Modifier.height(4.dp)) // Space before the line
+                            Spacer(modifier = Modifier.height(4.dp))
                             Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .height(1.dp)
                                     .background(Color.White.copy(alpha = 0.5f))
                             )
-                            Spacer(modifier = Modifier.height(2.dp)) // Space between line and text
+                            Spacer(modifier = Modifier.height(2.dp))
                         }
                         Text(
                             text = "Used in: $recipeName",
@@ -1133,7 +1089,7 @@ fun IngredientCard(
 private fun GroceryPreview() {
     PancookTheme {
         GroceryScreen(
-            onBackClick = {}, // For preview, this can remain empty as it's not a real navigation context
+            onBackClick = {},
             navController = rememberNavController(),
             onRemoveClick = {},
         )

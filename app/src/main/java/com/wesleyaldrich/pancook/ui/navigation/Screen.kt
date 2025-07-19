@@ -10,6 +10,7 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.SaveAlt
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Category // New import for category icon
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
@@ -32,5 +33,10 @@ sealed class Screen(val route: String, val title: String, val icon: ImageVector)
 
     object RecipeCompletion : Screen("recipe_completion/{recipeId}", "Recipe Completion", Icons.Default.Home) {
         fun createRoute(recipeId: Int) = "recipe_completion/$recipeId"
+    }
+
+    // New Category Screen definition
+    object Category : Screen("category/{categoryName}", "Category", Icons.Default.Category) {
+        fun createRoute(categoryName: String) = "category/$categoryName"
     }
 }
