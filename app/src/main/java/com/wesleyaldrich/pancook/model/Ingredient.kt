@@ -5,7 +5,7 @@ data class Ingredient(
     val imageRes: Int,
     val name: String,
     val category: String,
-    val qty: Float,
+    val qty: Double,
     val unitMeasurement: String,
 ) {
     fun quantityString(): String {
