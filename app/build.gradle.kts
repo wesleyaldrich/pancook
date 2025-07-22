@@ -71,7 +71,10 @@ dependencies {
     implementation("com.google.accompanist:accompanist-pager:0.28.0") // Check for the latest version
     implementation("com.google.accompanist:accompanist-pager-indicators:0.28.0") // Optional, for more advanced indicators
     implementation("io.coil-kt:coil-compose:2.4.0")
-    implementation("androidx.compose.material3:material3:1.2.1")
-
+    implementation("androidx.compose.material3:material3:1.7.0")
+    implementation("androidx.compose.foundation:foundation:1.7.0")
     implementation(libs.androidx.navigation.compose)
+    implementation("io.coil-kt:coil-compose:2.4.0")
+    implementation("androidx.compose.ui:ui:1.7.0")
+
 }
