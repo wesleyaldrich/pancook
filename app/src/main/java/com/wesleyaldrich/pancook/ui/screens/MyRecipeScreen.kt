@@ -22,6 +22,8 @@ import com.wesleyaldrich.pancook.ui.navigation.Screen
 import com.wesleyaldrich.pancook.model.Instruction
 import com.wesleyaldrich.pancook.model.NutritionFact
 import com.wesleyaldrich.pancook.model.Comment
+import androidx.compose.runtime.LaunchedEffect // Added for initializing upvotedRecipes
+import androidx.compose.runtime.remember // Added for remember
 
 
 val allRecipes = mutableStateListOf<Recipe>().apply {
@@ -70,7 +72,8 @@ val allRecipes = mutableStateListOf<Recipe>().apply {
                 comments = listOf(
                     Comment("John Doe", "This is a delicious salad, easy to make!"),
                     Comment("Jane Smith", "Loved the addition of feta cheese, great recipe!", isUpvote = true)
-                )
+                ),
+                isUpvoted = false // Initial state for this specific recipe
             ),
             Recipe(
                 id = 5,
@@ -111,7 +114,8 @@ val allRecipes = mutableStateListOf<Recipe>().apply {
                 comments = listOf(
                     Comment("Mark T.", "Super spicy, just how I like it!"),
                     Comment("Chef Emily", "Quick dinner solution, love it!", isUpvote = true)
-                )
+                ),
+                isUpvoted = false // Initial state
             ),
             Recipe(
                 id = 6,
@@ -152,7 +156,8 @@ val allRecipes = mutableStateListOf<Recipe>().apply {
                 comments = listOf(
                     Comment("David S.", "My go-to weeknight recipe!"),
                     Comment("Sara L.", "Healthy and delicious. Perfect combo.", isUpvote = true)
-                )
+                ),
+                isUpvoted = false // Initial state
             ),
             Recipe(
                 id = 7,
@@ -195,7 +200,8 @@ val allRecipes = mutableStateListOf<Recipe>().apply {
                 comments = listOf(
                     Comment("Priya R.", "So flavorful and comforting!"),
                     Comment("Vegan Chef", "A staple in my kitchen, absolutely love it.", isUpvote = true)
-                )
+                ),
+                isUpvoted = false // Initial state
             ),
             Recipe(
                 id = 8,
@@ -233,7 +239,8 @@ val allRecipes = mutableStateListOf<Recipe>().apply {
                 comments = listOf(
                     Comment("Tom H.", "My kids devour this every time!"),
                     Comment("RecipeFan", "Creamy perfection!", isUpvote = true)
-                )
+                ),
+                isUpvoted = false // Initial state
             ),
             Recipe(
                 id = 9,
@@ -268,7 +275,8 @@ val allRecipes = mutableStateListOf<Recipe>().apply {
                 comments = listOf(
                     Comment("Fisherman Fred", "Simple and delicious, great for grilling season."),
                     Comment("Health Nut", "Light and healthy, exactly what I needed!", isUpvote = true)
-                )
+                ),
+                isUpvoted = false // Initial state
             ),
             Recipe(
                 id = 11,
@@ -311,7 +319,8 @@ val allRecipes = mutableStateListOf<Recipe>().apply {
                 comments = listOf(
                     Comment("Grandma's Boy", "Just like my grandma used to make! So hearty."),
                     Comment("Winter Warmer", "Perfect for a cold evening.", isUpvote = true)
-                )
+                ),
+                isUpvoted = false // Initial state
             ),
             Recipe(
                 id = 12,
@@ -351,7 +360,8 @@ val allRecipes = mutableStateListOf<Recipe>().apply {
                 comments = listOf(
                     Comment("Soup Lover", "My favorite quick soup recipe!"),
                     Comment("Warm Belly", "Comfort in a bowl.", isUpvote = true)
-                )
+                ),
+                isUpvoted = false // Initial state
             ),
 
             Recipe(
@@ -389,7 +399,8 @@ val allRecipes = mutableStateListOf<Recipe>().apply {
                 comments = listOf(
                     Comment("Pasta Lover", "Classic comfort food, can't go wrong with this!"),
                     Comment("Italian Grandma", "Delizioso! A perfect bolognese.", isUpvote = true)
-                )
+                ),
+                isUpvoted = false // Initial state
             ),
             Recipe(
                 id = 2,
@@ -425,7 +436,8 @@ val allRecipes = mutableStateListOf<Recipe>().apply {
                 comments = listOf(
                     Comment("Salad Fan", "Fresh and light, great for lunch."),
                     Comment("Healthy Eater", "My daily dose of greens!", isUpvote = true)
-                )
+                ),
+                isUpvoted = false // Initial state
             ),
             Recipe(
                 id = 3,
@@ -459,7 +471,8 @@ val allRecipes = mutableStateListOf<Recipe>().apply {
                 comments = listOf(
                     Comment("Grill Master", "Perfectly grilled chicken every time!"),
                     Comment("Gym Buff", "High protein, low carb. Excellent!", isUpvote = true)
-                )
+                ),
+                isUpvoted = false // Initial state
             ),
 
             Recipe(
@@ -496,7 +509,8 @@ val allRecipes = mutableStateListOf<Recipe>().apply {
                 comments = listOf(
                     Comment("Breakfast King", "Crispy and delicious, a perfect breakfast side!"),
                     Comment("Morning Person", "Can't start my day without these.", isUpvote = true)
-                )
+                ),
+                isUpvoted = false // Initial state
             ),
             Recipe(
                 id = 102,
@@ -535,7 +549,8 @@ val allRecipes = mutableStateListOf<Recipe>().apply {
                 comments = listOf(
                     Comment("Sweet Tooth", "The fudgiest brownies ever! A must-try."),
                     Comment("Dessert Queen", "Perfect texture and rich chocolate flavor.", isUpvote = true)
-                )
+                ),
+                isUpvoted = false // Initial state
             ),
             Recipe(
                 id = 103,
@@ -571,7 +586,8 @@ val allRecipes = mutableStateListOf<Recipe>().apply {
                 ),
                 comments = listOf(
                     Comment("Brunch Fan", "Best French Toast ever, simple and delicious!")
-                )
+                ),
+                isUpvoted = false // Initial state
             )
         )
     )
@@ -580,16 +596,32 @@ val allRecipes = mutableStateListOf<Recipe>().apply {
 // Global mutable list to store bookmarked recipes
 val bookmarkedRecipes = mutableStateListOf<Recipe>().apply {
     // Initialize with some bookmarked recipes for demonstration
-    // These IDs correspond to recipes in 'allRecipes'
-    add(allRecipes.find { it.id == 4 }!!)
-    add(allRecipes.find { it.id == 6 }!!)
-    add(allRecipes.find { it.id == 102 }!!)
-    add(allRecipes.find { it.id == 5 }!!)
-    add(allRecipes.find { it.id == 9 }!!)
+    val initialBookmarks = listOf(4, 6, 102, 5, 9)
+    initialBookmarks.forEach { id ->
+        allRecipes.find { it.id == id }?.let { add(it) }
+    }
 }
+
+// GLOBAL mutable list to store upvoted recipes
+val upvotedRecipes = mutableStateListOf<Recipe>().apply {
+    // Optionally initialize with some upvoted recipes for demonstration
+    // val initialUpvotes = listOf(4, 1, 103) // Example
+    // initialUpvotes.forEach { id ->
+    //     allRecipes.find { it.id == id }?.let { add(it) }
+    // }
+}
+
 
 @Composable
 fun MyRecipeScreen(navController: NavController) {
+    // This LaunchedEffect will update the `isUpvoted` status of recipes in `allRecipes`
+    // whenever `upvotedRecipes` changes, ensuring consistency.
+    LaunchedEffect(upvotedRecipes.toList()) { // Use .toList() to trigger recomposition when content changes
+        allRecipes.forEach { recipe ->
+            recipe.isUpvoted = upvotedRecipes.contains(recipe)
+        }
+    }
+
     Column(modifier = Modifier.fillMaxSize()) {
         LazyVerticalGrid(
             columns = GridCells.Fixed(2),
@@ -599,14 +631,17 @@ fun MyRecipeScreen(navController: NavController) {
             modifier = Modifier.fillMaxSize()
         ) {
             items(allRecipes) { recipe ->
-                // Directly check the global bookmarkedRecipes list for the current bookmark status
+                // Check the global upvotedRecipes list for the current upvote status
+                val isUpvoted = upvotedRecipes.contains(recipe)
                 val isBookmarked = bookmarkedRecipes.contains(recipe)
+
+
                 ReusableCard(
                     imagePainter = painterResource(id = recipe.images.first()),
                     title = recipe.title,
                     description = recipe.recipeMaker,
                     duration = recipe.duration,
-                    upvoteCount = recipe.upvoteCount,
+                    upvoteCount = recipe.upvoteCount, // Now read directly from the recipe object
                     isBookmarked = isBookmarked,
                     onBookmarkClick = {
                         // Toggle bookmark status directly on the global list
@@ -619,6 +654,18 @@ fun MyRecipeScreen(navController: NavController) {
                     onDeleteClick = {
                         allRecipes.remove(recipe)
                         bookmarkedRecipes.remove(recipe) // Ensure it's removed from bookmarks too
+                        upvotedRecipes.remove(recipe) // Ensure it's removed from upvotes too
+                    },
+                    isUpvoted = isUpvoted, // Pass the status derived from the global list
+                    onUpvoteClick = {
+                        // Toggle upvote status directly on the global list
+                        if (upvotedRecipes.contains(recipe)) {
+                            upvotedRecipes.remove(recipe)
+                            recipe.upvoteCount-- // Decrement count directly on the recipe object
+                        } else {
+                            upvotedRecipes.add(recipe)
+                            recipe.upvoteCount++ // Increment count directly on the recipe object
+                        }
                     },
                     modifier = Modifier.clickable {
                         navController.navigate(Screen.DetailRecipe.createRoute(recipe.id))
