@@ -27,6 +27,7 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.ThumbUp
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.sp
 import com.wesleyaldrich.pancook.ui.theme.nunito
 import com.wesleyaldrich.pancook.ui.theme.poppins
@@ -45,6 +46,8 @@ import androidx.compose.ui.graphics.Color
  * @param onBookmarkClick Lambda to handle bookmark icon clicks.
  * @param onDeleteClick Lambda to handle delete icon clicks.
  * @param hideDeleteButton Boolean to control the visibility of the delete button.
+ * @param isUpvoted Boolean to indicate if the recipe is upvoted by the current user.
+ * @param onUpvoteClick Lambda to handle upvote icon clicks.
  */
 @Composable
 fun ReusableCard(
@@ -57,7 +60,9 @@ fun ReusableCard(
     isBookmarked: Boolean = false,
     onBookmarkClick: () -> Unit = {},
     onDeleteClick: () -> Unit = {},
-    hideDeleteButton: Boolean = false // New parameter
+    hideDeleteButton: Boolean = false, // New parameter
+    isUpvoted: Boolean = false, // New parameter for upvote state
+    onUpvoteClick: () -> Unit = {} // New parameter for upvote click
 ) {
     Card(
         modifier = modifier
@@ -93,10 +98,10 @@ fun ReusableCard(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text(
-                        text = duration,
+                        text = formatDurationShort(duration), // Apply formatting
                         fontFamily = nunito,
                         fontWeight = FontWeight.SemiBold,
-                        fontSize = 16.sp,
+                        fontSize = 14.sp, // Toned down from 16.sp
                         color = colorResource(R.color.accent_yellow),
                         modifier = Modifier
                             .background(
@@ -163,12 +168,30 @@ fun ReusableCard(
                         .padding(horizontal = 6.dp, vertical = 3.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Icon(
-                        imageVector = Icons.Filled.ThumbUp,
-                        contentDescription = "Upvotes",
-                        tint = colorResource(R.color.accent_yellow),
-                        modifier = Modifier.size(14.dp)
-                    )
+                    // Upvote button with layered icons for border effect
+                    Box(
+                        modifier = Modifier
+                            .size(24.dp) // Toned down from 28.dp
+                            .clip(RoundedCornerShape(20.dp))
+                            .background(colorResource(R.color.primary).copy(alpha = 0.75f))
+                            .clickable { onUpvoteClick() }, // Make clickable
+                        contentAlignment = Alignment.Center
+                    ) {
+                        // Border Icon (always white, slightly larger)
+                        Icon(
+                            imageVector = Icons.Filled.ThumbUp,
+                            contentDescription = "Upvotes Border",
+                            tint = Color.White, // Fixed white for the border
+                            modifier = Modifier.size(18.dp) // Toned down from 20.dp
+                        )
+                        // Fill Icon (dynamic color, slightly smaller)
+                        Icon(
+                            imageVector = Icons.Filled.ThumbUp,
+                            contentDescription = "Upvotes Fill",
+                            tint = if (isUpvoted) colorResource(R.color.accent_yellow) else colorResource(R.color.primary).copy(alpha = 0.75f), // Change color based on isUpvoted
+                            modifier = Modifier.size(14.dp) // Toned down from 16.dp
+                        )
+                    }
                     Spacer(modifier = Modifier.width(3.dp))
                     Text(
                         text = if (upvoteCount >= 1000) {
@@ -178,8 +201,8 @@ fun ReusableCard(
                         },
                         fontFamily = nunito,
                         fontWeight = FontWeight.Medium,
+                        fontSize = 12.sp,
                         color = colorResource(R.color.accent_yellow),
-                        fontSize = 12.sp
                     )
                 }
             }
@@ -193,7 +216,9 @@ fun ReusableCard(
                     text = title,
                     fontFamily = poppins,
                     fontWeight = FontWeight.SemiBold,
-                    fontSize = 16.sp,
+                    fontSize = 15.sp, // Toned down from 16.sp
+                    maxLines = 1, // Limit text to 1 line
+                    overflow = TextOverflow.Ellipsis, // Add ellipsis if text overflows
                     color = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier
                         .fillMaxWidth()
@@ -203,7 +228,7 @@ fun ReusableCard(
                     text = description,
                     fontFamily = nunito,
                     fontWeight = FontWeight.SemiBold,
-                    fontSize = 12.sp,
+                    fontSize = 11.sp, // Toned down from 12.sp
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier
                         .fillMaxWidth()
@@ -212,6 +237,53 @@ fun ReusableCard(
             }
         }
     }
+}
+
+/**
+ * Helper function to format duration strings into a shorter format.
+ * Examples: "1 hour 20 minutes" -> "1h 20m", "30 min" -> "30m", "2 days" -> "2d"
+ */
+private fun formatDurationShort(duration: String): String {
+    val durationLower = duration.lowercase()
+    val components = mutableListOf<String>()
+
+    // Regex to find and extract numbers followed by common time units (hour, min, day, week)
+    val hoursMatch = Regex("(\\d+)\\s+(hour|hours)").find(durationLower)
+    hoursMatch?.let {
+        components.add("${it.groupValues[1]}h")
+    }
+
+    val minutesMatch = Regex("(\\d+)\\s+(min|minutes)").find(durationLower)
+    minutesMatch?.let {
+        components.add("${it.groupValues[1]}m")
+    }
+
+    val daysMatch = Regex("(\\d+)\\s+(day|days)").find(durationLower)
+    daysMatch?.let {
+        components.add("${it.groupValues[1]}d")
+    }
+
+    val weeksMatch = Regex("(\\d+)\\s+(week|weeks)").find(durationLower)
+    weeksMatch?.let {
+        components.add("${it.groupValues[1]}w")
+    }
+
+    // Handle cases where duration might just be "30 min" without "hour"
+    if (components.isEmpty()) {
+        val singleUnitMatch = Regex("(\\d+)\\s*(min|minutes|hour|hours|day|days|week|weeks)").find(durationLower)
+        singleUnitMatch?.let {
+            val value = it.groupValues[1]
+            when (it.groupValues[2]) { // Make 'when' exhaustive
+                "min", "minutes" -> components.add("${value}m")
+                "hour", "hours" -> components.add("${value}h")
+                "day", "days" -> components.add("${value}d")
+                "week", "weeks" -> components.add("${value}w")
+                else -> components.add(duration) // Fallback for unhandled units
+            }
+        }
+    }
+
+    return if (components.isEmpty()) duration else components.joinToString(" ")
 }
 
 @Preview(showBackground = true)
@@ -224,45 +296,48 @@ fun ReusableCardPreview() {
                 imagePainter = painterResource(id = R.drawable.salad),
                 title = "Delicious Salad",
                 description = "by Nunuk",
-                duration = "15 min",
+                duration = "15 minutes", // Changed for preview
                 upvoteCount = 1234,
                 isBookmarked = true,
                 onBookmarkClick = {},
-                onDeleteClick = {}
+                onDeleteClick = {},
+                isUpvoted = true // Preview with upvoted state
             )
             Spacer(modifier = Modifier.height(16.dp))
             ReusableCard(
                 imagePainter = painterResource(id = R.drawable.salad),
                 title = "Another Delicious Dish",
                 description = "by Chef John",
-                duration = "45 min",
+                duration = "1 hour 30 minutes", // Changed for preview
                 upvoteCount = 987,
                 isBookmarked = false,
                 onBookmarkClick = {},
                 onDeleteClick = {},
-                hideDeleteButton = true // Example of hidden delete button
+                isUpvoted = false // Preview with unupvoted state
             )
             Spacer(modifier = Modifier.height(16.dp))
             ReusableCard(
                 imagePainter = painterResource(id = R.drawable.salad),
                 title = "Quick Snack",
                 description = "by Mary",
-                duration = "5 min",
+                duration = "5 min", // Changed for preview
                 upvoteCount = 10000,
                 isBookmarked = true,
                 onBookmarkClick = {},
-                onDeleteClick = {}
+                onDeleteClick = {},
+                isUpvoted = true // Preview with upvoted state
             )
             Spacer(modifier = Modifier.height(16.dp))
             ReusableCard(
                 imagePainter = painterResource(id = R.drawable.salad),
                 title = "Long Cook Meal",
                 description = "by Chef Gordon",
-                duration = "2 hours",
+                duration = "2 hours", // Changed for preview
                 upvoteCount = 5000,
                 isBookmarked = true,
                 onBookmarkClick = {},
-                onDeleteClick = {}
+                onDeleteClick = {},
+                isUpvoted = false // Preview with unupvoted state
             )
         }
     }

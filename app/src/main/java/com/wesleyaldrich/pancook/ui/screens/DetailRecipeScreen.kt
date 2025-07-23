@@ -29,7 +29,7 @@ import androidx.compose.material.icons.filled.ChatBubble
 import androidx.compose.material.icons.filled.People
 import androidx.compose.material.icons.filled.MoreHoriz
 import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.* // Make sure to import all necessary remember, mutableStateOf, etc.
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -62,11 +62,58 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.unit.IntOffset
 import kotlin.math.roundToInt
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.wesleyaldrich.pancook.model.Recipe // Ensure Recipe model is imported
 
+/**
+ * Helper function to format duration strings into a shorter format.
+ * Examples: "1 hour 20 minutes" -> "1h 20m", "30 min" -> "30m", "2 days" -> "2d"
+ */
+private fun formatDurationShort(duration: String): String {
+    val durationLower = duration.lowercase()
+    val components = mutableListOf<String>()
+
+    // Regex to find and extract numbers followed by common time units (hour, min, day, week)
+    val hoursMatch = Regex("(\\d+)\\s+(hour|hours)").find(durationLower)
+    hoursMatch?.let {
+        components.add("${it.groupValues[1]}h")
+    }
+
+    val minutesMatch = Regex("(\\d+)\\s+(min|minutes)").find(durationLower)
+    minutesMatch?.let {
+        components.add("${it.groupValues[1]}m")
+    }
+
+    val daysMatch = Regex("(\\d+)\\s+(day|days)").find(durationLower)
+    daysMatch?.let {
+        components.add("${it.groupValues[1]}d")
+    }
+
+    val weeksMatch = Regex("(\\d+)\\s+(week|weeks)").find(durationLower)
+    weeksMatch?.let {
+        components.add("${it.groupValues[1]}w")
+    }
+
+    // Handle cases where duration might just be "30 min" without "hour"
+    if (components.isEmpty()) {
+        val singleUnitMatch = Regex("(\\d+)\\s*(min|minutes|hour|hours|day|days|week|weeks)").find(durationLower)
+        singleUnitMatch?.let {
+            val value = it.groupValues[1]
+            when (it.groupValues[2]) { // Make 'when' exhaustive
+                "min", "minutes" -> components.add("${value}m")
+                "hour", "hours" -> components.add("${value}h")
+                "day", "days" -> components.add("${value}d")
+                "week", "weeks" -> components.add("${value}w")
+                else -> components.add(duration) // Fallback for unhandled units
+            }
+        }
+    }
+
+    return if (components.isEmpty()) duration else components.joinToString(" ")
+}
 
 /**
  * A reusable, auto-scrolling image carousel with infinite loop behavior and indicator dots.
@@ -230,10 +277,13 @@ fun DetailRecipeScreen(recipeId: Int, navController: NavController) {
     var showShareDialog by remember { mutableStateOf(false) }
     val context = LocalContext.current
 
-    val currentRecipe = remember(recipeId) {
-        allRecipes.find { it.id == recipeId }
+    // Find the recipe from the global allRecipes list
+    // Use derivedStateOf to ensure currentRecipe updates if allRecipes changes
+    val currentRecipe by remember(recipeId) {
+        derivedStateOf { allRecipes.find { it.id == recipeId } }
     }
 
+    // Early exit if recipe not found (e.g., deleted)
     if (currentRecipe == null) {
         LaunchedEffect(Unit) {
             navController.popBackStack()
@@ -241,13 +291,18 @@ fun DetailRecipeScreen(recipeId: Int, navController: NavController) {
         return
     }
 
-    var currentUpvoteCount by remember(currentRecipe.id) { mutableStateOf(currentRecipe.upvoteCount) }
-    var isBookmarked by remember(currentRecipe.id) {
-        mutableStateOf(bookmarkedRecipes.contains(currentRecipe))
-    }
+    // Use currentRecipe directly for its upvoteCount and isUpvoted state
+    // These values will be observed from the global allRecipes list
+    val recipe = currentRecipe!! // Non-null asserted after null check above
 
-    val displayImages = remember(currentRecipe.images) { // Corrected to use currentRecipe.images
-        currentRecipe.images
+    // These states are now derived from the global lists, making them consistent
+    // No need for local mutableStateOf for isUpvoted and currentUpvoteCount for display
+    val isRecipeBookmarked = bookmarkedRecipes.contains(recipe)
+    val isRecipeUpvoted = upvotedRecipes.contains(recipe)
+    val currentDisplayUpvoteCount = recipe.upvoteCount // Directly read from the recipe object
+
+    val displayImages = remember(recipe.images) {
+        recipe.images
     }
 
     fun formatCount(count: Int): String {
@@ -336,8 +391,8 @@ fun DetailRecipeScreen(recipeId: Int, navController: NavController) {
                         ) {
                             Column(modifier = Modifier.weight(1f)) {
                                 Text(
-                                    text = currentRecipe.title,
-                                    style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold, fontSize = 24.sp, color = colorResource(R.color.primary).copy(alpha = 1f)),
+                                    text = recipe.title, // Use 'recipe' directly
+                                    style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold, fontSize = 22.sp, color = colorResource(R.color.primary).copy(alpha = 1f)), // Toned down from 24.sp
                                     modifier = Modifier.fillMaxWidth()
                                 )
                                 Spacer(modifier = Modifier.height(4.dp))
@@ -348,15 +403,15 @@ fun DetailRecipeScreen(recipeId: Int, navController: NavController) {
                                             painter = painterResource(id = R.drawable.nopal),
                                             contentDescription = "Creator Profile",
                                             modifier = Modifier
-                                                .size(20.dp)
+                                                .size(18.dp) // Toned down from 20.dp
                                                 .clip(CircleShape)
                                                 .background(MaterialTheme.colorScheme.surfaceVariant),
                                             contentScale = ContentScale.Crop,
                                         )
                                         Spacer(modifier = Modifier.width(4.dp))
                                         Text(
-                                            text = currentRecipe.recipeMaker,
-                                            style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium, fontSize = 16.sp, color = colorResource(R.color.primary).copy(alpha = 1f))
+                                            text = recipe.recipeMaker, // Use 'recipe' directly
+                                            style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium, fontSize = 14.sp, color = colorResource(R.color.primary).copy(alpha = 1f)) // Toned down from 16.sp
                                         )
                                     }
 
@@ -365,11 +420,11 @@ fun DetailRecipeScreen(recipeId: Int, navController: NavController) {
                                         Icon(
                                             painterResource(id = R.drawable.ic_clock),
                                             contentDescription = "Duration",
-                                            modifier = Modifier.size(20.dp),
+                                            modifier = Modifier.size(18.dp), // Toned down from 20.dp
                                             tint = colorResource(R.color.primary).copy(alpha = 1f)
                                         )
                                         Spacer(modifier = Modifier.width(2.dp))
-                                        Text(text = currentRecipe.duration, style = MaterialTheme.typography.bodyMedium.copy(fontSize = 16.sp))
+                                        Text(text = formatDurationShort(recipe.duration), style = MaterialTheme.typography.bodyMedium.copy(fontSize = 14.sp)) // Toned down from 16.sp
                                     }
                                 }
                                 Spacer(modifier = Modifier.height(8.dp)) // Added space here to push description down
@@ -379,78 +434,108 @@ fun DetailRecipeScreen(recipeId: Int, navController: NavController) {
                                 modifier = Modifier.padding(top = 8.dp),
                                 verticalAlignment = Alignment.Top
                             ) {
+                                // Upvote Button
                                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                     IconButton(
                                         onClick = {
-                                            currentUpvoteCount = if (currentUpvoteCount == currentRecipe.upvoteCount) currentUpvoteCount + 1 else currentUpvoteCount - 1
-                                        },
-                                        modifier = Modifier.size(24.dp)
-                                    ) {
-                                        Icon(Icons.Filled.ThumbUp, contentDescription = "Upvote", tint = colorResource(R.color.primary).copy(alpha = 1f))
-                                    }
-                                    Spacer(modifier = Modifier.height(0.dp))
-                                    Text(
-                                        text = formatCount(currentUpvoteCount),
-                                        style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp)
-                                    )
-                                }
-                                Spacer(modifier = Modifier.width(4.dp))
-                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                    IconButton(
-                                        onClick = {
-                                            if (isBookmarked) {
-                                                bookmarkedRecipes.remove(currentRecipe)
+                                            // Toggle upvote state and update count on the global recipe object
+                                            if (upvotedRecipes.contains(recipe)) {
+                                                upvotedRecipes.remove(recipe)
+                                                recipe.upvoteCount--
                                             } else {
-                                                bookmarkedRecipes.add(currentRecipe)
+                                                upvotedRecipes.add(recipe)
+                                                recipe.upvoteCount++
                                             }
-                                            isBookmarked = !isBookmarked
+                                            // The isUpvoted state and count will now automatically reflect
+                                            // the changes because they are derived from the global lists/objects.
                                         },
-                                        modifier = Modifier.size(24.dp)
+                                        modifier = Modifier.size(22.dp) // Toned down from 24.dp
                                     ) {
                                         Box(
                                             contentAlignment = Alignment.Center,
-                                            modifier = Modifier.size(24.dp)
+                                            modifier = Modifier.size(22.dp) // Toned down from 24.dp
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Filled.ThumbUp,
+                                                contentDescription = "Upvote Border",
+                                                tint = colorResource(R.color.primary), // Border color
+                                                modifier = Modifier.size(22.dp) // Toned down from 24.dp
+                                            )
+                                            Icon(
+                                                imageVector = Icons.Filled.ThumbUp,
+                                                contentDescription = "Upvote Fill",
+                                                // Use the derived isRecipeUpvoted state
+                                                tint = if (isRecipeUpvoted) colorResource(R.color.primary) else MaterialTheme.colorScheme.surface, // Fill color based on state
+                                                modifier = Modifier.size(18.dp) // Toned down from 20.dp
+                                            )
+                                        }
+                                    }
+                                    Spacer(modifier = Modifier.height(0.dp))
+                                    Text(
+                                        text = formatCount(currentDisplayUpvoteCount), // Use the derived count
+                                        style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp) // Toned down from 12.sp
+                                    )
+                                }
+                                Spacer(modifier = Modifier.width(4.dp))
+                                // Bookmark Button
+                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                    IconButton(
+                                        onClick = {
+                                            if (bookmarkedRecipes.contains(recipe)) {
+                                                bookmarkedRecipes.remove(recipe)
+                                            } else {
+                                                bookmarkedRecipes.add(recipe)
+                                            }
+                                            // The isBookmarked state will automatically reflect the change
+                                            // because it's derived from the global list.
+                                        },
+                                        modifier = Modifier.size(22.dp) // Toned down from 24.dp
+                                    ) {
+                                        Box(
+                                            contentAlignment = Alignment.Center,
+                                            modifier = Modifier.size(22.dp) // Toned down from 24.dp
                                         ) {
                                             Icon(
                                                 imageVector = Icons.Filled.Bookmark,
-                                                contentDescription = "Bookmark Icon",
-                                                tint = colorResource(R.color.primary), // Apply primary color when bookmarked, else background color
-                                                modifier = Modifier.size(24.dp)
+                                                contentDescription = "Bookmark Border",
+                                                tint = colorResource(R.color.primary), // Border color (fixed)
+                                                modifier = Modifier.size(22.dp) // Toned down from 24.dp
                                             )
                                             Icon(
                                                 imageVector = Icons.Filled.Bookmark,
-                                                contentDescription = "Bookmark Icon",
-                                                tint = if (isBookmarked) colorResource(R.color.primary) else MaterialTheme.colorScheme.surface, // Apply primary color when bookmarked, else background color
-                                                modifier = Modifier.size(20.dp)
+                                                contentDescription = "Bookmark Fill",
+                                                // Use the derived isRecipeBookmarked state
+                                                tint = if (isRecipeBookmarked) colorResource(R.color.primary) else MaterialTheme.colorScheme.surface, // Fill color based on state
+                                                modifier = Modifier.size(18.dp) // Toned down from 20.dp
                                             )
                                         }
                                     }
                                     Spacer(modifier = Modifier.height(0.dp))
                                     Text(
                                         text = formatCount(bookmarkedRecipes.size),
-                                        style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp)
+                                        style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp) // Toned down from 12.sp
                                     )
                                 }
                                 Spacer(modifier = Modifier.width(4.dp))
                                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                     IconButton(
                                         onClick = { showShareDialog = true },
-                                        modifier = Modifier.size(24.dp)
+                                        modifier = Modifier.size(22.dp) // Toned down from 24.dp
                                     ) {
                                         Icon(Icons.Filled.Share, contentDescription = "Share", tint = colorResource(R.color.primary).copy(alpha = 1f))
                                     }
                                     Spacer(modifier = Modifier.height(0.dp))
                                     Text(
                                         text = formatCount(567), // Static share count for now
-                                        style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp)
+                                        style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp) // Toned down from 12.sp
                                     )
                                 }
                             }
                         }
 
                         Text(
-                            text = currentRecipe.description,
-                            style = MaterialTheme.typography.bodyLarge.copy(fontSize = 16.sp),
+                            text = recipe.description, // Use 'recipe' directly
+                            style = MaterialTheme.typography.bodyLarge.copy(fontSize = 14.sp), // Toned down from 16.sp
                             modifier = Modifier.padding(bottom = 6.dp)
                         )
                     }
@@ -472,7 +557,7 @@ fun DetailRecipeScreen(recipeId: Int, navController: NavController) {
                             ) {
                                 Text(
                                     text = "Ingredients",
-                                    style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold, fontSize = 20.sp, color = colorResource(R.color.primary).copy(alpha = 1f)),
+                                    style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold, fontSize = 18.sp, color = colorResource(R.color.primary).copy(alpha = 1f)), // Toned down from 20.sp
                                     modifier = Modifier.weight(1f)
                                 )
 
@@ -480,33 +565,33 @@ fun DetailRecipeScreen(recipeId: Int, navController: NavController) {
                                     Icon(
                                         painterResource(id = R.drawable.ic_serving),
                                         contentDescription = "Serving Count",
-                                        modifier = Modifier.size(20.dp),
+                                        modifier = Modifier.size(18.dp), // Toned down from 20.dp
                                         tint = colorResource(R.color.primary).copy(alpha = 1f)
                                     )
                                     Spacer(modifier = Modifier.width(4.dp))
 
                                     Button(
                                         onClick = { if (servingCount > 1) servingCount-- },
-                                        modifier = Modifier.size(20.dp),
+                                        modifier = Modifier.size(18.dp), // Toned down from 20.dp
                                         shape = CircleShape,
                                         contentPadding = PaddingValues(0.dp),
                                         colors = ButtonDefaults.buttonColors(containerColor = colorResource(R.color.primary).copy(alpha = 1f))
                                     ) {
-                                        Icon(Icons.Filled.KeyboardArrowDown, contentDescription = "Decrease Serving", tint = colorResource(R.color.accent_yellow).copy(alpha = 1f), modifier = Modifier.size(16.dp))
+                                        Icon(Icons.Filled.KeyboardArrowDown, contentDescription = "Decrease Serving", tint = colorResource(R.color.accent_yellow).copy(alpha = 1f), modifier = Modifier.size(14.dp)) // Toned down from 16.dp
                                     }
                                     Text(
                                         text = "$servingCount",
-                                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, fontSize = 16.sp),
+                                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, fontSize = 14.sp), // Toned down from 16.sp
                                         modifier = Modifier.padding(horizontal = 4.dp)
                                     )
                                     Button(
                                         onClick = { servingCount++ },
-                                        modifier = Modifier.size(20.dp),
+                                        modifier = Modifier.size(18.dp), // Toned down from 20.dp
                                         shape = CircleShape,
                                         contentPadding = PaddingValues(0.dp),
                                         colors = ButtonDefaults.buttonColors(containerColor = colorResource(R.color.primary).copy(alpha = 1f))
                                     ) {
-                                        Icon(Icons.Filled.KeyboardArrowUp, contentDescription = "Increase Serving", tint = colorResource(R.color.accent_yellow).copy(alpha = 1f), modifier = Modifier.size(16.dp))
+                                        Icon(Icons.Filled.KeyboardArrowUp, contentDescription = "Increase Serving", tint = colorResource(R.color.accent_yellow).copy(alpha = 1f), modifier = Modifier.size(14.dp)) // Toned down from 16.dp
                                     }
                                 }
                             }
@@ -515,8 +600,7 @@ fun DetailRecipeScreen(recipeId: Int, navController: NavController) {
                             val indentSpacerWidth = 8.dp
 
                             Column(modifier = Modifier.padding(start = 8.dp)) {
-                                currentRecipe.ingredients.forEach { ingredient ->
-                                    val (formattedQty, formattedUnit) = formatIngredientQuantity(ingredient.qty, ingredient.unitMeasurement)
+                                recipe.ingredients.forEach { ingredient -> // Use 'recipe' directly
                                     Row(
                                         modifier = Modifier
                                             .fillMaxWidth()
@@ -525,14 +609,16 @@ fun DetailRecipeScreen(recipeId: Int, navController: NavController) {
                                     ) {
                                         Box(
                                             modifier = Modifier
-                                                .size(width = ingredientValueBoxWidth, height = 20.dp)
+                                                .width(ingredientValueBoxWidth) // Fixed width for quantity
+                                                .height(20.dp)
                                                 .clip(RoundedCornerShape(8.dp))
                                                 .background(colorResource(R.color.primary).copy(alpha = 1f)),
                                             contentAlignment = Alignment.CenterEnd
                                         ) {
+                                            val (formattedQty, _) = formatIngredientQuantity(ingredient.qty, ingredient.unitMeasurement)
                                             Text(
                                                 text = formattedQty,
-                                                style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold, fontSize = 11.sp),
+                                                style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold, fontSize = 10.sp), // Toned down from 11.sp
                                                 color = colorResource(R.color.accent_yellow).copy(alpha = 1f),
                                                 textAlign = TextAlign.End,
                                                 modifier = Modifier.padding(end = 8.dp),
@@ -543,8 +629,8 @@ fun DetailRecipeScreen(recipeId: Int, navController: NavController) {
                                         Spacer(modifier = Modifier.width(indentSpacerWidth))
 
                                         Text(
-                                            text = formattedUnit,
-                                            style = MaterialTheme.typography.bodySmall.copy(fontSize = 14.sp),
+                                            text = formatIngredientQuantity(ingredient.qty, ingredient.unitMeasurement).second, // Display formatted unit
+                                            style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp), // Toned down from 14.sp
                                             fontWeight = FontWeight.Normal,
                                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                                             modifier = Modifier.width(70.dp)
@@ -553,7 +639,7 @@ fun DetailRecipeScreen(recipeId: Int, navController: NavController) {
 
                                         Text(
                                             text = ingredient.name,
-                                            style = MaterialTheme.typography.bodyLarge.copy(fontSize = 16.sp),
+                                            style = MaterialTheme.typography.bodyLarge.copy(fontSize = 14.sp), // Toned down from 16.sp
                                             modifier = Modifier.weight(1f)
                                         )
                                     }
@@ -575,38 +661,38 @@ fun DetailRecipeScreen(recipeId: Int, navController: NavController) {
                             Row(verticalAlignment = Alignment.Bottom) { // Aligns children baselines at the bottom
                                 Text(
                                     text = "Nutrition",
-                                    style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold, fontSize = 20.sp, color = colorResource(R.color.primary).copy(alpha = 1f)),
-                                    // Remove bottom padding, rely on Row's alignment
+                                    style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold, fontSize = 18.sp, color = colorResource(R.color.primary).copy(alpha = 1f)), // Toned down from 20.sp
                                 )
                             }
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceAround,
+                                horizontalArrangement = Arrangement.SpaceAround, // Changed to SpaceAround for even spacing
                                 verticalAlignment = Alignment.Top
                             ) {
-                                val fixedNutritionItemWidth = 80.dp
+                                // Define a common width for all nutrition value boxes
+                                val commonNutritionItemWidth = 70.dp // Adjusted for consistent width
 
-                                currentRecipe.nutritionFacts.forEach { fact ->
+                                recipe.nutritionFacts.forEach { fact -> // Use 'recipe' directly
                                     Column(
                                         horizontalAlignment = Alignment.CenterHorizontally,
-                                        modifier = Modifier.width(fixedNutritionItemWidth)
+                                        modifier = Modifier.width(commonNutritionItemWidth) // Apply common width
                                     ) {
                                         Text(
                                             text = fact.label,
-                                            style = MaterialTheme.typography.bodyMedium.copy(fontSize = 16.sp),
+                                            style = MaterialTheme.typography.bodyMedium.copy(fontSize = 14.sp), // Toned down from 16.sp
                                             modifier = Modifier.padding(bottom = 4.dp)
                                         )
                                         Box(
                                             modifier = Modifier
-                                                .height(32.dp)
-                                                .fillMaxWidth()
+                                                .height(30.dp) // Toned down from 32.dp
+                                                .fillMaxWidth() // Fill the commonNutritionItemWidth
                                                 .clip(RoundedCornerShape(8.dp))
                                                 .background(colorResource(R.color.primary).copy(alpha = 1f)),
                                             contentAlignment = Alignment.Center
                                         ) {
                                             Text(
                                                 text = fact.value,
-                                                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold, fontSize = 11.sp),
+                                                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold, fontSize = 10.sp), // Toned down from 11.sp
                                                 color = colorResource(R.color.accent_yellow).copy(alpha = 1f),
                                                 maxLines = 1,
                                                 overflow = TextOverflow.Ellipsis
@@ -630,11 +716,11 @@ fun DetailRecipeScreen(recipeId: Int, navController: NavController) {
                         Column(modifier = Modifier.padding(16.dp)) {
                             Text(
                                 text = "Instructions",
-                                style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold, fontSize = 20.sp, color = colorResource(R.color.primary).copy(alpha = 1f)),
+                                style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold, fontSize = 18.sp, color = colorResource(R.color.primary).copy(alpha = 1f)), // Toned down from 20.sp
                                 modifier = Modifier.padding(bottom = 8.dp)
                             )
 
-                            currentRecipe.steps.forEach { step ->
+                            recipe.steps.forEach { step -> // Use 'recipe' directly
                                 Column(
                                     modifier = Modifier
                                         .fillMaxWidth()
@@ -643,17 +729,17 @@ fun DetailRecipeScreen(recipeId: Int, navController: NavController) {
                                     Row(verticalAlignment = Alignment.CenterVertically) {
                                         Box(
                                             modifier = Modifier
-                                                .size(30.dp)
+                                                .size(28.dp) // Toned down from 30.dp
                                                 .clip(CircleShape)
                                                 .background(colorResource(R.color.primary).copy(alpha = 1f)),
                                             contentAlignment = Alignment.Center
                                         ) {
-                                            Text(text = "${step.stepNumber}", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                                            Text(text = "${step.stepNumber}", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 14.sp) // Toned down from 16.sp
                                         }
                                         Spacer(modifier = Modifier.width(8.dp))
                                         Text(
                                             text = step.description,
-                                            style = MaterialTheme.typography.bodyLarge.copy(fontSize = 16.sp),
+                                            style = MaterialTheme.typography.bodyLarge.copy(fontSize = 14.sp), // Toned down from 16.sp
                                             modifier = Modifier.weight(1f)
                                         )
                                     }
@@ -674,18 +760,18 @@ fun DetailRecipeScreen(recipeId: Int, navController: NavController) {
                         Column(modifier = Modifier.padding(16.dp)) {
                             Text(
                                 text = "Comments",
-                                style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold, fontSize = 20.sp, color = colorResource(R.color.primary).copy(alpha = 1f)),
+                                style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold, fontSize = 18.sp, color = colorResource(R.color.primary).copy(alpha = 1f)), // Toned down from 20.sp
                                 modifier = Modifier.padding(bottom = 8.dp)
                             )
-                            if (currentRecipe.comments.isEmpty()) {
+                            if (recipe.comments.isEmpty()) { // Use 'recipe' directly
                                 Text(
                                     text = "No comments yet. Be the first to share your thoughts!",
-                                    style = MaterialTheme.typography.bodyMedium,
+                                    style = MaterialTheme.typography.bodyMedium.copy(fontSize = 14.sp), // Toned down from default
                                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                                     modifier = Modifier.padding(vertical = 8.dp)
                                 )
                             } else {
-                                currentRecipe.comments.forEach { comment ->
+                                recipe.comments.forEach { comment -> // Use 'recipe' directly
                                     Row(
                                         modifier = Modifier
                                             .fillMaxWidth()
@@ -697,7 +783,7 @@ fun DetailRecipeScreen(recipeId: Int, navController: NavController) {
                                                 painter = rememberAsyncImagePainter(comment.imageUrl),
                                                 contentDescription = "User Avatar",
                                                 modifier = Modifier
-                                                    .size(48.dp)
+                                                    .size(40.dp) // Toned down from 48.dp
                                                     .clip(CircleShape)
                                                     .background(colorResource(R.color.accent_yellow).copy(alpha = 1f)),
                                                 contentScale = ContentScale.Crop
@@ -707,7 +793,7 @@ fun DetailRecipeScreen(recipeId: Int, navController: NavController) {
                                                 painter = painterResource(id = R.drawable.ic_serving),
                                                 contentDescription = "User Avatar",
                                                 modifier = Modifier
-                                                    .size(48.dp)
+                                                    .size(40.dp) // Toned down from 48.dp
                                                     .clip(CircleShape)
                                                     .background(colorResource(R.color.accent_yellow).copy(alpha = 1f)),
                                                 contentScale = ContentScale.Crop,
@@ -716,20 +802,20 @@ fun DetailRecipeScreen(recipeId: Int, navController: NavController) {
                                         }
                                         Spacer(modifier = Modifier.width(8.dp))
                                         Column(modifier = Modifier.weight(1f)) {
-                                            Text(text = comment.userName, fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                                            Text(text = comment.commentText, style = MaterialTheme.typography.bodyLarge.copy(fontSize = 16.sp))
+                                            Text(text = comment.userName, fontWeight = FontWeight.Bold, fontSize = 14.sp) // Toned down from 16.sp
+                                            Text(text = comment.commentText, style = MaterialTheme.typography.bodyLarge.copy(fontSize = 14.sp)) // Toned down from 16.sp
                                             comment.isUpvote?.let { isUpvote ->
                                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                                     Icon(
                                                         imageVector = if (isUpvote) Icons.Default.ThumbUp else Icons.Default.ThumbDown,
                                                         contentDescription = if (isUpvote) "Upvoted" else "Downvoted",
                                                         tint = if (isUpvote) Color.Green else Color.Red,
-                                                        modifier = Modifier.size(16.dp)
+                                                        modifier = Modifier.size(14.dp) // Toned down from 16.dp
                                                     )
                                                     Spacer(modifier = Modifier.width(4.dp))
                                                     Text(
                                                         text = if (isUpvote) "Recommended" else "Not Recommended",
-                                                        fontSize = 12.sp,
+                                                        fontSize = 11.sp, // Toned down from 12.sp
                                                         color = if (isUpvote) Color.Green else Color.Red
                                                     )
                                                 }
@@ -771,7 +857,7 @@ fun DetailRecipeScreen(recipeId: Int, navController: NavController) {
                         onClick = { /* Handle add to planner */ },
                         modifier = Modifier
                             .weight(0.5f)
-                            .height(50.dp),
+                            .height(45.dp), // Toned down from 50.dp
                         colors = ButtonDefaults.buttonColors(
                             containerColor = MaterialTheme.colorScheme.surfaceVariant,
                             contentColor = MaterialTheme.colorScheme.onSurfaceVariant
@@ -780,7 +866,7 @@ fun DetailRecipeScreen(recipeId: Int, navController: NavController) {
                     ) {
                         Icon(Icons.Filled.Add, contentDescription = "Add to Planner")
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text(text = "Add to Planner", fontSize = 15.5.sp)
+                        Text(text = "Add to Planner", fontSize = 14.sp) // Toned down from 15.5.sp
                     }
 
                     Spacer(modifier = Modifier.width(16.dp))
@@ -791,11 +877,11 @@ fun DetailRecipeScreen(recipeId: Int, navController: NavController) {
                         },
                         modifier = Modifier
                             .weight(0.5f)
-                            .height(50.dp),
+                            .height(45.dp), // Toned down from 50.dp
                         colors = ButtonDefaults.buttonColors(containerColor = colorResource(R.color.primary).copy(alpha = 1f)),
                         shape = RoundedCornerShape(8.dp)
                     ) {
-                        Text(text = "Start Instruction", color = MaterialTheme.colorScheme.onPrimary, fontSize = 16.sp)
+                        Text(text = "Start Instruction", color = MaterialTheme.colorScheme.onPrimary, fontSize = 14.sp) // Toned down from 16.sp
                     }
                 }
             }
@@ -871,13 +957,13 @@ fun DetailRecipeScreen(recipeId: Int, navController: NavController) {
                             )
                             Text(
                                 text = "Share to...",
-                                style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
+                                style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold, fontSize = 20.sp), // Toned down from default
                                 color = MaterialTheme.colorScheme.onSurface,
                                 modifier = Modifier.padding(vertical = 16.dp)
                             )
 
                             // Changed shareLink to use a custom scheme for internal app navigation
-                            val shareLink = "app://pancook.recipe/${currentRecipe.id}"
+                            val shareLink = "app://pancook.recipe/${recipe.id}" // Use 'recipe.id'
 
                             LazyRow(
                                 modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
@@ -958,7 +1044,7 @@ fun DetailRecipeScreen(recipeId: Int, navController: NavController) {
                                 onValueChange = { /* Read-only */ },
                                 readOnly = true,
                                 modifier = Modifier.fillMaxWidth(),
-                                label = { Text("Link") },
+                                label = { Text("Link", fontSize = 14.sp) }, // Toned down from default
                                 trailingIcon = {
                                     IconButton(onClick = {
                                         val clipboardManager = context.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
@@ -966,18 +1052,18 @@ fun DetailRecipeScreen(recipeId: Int, navController: NavController) {
                                         clipboardManager.setPrimaryClip(clipData)
                                         showShareDialog = false
                                     }) {
-                                        Icon(Icons.Default.ContentCopy, contentDescription = "Copy")
+                                        Icon(Icons.Default.ContentCopy, contentDescription = "Copy", modifier = Modifier.size(20.dp)) // Toned down from default
                                     }
                                 }
                             )
                             Spacer(modifier = Modifier.height(16.dp))
                             Button(
                                 onClick = { showShareDialog = false },
-                                modifier = Modifier.fillMaxWidth(),
+                                modifier = Modifier.fillMaxWidth().height(40.dp), // Toned down from default
                                 colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
                                 shape = RoundedCornerShape(8.dp)
                             ) {
-                                Text("Close", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                Text("Close", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp) // Toned down from default
                             }
                         }
                     }
@@ -993,11 +1079,11 @@ fun ShareOption(icon: ImageVector, text: String, onClick: () -> Unit) {
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
             .clickable(onClick = onClick)
-            .padding(8.dp)
+            .padding(6.dp) // Toned down from 8.dp
     ) {
         Box(
             modifier = Modifier
-                .size(50.dp)
+                .size(45.dp) // Toned down from 50.dp
                 .clip(CircleShape)
                 .background(MaterialTheme.colorScheme.secondaryContainer),
             contentAlignment = Alignment.Center
@@ -1005,12 +1091,12 @@ fun ShareOption(icon: ImageVector, text: String, onClick: () -> Unit) {
             Icon(
                 imageVector = icon,
                 contentDescription = text,
-                modifier = Modifier.size(24.dp),
+                modifier = Modifier.size(20.dp), // Toned down from 24.dp
                 tint = MaterialTheme.colorScheme.onSecondaryContainer
             )
         }
         Spacer(modifier = Modifier.width(4.dp))
-        Text(text = text, style = MaterialTheme.typography.labelSmall)
+        Text(text = text, style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp)) // Toned down from default
     }
 }
 
