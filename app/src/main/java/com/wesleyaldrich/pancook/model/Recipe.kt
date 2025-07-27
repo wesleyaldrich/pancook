@@ -13,5 +13,6 @@ data class Recipe(
     var upvoteCount: Int, // Made upvoteCount mutable
     val recipeMaker: String,
     val nutritionFacts: List<NutritionFact>,
-    val comments: List<Comment>
+    val comments: List<Comment>,
+    var isUpvoted: Boolean = false
 )
