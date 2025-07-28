@@ -47,7 +47,9 @@ fun NavigationGraph(navController: NavHostController, modifier: Modifier = Modif
             DetailRecipeScreen(recipeId = recipeId, navController = navController)
         }
         composable(Screen.Add.route) {  AddRecipeScreen(onBackPressed = { navController.popBackStack() }) }
-        composable(Screen.Planner.route) { PlannerScreen() }
+        composable(Screen.Planner.route) { PlannerScreen(
+            navController = navController,
+        ) }
         composable(Screen.GroceryList.route) {
             GroceryScreen(
                 onBackClick = { navController.popBackStack() },
