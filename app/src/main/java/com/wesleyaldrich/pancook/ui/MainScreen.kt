@@ -1,3 +1,4 @@
+// ui/MainScreen.kt
 package com.wesleyaldrich.pancook.ui
 
 import android.graphics.Color.rgb
