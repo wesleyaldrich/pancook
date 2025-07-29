@@ -1,3 +1,4 @@
+// ui/navigation/NavigationGraph.kt
 package com.wesleyaldrich.pancook.ui.navigation
 
 //import AddRecipeScreen
@@ -56,7 +57,12 @@ fun NavigationGraph(navController: NavHostController, modifier: Modifier = Modif
             )
         }
         composable(Screen.Profile.route) { ProfileScreen() }
-        composable(Screen.SavedRecipe.route) { SavedRecipeScreen(navController = navController) }
+        composable(Screen.SavedRecipe.route) {
+            SavedRecipeScreen(
+                navController = navController,
+                onBackClick = { navController.popBackStack() } // ADD THIS LINE
+            )
+        }
         composable(
             route = Screen.Instruction.route,
             arguments = listOf(navArgument("recipeId") { type = NavType.IntType })

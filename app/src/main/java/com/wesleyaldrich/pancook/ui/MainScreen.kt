@@ -1,3 +1,4 @@
+// ui/MainScreen.kt
 package com.wesleyaldrich.pancook.ui
 
 import android.graphics.Color.rgb
@@ -70,7 +71,8 @@ fun MainScreen() {
     val isSpecialScreen = currentRoute?.startsWith(Screen.DetailRecipe.route.substringBefore('/')) == true ||
             currentRoute?.startsWith(Screen.Instruction.route.substringBefore('/')) == true ||
             currentRoute?.startsWith(Screen.RecipeCompletion.route.substringBefore('/')) == true ||
-            currentRoute == Screen.GroceryList.route // This line hides header/bottom bar for GroceryScreen, add more here
+            currentRoute == Screen.GroceryList.route ||
+            currentRoute == Screen.SavedRecipe.route // ADD THIS LINE
 
     Scaffold(
         topBar = {

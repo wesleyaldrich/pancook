@@ -1,4 +1,4 @@
-// SavedRecipeScreen.kt
+// ui/screens/SavedRecipeScreen.kt
 package com.wesleyaldrich.pancook.ui.screens
 
 import androidx.compose.foundation.clickable
@@ -22,53 +22,98 @@ import androidx.compose.runtime.remember
 import com.wesleyaldrich.pancook.ui.screens.bookmarkedRecipes // Updated import
 import com.wesleyaldrich.pancook.ui.screens.allRecipes // Updated import
 
+// Import for Scaffold, TopAppBar, IconButton, Icon, Icons
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Icon
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material3.ExperimentalMaterial3Api // Required for TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.ui.res.colorResource
+import com.wesleyaldrich.pancook.R
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
+import com.wesleyaldrich.pancook.ui.theme.poppins
+
+@OptIn(ExperimentalMaterial3Api::class) // Add this annotation
 @Composable
-fun SavedRecipeScreen(navController: NavController) {
-    Column(modifier = Modifier.fillMaxSize()) {
-        if (bookmarkedRecipes.isEmpty()) {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                Text("No saved recipes yet. Bookmark some recipes to see them here!")
-            }
-        } else {
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(2),
-                contentPadding = PaddingValues(8.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier.fillMaxSize()
-            ) {
-                items(bookmarkedRecipes) { recipe ->
-                    val isBookmarked = remember(recipe.id) { bookmarkedRecipes.contains(recipe) }
-                    ReusableCard(
-                        imagePainter = painterResource(id = recipe.images.first()), // Use first image from list
-                        title = recipe.title,
-                        description = recipe.recipeMaker,
-                        duration = recipe.duration,
-                        upvoteCount = recipe.upvoteCount,
-                        isBookmarked = isBookmarked,
-                        onBookmarkClick = {
-                            // Toggle bookmark status for this recipe
-                            if (isBookmarked) {
+fun SavedRecipeScreen(
+    navController: NavController,
+    onBackClick: () -> Unit // ADD THIS PARAMETER
+) {
+    Scaffold( // Wrap your content with Scaffold
+        topBar = {
+            TopAppBar(
+                title = { },
+                navigationIcon = {
+                    IconButton(onClick = onBackClick) {
+                        // Change icon to ArrowBack and remove graphicsLayer if you want it to match GroceryScreen exactly
+                        Icon(
+                            imageVector = Icons.Filled.PlayArrow, // Changed from PlayArrow
+                            contentDescription = "Back",
+                            modifier = Modifier
+                                .size(50.dp)
+                                .graphicsLayer {
+                                    scaleX = -1f
+                                }
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.White)
+            )
+        }
+    ) { paddingValues -> // Add paddingValues to the content
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues) // Apply padding from Scaffold
+                .padding(horizontal = 8.dp) // Maintain horizontal padding
+        ) {
+            if (bookmarkedRecipes.isEmpty()) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text("No saved recipes yet. Bookmark some recipes to see them here!")
+                }
+            } else {
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(2),
+                    contentPadding = PaddingValues(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    items(bookmarkedRecipes) { recipe ->
+                        val isBookmarked = remember(recipe.id) { bookmarkedRecipes.contains(recipe) }
+                        ReusableCard(
+                            imagePainter = painterResource(id = recipe.images.first()),
+                            title = recipe.title,
+                            description = recipe.recipeMaker,
+                            duration = recipe.duration,
+                            upvoteCount = recipe.upvoteCount,
+                            isBookmarked = isBookmarked,
+                            onBookmarkClick = {
+                                if (isBookmarked) {
+                                    bookmarkedRecipes.remove(recipe)
+                                } else {
+                                    bookmarkedRecipes.add(recipe)
+                                }
+                            },
+                            onDeleteClick = {
                                 bookmarkedRecipes.remove(recipe)
-                            } else {
-                                bookmarkedRecipes.add(recipe)
+                            },
+                            hideDeleteButton = true,
+                            modifier = Modifier.clickable {
+                                navController.navigate(Screen.DetailRecipe.createRoute(recipe.id))
                             }
-                        },
-                        // The onDeleteClick lambda is still provided, but the button will be hidden
-                        onDeleteClick = {
-                            // Deleting from saved recipes means removing from bookmarkedRecipes
-                            bookmarkedRecipes.remove(recipe)
-                            // If you want deleting from saved also to delete from allRecipes:
-                            // allRecipes.remove(recipe)
-                        },
-                        hideDeleteButton = true, // Set this to true to hide the delete button
-                        modifier = Modifier.clickable {
-                            navController.navigate(Screen.DetailRecipe.createRoute(recipe.id))
-                        }
-                    )
+                        )
+                    }
                 }
             }
         }
@@ -83,6 +128,6 @@ fun SavedRecipeScreen(navController: NavController) {
 @Composable
 fun SavedRecipeScreenPreview() {
     PancookTheme {
-        SavedRecipeScreen(navController = rememberNavController())
+        SavedRecipeScreen(navController = rememberNavController(), onBackClick = {}) // Update preview call
     }
 }
