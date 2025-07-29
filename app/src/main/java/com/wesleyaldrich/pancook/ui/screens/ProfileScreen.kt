@@ -29,7 +29,10 @@ import com.wesleyaldrich.pancook.R
 import com.wesleyaldrich.pancook.ui.theme.nunito
 
 @Composable
-fun ProfileScreen(viewModel: ProfileViewModel = viewModel()) {
+fun ProfileScreen(
+    viewModel: ProfileViewModel = viewModel(),
+    onLogout: () -> Unit
+) {
     val focusManager = LocalFocusManager.current
 
     val profile by viewModel.profileState.collectAsState()
@@ -37,109 +40,126 @@ fun ProfileScreen(viewModel: ProfileViewModel = viewModel()) {
     var nameField by remember { mutableStateOf(TextFieldValue(profile.name)) }
     var emailField by remember { mutableStateOf(TextFieldValue(profile.email)) }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Top
-    ) {
-        Box(
+    Box(modifier = Modifier.fillMaxSize()) {
+        Column(
             modifier = Modifier
-                .size(120.dp)
-                .clip(CircleShape)
-                .background(Color.LightGray)
-                .clickable {
-                    viewModel.updateProfilePicture(R.drawable.nopal)
-                },
-            contentAlignment = Alignment.Center
+                .fillMaxSize()
+                .padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Top
         ) {
-            if (profile.profilePictureResId != null) {
-                Image(
-                    painter = painterResource(id = profile.profilePictureResId!!),
-                    contentDescription = "Profile Picture",
-                    modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Crop
+            Box(
+                modifier = Modifier
+                    .size(120.dp)
+                    .clip(CircleShape)
+                    .background(Color.LightGray)
+                    .clickable {
+                        viewModel.updateProfilePicture(R.drawable.nopal)
+                    },
+                contentAlignment = Alignment.Center
+            ) {
+                if (profile.profilePictureResId != null) {
+                    Image(
+                        painter = painterResource(id = profile.profilePictureResId!!),
+                        contentDescription = "Profile Picture",
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
+                } else {
+                    Icon(
+                        imageVector = Icons.Default.Person,
+                        contentDescription = "Default Icon",
+                        modifier = Modifier.size(64.dp),
+                        tint = Color.DarkGray
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp)
+            ){
+                Text(
+                    text = "Username",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Color.Black,
+                    modifier = Modifier.padding(bottom = 4.dp),
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight(500),
+                    textAlign = TextAlign.Start,
+                    fontFamily = nunito
                 )
-            } else {
-                Icon(
-                    imageVector = Icons.Default.Person,
-                    contentDescription = "Default Icon",
-                    modifier = Modifier.size(64.dp),
-                    tint = Color.DarkGray
+                OutlinedTextField(
+                    value = nameField,
+                    onValueChange = { nameField = it },
+                    modifier = Modifier.fillMaxWidth(),
+                    placeholder = { Text("Input username here") },
+                    singleLine = true,
+                    textStyle = TextStyle(
+                        fontFamily = nunito,
+                        fontSize = 16.sp
+                    )
+                )
+
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Text(
+                    text = "Email",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Color.Black,
+                    modifier = Modifier.padding(bottom = 4.dp),
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight(500),
+                    textAlign = TextAlign.Start,
+                    fontFamily = nunito
+                )
+                OutlinedTextField(
+                    value = emailField,
+                    onValueChange = { emailField = it },
+                    modifier = Modifier.fillMaxWidth(),
+                    placeholder = { Text("Input email here") },
+                    singleLine = true,
+                    textStyle = TextStyle(
+                        fontFamily = nunito,
+                        fontSize = 16.sp
+                    )
+                )
+            }
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            Button(
+                onClick = {
+                    focusManager.clearFocus(force = true)
+
+                    viewModel.updateName(nameField.text)
+                    viewModel.updateEmail(emailField.text)
+                    viewModel.saveProfile()
+                },
+                modifier = Modifier.width(200.dp),
+                shape = RoundedCornerShape(10.dp)
+            ) {
+                Text("Save",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    fontFamily = nunito
                 )
             }
         }
 
-        Spacer(modifier = Modifier.height(32.dp))
-
-        Column(
+        OutlinedButton(
+            onClick = onLogout, // Call the passed-in logout function
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 8.dp)
-        ){
-            Text(
-                text = "Username",
-                style = MaterialTheme.typography.bodySmall,
-                color = Color.Black,
-                modifier = Modifier.padding(bottom = 4.dp),
-                fontSize = 16.sp,
-                fontWeight = FontWeight(500),
-                textAlign = TextAlign.Start,
-                fontFamily = nunito
-            )
-            OutlinedTextField(
-                value = nameField,
-                onValueChange = { nameField = it },
-                modifier = Modifier.fillMaxWidth(),
-                placeholder = { Text("Input username here") },
-                singleLine = true,
-                textStyle = TextStyle(
-                    fontFamily = nunito,
-                    fontSize = 16.sp
-                )
-            )
-
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Text(
-                text = "Email",
-                style = MaterialTheme.typography.bodySmall,
-                color = Color.Black,
-                modifier = Modifier.padding(bottom = 4.dp),
-                fontSize = 16.sp,
-                fontWeight = FontWeight(500),
-                textAlign = TextAlign.Start,
-                fontFamily = nunito
-            )
-            OutlinedTextField(
-                value = emailField,
-                onValueChange = { emailField = it },
-                modifier = Modifier.fillMaxWidth(),
-                placeholder = { Text("Input email here") },
-                singleLine = true,
-                textStyle = TextStyle(
-                    fontFamily = nunito,
-                    fontSize = 16.sp
-                )
-            )
-        }
-
-        Spacer(modifier = Modifier.height(32.dp))
-
-        Button(
-            onClick = {
-                focusManager.clearFocus(force = true)
-
-                viewModel.updateName(nameField.text)
-                viewModel.updateEmail(emailField.text)
-                viewModel.saveProfile()
-            },
-            modifier = Modifier.width(200.dp),
+                .align(Alignment.BottomCenter) // Align to the bottom center of the Box
+                .padding(bottom = 64.dp)
+                .width(200.dp),
             shape = RoundedCornerShape(10.dp)
         ) {
-            Text("Save",
+            Text("Logout",
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
                 fontFamily = nunito
