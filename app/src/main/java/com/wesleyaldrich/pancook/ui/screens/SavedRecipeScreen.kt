@@ -31,6 +31,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.ExperimentalMaterial3Api // Required for TopAppBar
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.ui.res.colorResource
 import com.wesleyaldrich.pancook.R
@@ -49,18 +50,23 @@ fun SavedRecipeScreen(
     Scaffold( // Wrap your content with Scaffold
         topBar = {
             TopAppBar(
-                title = { },
+                title = {
+                    Text(
+                        text = "Saved Recipe",
+                        fontSize = 24.sp, // Slightly smaller font for the top bar
+                        fontFamily = poppins,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         // Change icon to ArrowBack and remove graphicsLayer if you want it to match GroceryScreen exactly
                         Icon(
-                            imageVector = Icons.Filled.PlayArrow, // Changed from PlayArrow
+                            imageVector = Icons.Filled.ArrowBack, // Changed from PlayArrow
                             contentDescription = "Back",
                             modifier = Modifier
                                 .size(50.dp)
-                                .graphicsLayer {
-                                    scaleX = -1f
-                                }
                         )
                     }
                 },

@@ -1,4 +1,3 @@
-// ui/navigation/NavigationGraph.kt
 package com.wesleyaldrich.pancook.ui.navigation
 
 import androidx.compose.animation.EnterTransition
@@ -64,11 +63,10 @@ fun NavigationGraph(
                 onRemoveClick = {},
             )
         }
-        composable(Screen.Profile.route) { ProfileScreen() }
         composable(Screen.SavedRecipe.route) {
             SavedRecipeScreen(
                 navController = navController,
-                onBackClick = { navController.popBackStack() } // ADD THIS LINE
+                onBackClick = { navController.popBackStack() }
             )
         }
         composable(
