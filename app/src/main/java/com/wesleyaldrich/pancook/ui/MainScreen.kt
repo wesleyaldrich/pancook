@@ -70,7 +70,8 @@ fun MainScreen() {
     val isSpecialScreen = currentRoute?.startsWith(Screen.DetailRecipe.route.substringBefore('/')) == true ||
             currentRoute?.startsWith(Screen.Instruction.route.substringBefore('/')) == true ||
             currentRoute?.startsWith(Screen.RecipeCompletion.route.substringBefore('/')) == true ||
-            currentRoute == Screen.GroceryList.route // This line hides header/bottom bar for GroceryScreen, add more here
+            currentRoute == Screen.GroceryList.route ||
+            currentRoute == Screen.Add.route// This line hides header/bottom bar for GroceryScreen, add more here
 
     Scaffold(
         topBar = {

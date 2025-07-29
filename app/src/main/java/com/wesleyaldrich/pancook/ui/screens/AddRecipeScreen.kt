@@ -43,6 +43,9 @@ import com.wesleyaldrich.pancook.ui.theme.PancookTheme
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.ui.text.font.FontWeight
 import com.wesleyaldrich.pancook.ui.theme.poppins
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.border
+import androidx.compose.ui.graphics.SolidColor
 
 // Data class for Ingredient (remains unchanged)
 data class Ingredient(
@@ -99,34 +102,65 @@ fun AddRecipeScreen(
             .verticalScroll(rememberScrollState())
     ) {
         // IMAGE SECTION (Carousel)
+        // IMAGE SECTION (Carousel)
+        val pages = if (imageUris.isNotEmpty()) imageUris + listOf<Uri?>(null) else listOf(null)
+        val pagerState = rememberPagerState(pageCount = { pages.size })
+
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(220.dp)
                 .clip(RoundedCornerShape(bottomStart = 24.dp, bottomEnd = 24.dp))
-                .clickable { pickImagesLauncher.launch("image/*") }
         ) {
-            if (imageUris.isNotEmpty()) {
-                HorizontalPager(
-                    state = pagerState,
-                    modifier = Modifier.fillMaxSize()
-                ) { page ->
+            HorizontalPager(
+                state = pagerState,
+                modifier = Modifier.fillMaxSize()
+            ) { page ->
+                val uri = pages[page]
+                if (uri != null) {
+                    // Tampilkan gambar
                     Image(
-                        painter = rememberAsyncImagePainter(imageUris[page]),
+                        painter = rememberAsyncImagePainter(uri),
                         contentDescription = "Recipe Image ${page + 1}",
                         contentScale = ContentScale.Crop,
                         modifier = Modifier.fillMaxSize()
                     )
+                } else {
+                    // Slide "Add Recipe Image"
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(Color.LightGray)
+                            .clickable { pickImagesLauncher.launch("image/*") },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.salad),
+                                contentDescription = "Add Image",
+                                tint = Color.DarkGray,
+                                modifier = Modifier.size(72.dp)
+                            )
+                            Spacer(modifier = Modifier.height(12.dp))
+                            Text(
+                                text = "Add Recipe Image",
+                                style = MaterialTheme.typography.titleMedium,
+                                color = Color.DarkGray
+                            )
+                        }
+                    }
                 }
+            }
 
-                // Dots Indicator
+            // Dots Indicator
+            if (pages.size > 1) {
                 Row(
                     Modifier
                         .align(Alignment.BottomCenter)
                         .padding(bottom = 12.dp),
                     horizontalArrangement = Arrangement.Center
                 ) {
-                    repeat(pagerState.pageCount) { index ->
+                    repeat(pages.size) { index ->
                         val selected = pagerState.currentPage == index
                         Box(
                             modifier = Modifier
@@ -139,30 +173,9 @@ fun AddRecipeScreen(
                         )
                     }
                 }
-            } else {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(Color.LightGray),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.salad),
-                            contentDescription = "Placeholder",
-                            tint = Color.DarkGray,
-                            modifier = Modifier.size(72.dp)
-                        )
-                        Spacer(modifier = Modifier.height(12.dp))
-                        Text(
-                            text = "Add Recipe Image",
-                            style = MaterialTheme.typography.titleMedium,
-                            color = Color.DarkGray
-                        )
-                    }
-                }
             }
 
+            // Tombol back
             IconButton(
                 onClick = onBackPressed,
                 modifier = Modifier
@@ -174,6 +187,8 @@ fun AddRecipeScreen(
                 Icon(Icons.Default.ArrowBack, contentDescription = "Back")
             }
         }
+
+
 
         Spacer(modifier = Modifier.height(24.dp))
 
@@ -635,7 +650,6 @@ fun IngredientInputRow(
     showRemoveButton: Boolean,
     darkBlue: Color
 ) {
-    var expanded by remember { mutableStateOf(false) }
     val units = listOf("g", "kg", "ml", "L", "pcs", "cup", "tbsp", "tsp", "pinch", "dash", "to taste")
 
     Column(
@@ -675,51 +689,15 @@ fun IngredientInputRow(
 
             Spacer(modifier = Modifier.width(8.dp))
 
-            Box(
+            // Replace the previous ExposedDropdownMenuBox with UnitDropdownField
+            UnitDropdownField(
+                unitList = units,
+                initialUnit = ingredient.unit,
+                onUnitSelected = onUnitChange,
                 modifier = Modifier
                     .width(100.dp)
                     .height(50.dp)
-            ) {
-                ExposedDropdownMenuBox(
-                    expanded = expanded,
-                    onExpandedChange = { expanded = !expanded }
-                ) {
-                    OutlinedTextField(
-                        value = ingredient.unit,
-                        onValueChange = {},
-                        readOnly = true,
-                        placeholder = { Text("Unit", style = LocalTextStyle.current.copy(fontSize = 14.sp)) },
-                        textStyle = LocalTextStyle.current.copy(fontSize = 14.sp),
-                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
-                        modifier = Modifier.menuAnchor().fillMaxWidth(),
-                        shape = RoundedCornerShape(25.dp),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedTextColor = Color.Black,
-                            unfocusedTextColor = Color.DarkGray,
-                            focusedContainerColor = Color.White,
-                            unfocusedContainerColor = Color.White,
-                            cursorColor = Color.Blue,
-                            focusedBorderColor = MaterialTheme.colorScheme.primary,
-                            unfocusedBorderColor = Color.Gray
-                        )
-                    )
-                    ExposedDropdownMenu(
-                        expanded = expanded,
-                        onDismissRequest = { expanded = false }
-                    ) {
-                        units.forEach { selectionOption ->
-                            DropdownMenuItem(
-                                text = { Text(selectionOption, color = darkBlue) },
-                                onClick = {
-                                    onUnitChange(selectionOption)
-                                    expanded = false
-                                },
-                                modifier = Modifier.height(48.dp)
-                            )
-                        }
-                    }
-                }
-            }
+            )
 
             if (showRemoveButton) {
                 Spacer(modifier = Modifier.width(8.dp))
@@ -817,19 +795,16 @@ fun StepInputRow(
                 horizontalArrangement = Arrangement.End // Align timer contents to the end (right)
             ) {
                 // Minutes Input Pill
-                OutlinedTextField(
-                    value = step.timerMinutes, // Bind to step.timerMinutes
+                BasicTextField(
+                    value = step.timerMinutes,
                     onValueChange = { newValue ->
                         if (newValue.all { it.isDigit() } && newValue.length <= 2) {
                             val intValue = newValue.toIntOrNull() ?: 0
-                            if (intValue in 0..59 || newValue.isEmpty()) { // Validate for minutes (0-59)
+                            if (intValue in 0..59 || newValue.isEmpty()) {
                                 onTimerMinutesChange(newValue)
                             }
                         }
                     },
-                    modifier = Modifier
-                        .width(64.dp) // Increased width for better visibility of "0" and input
-                        .height(40.dp), // Height within pill
                     singleLine = true,
                     textStyle = LocalTextStyle.current.copy(
                         fontSize = 16.sp,
@@ -839,28 +814,29 @@ fun StepInputRow(
                         color = darkBlue
                     ),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    placeholder = {
-                        Text(
-                            text = "0", // Placeholder visible
-                            fontSize = 16.sp,
-                            textAlign = TextAlign.Center,
-                            fontFamily = poppins,
-                            color = Color.Gray.copy(alpha = 0.6f)
-                        )
-                    },
-                    shape = RoundedCornerShape(20.dp), // Pill shape for text field
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = MaterialTheme.colorScheme.primary,
-                        unfocusedBorderColor = Color.Transparent, // No border
-                        cursorColor = darkBlue,
-                        focusedTextColor = darkBlue,
-                        unfocusedTextColor = darkBlue,
-                        focusedPlaceholderColor = Color.Gray.copy(alpha = 0.6f),
-                        unfocusedPlaceholderColor = Color.Gray.copy(alpha = 0.6f),
-                        focusedContainerColor = Color.White,
-                        unfocusedContainerColor = Color.White // Solid white background
-                    )
-                )
+                    modifier = Modifier
+                        .width(64.dp)
+                        .height(40.dp)
+                        .background(Color.White, RoundedCornerShape(20.dp))
+                        .border(1.dp, MaterialTheme.colorScheme.primary, RoundedCornerShape(20.dp))
+                        .padding(vertical = 6.dp), // Custom padding agar teks nggak ketutupan
+                ) { innerTextField ->
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        if (step.timerMinutes.isEmpty()) {
+                            Text(
+                                text = "0",
+                                fontSize = 16.sp,
+                                textAlign = TextAlign.Center,
+                                fontFamily = poppins,
+                                color = Color.Gray.copy(alpha = 0.6f)
+                            )
+                        }
+                        innerTextField()
+                    }
+                }
                 Text(
                     text = "min", // "min" label
                     fontSize = 14.sp,
@@ -870,19 +846,16 @@ fun StepInputRow(
                 )
 
                 // Seconds Input Pill
-                OutlinedTextField(
-                    value = step.timerSeconds, // Bind to step.timerSeconds
+                BasicTextField(
+                    value = step.timerSeconds,
                     onValueChange = { newValue ->
                         if (newValue.all { it.isDigit() } && newValue.length <= 2) {
                             val intValue = newValue.toIntOrNull() ?: 0
-                            if (intValue in 0..59 || newValue.isEmpty()) { // Validate for seconds (0-59)
+                            if (intValue in 0..59 || newValue.isEmpty()) {
                                 onTimerSecondsChange(newValue)
                             }
                         }
                     },
-                    modifier = Modifier
-                        .width(64.dp) // Increased width for better visibility of "0" and input
-                        .height(40.dp), // Height within pill
                     singleLine = true,
                     textStyle = LocalTextStyle.current.copy(
                         fontSize = 16.sp,
@@ -892,28 +865,29 @@ fun StepInputRow(
                         color = darkBlue
                     ),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    placeholder = {
-                        Text(
-                            text = "0", // Placeholder visible
-                            fontSize = 16.sp,
-                            textAlign = TextAlign.Center,
-                            fontFamily = poppins,
-                            color = Color.Gray.copy(alpha = 0.6f)
-                        )
-                    },
-                    shape = RoundedCornerShape(20.dp), // Pill shape for text field
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = MaterialTheme.colorScheme.primary,
-                        unfocusedBorderColor = Color.Transparent, // No border
-                        cursorColor = darkBlue,
-                        focusedTextColor = darkBlue,
-                        unfocusedTextColor = darkBlue,
-                        focusedPlaceholderColor = Color.Gray.copy(alpha = 0.6f),
-                        unfocusedPlaceholderColor = Color.Gray.copy(alpha = 0.6f),
-                        focusedContainerColor = Color.White,
-                        unfocusedContainerColor = Color.White // Solid white background
-                    )
-                )
+                    modifier = Modifier
+                        .width(64.dp)
+                        .height(40.dp)
+                        .background(Color.White, RoundedCornerShape(20.dp))
+                        .border(1.dp, MaterialTheme.colorScheme.primary, RoundedCornerShape(20.dp))
+                        .padding(vertical = 6.dp), // Custom padding agar teks nggak ketutupan
+                ) { innerTextField ->
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        if (step.timerSeconds.isEmpty()) {
+                            Text(
+                                text = "0",
+                                fontSize = 16.sp,
+                                textAlign = TextAlign.Center,
+                                fontFamily = poppins,
+                                color = Color.Gray.copy(alpha = 0.6f)
+                            )
+                        }
+                        innerTextField()
+                    }
+                }
                 Text(
                     text = "sec", // "sec" label
                     fontSize = 14.sp,
@@ -1068,6 +1042,83 @@ fun TimeInputUnit(
                 unfocusedContainerColor = Color.White
             )
         )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun UnitDropdownField(
+    unitList: List<String>,
+    modifier: Modifier = Modifier,
+    initialUnit: String = "",
+    onUnitSelected: (String) -> Unit
+) {
+    var expanded by remember { mutableStateOf(false) }
+    var selectedUnit by remember { mutableStateOf(initialUnit) }
+
+    ExposedDropdownMenuBox(
+        expanded = expanded,
+        onExpandedChange = { expanded = !expanded },
+        modifier = modifier
+    ) {
+        // Field utama dengan BasicTextField
+        Box(
+            modifier = Modifier
+                .menuAnchor()
+                .fillMaxWidth()
+                .height(50.dp)
+                .background(Color.White, RoundedCornerShape(25.dp))
+                .border(1.dp, Color.Gray, RoundedCornerShape(25.dp))
+                .clickable { expanded = !expanded } // buka/close dropdown
+                .padding(horizontal = 16.dp, vertical = 8.dp),
+            contentAlignment = Alignment.CenterStart
+        ) {
+            BasicTextField(
+                value = selectedUnit,
+                onValueChange = {},
+                readOnly = true,
+                singleLine = true,
+                textStyle = LocalTextStyle.current.copy(
+                    fontSize = 14.sp,
+                    color = if (selectedUnit.isNotEmpty()) Color.Black else Color.Gray
+                ),
+                cursorBrush = SolidColor(Color.Transparent),
+                decorationBox = { innerTextField ->
+                    if (selectedUnit.isEmpty()) {
+                        Text(
+                            text = "Unit",
+                            fontSize = 14.sp,
+                            color = Color.Gray
+                        )
+                    }
+                    innerTextField()
+                }
+            )
+
+            // Ikon dropdown di sebelah kanan
+            Box(
+                modifier = Modifier.align(Alignment.CenterEnd)
+            ) {
+                ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
+            }
+        }
+
+        // Menu pilihan dropdown
+        ExposedDropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false }
+        ) {
+            unitList.forEach { unit ->
+                DropdownMenuItem(
+                    text = { Text(unit) },
+                    onClick = {
+                        selectedUnit = unit
+                        expanded = false
+                        onUnitSelected(unit)
+                    }
+                )
+            }
+        }
     }
 }
 
