@@ -2,4 +2,12 @@
 <resources>
 
     <style name="Theme.Pancook" parent="android:Theme.Material.Light.NoActionBar" />
+
+    <style name="Theme.Pancook.Starting" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">#FFFFFF</item>
+
+        <item name="windowSplashScreenAnimatedIcon">@drawable/icon_pancook</item>
+
+        <item name="postSplashScreenTheme">@style/Theme.Pancook</item>
+    </style>
 </resources>
