@@ -2,20 +2,16 @@ package com.wesleyaldrich.pancook.ui.navigation
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Event
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.List
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.SaveAlt
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.filled.Category // New import for category icon
+import androidx.compose.material.icons.filled.*
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.navigation.NavType
-import androidx.navigation.navArgument
 
+// A sealed class for screen routes
 sealed class Screen(val route: String, val title: String, val icon: ImageVector) {
+    // New routes for the overall app structure
+    object Login : Screen("login", "Login", Icons.Default.Lock)
+    object Main : Screen("main", "Main", Icons.Default.Home) // Represents the entire MainScreen
+
+    // Your existing routes
     object Home : Screen("home", "Home", Icons.Default.Home)
     object MyRecipe : Screen("recipe", "My Recipe", Icons.AutoMirrored.Filled.List)
     object Add : Screen("add", "Add Recipe", Icons.Default.Add)
@@ -35,7 +31,6 @@ sealed class Screen(val route: String, val title: String, val icon: ImageVector)
         fun createRoute(recipeId: Int) = "recipe_completion/$recipeId"
     }
 
-    // New Category Screen definition
     object Category : Screen("category/{categoryName}", "Category", Icons.Default.Category) {
         fun createRoute(categoryName: String) = "category/$categoryName"
     }
