@@ -74,8 +74,6 @@ import com.wesleyaldrich.pancook.ui.theme.PancookTheme
 import com.wesleyaldrich.pancook.ui.theme.nunito
 import com.wesleyaldrich.pancook.ui.theme.poppins
 import kotlinx.coroutines.launch
-import com.wesleyaldrich.pancook.ui.screens.bookmarkedRecipes
-// REMOVED THE CONFLICTING IMPORT AS WE'RE DEFINING A NEW GLOBAL HERE
 // import com.wesleyaldrich.pancook.ui.screens.allRecipes // Assuming allRecipes is a global mutable list
 import com.wesleyaldrich.pancook.ui.navigation.Screen // Import Screen for navigation
 import androidx.navigation.NavController // Import NavController
@@ -103,180 +101,144 @@ val recentViewedItems = listOf(
 // Define specific Recipe objects for the "Most Popular" section
 val mostPopularRecipes = listOf(
     Recipe(
-        id = 1, // Unique ID for Ayam Geprek
-        title = "Ayam Geprek",
-        description = "Crispy fried chicken with fiery sambal, a beloved Indonesian dish.",
-        images = listOf(R.drawable.ayam_geprek, R.drawable.chicken_stir_fry_2, R.drawable.chicken_stir_fry_3), // Example additional images
+        id = 1,
+        title = "Spaghetti Bolognese",
+        description = "A classic Italian pasta dish with rich meat sauce.",
+        // Corrected image references based on your provided file
+        images = listOf(R.drawable.spaghetti_bolognese, R.drawable.spaghetti_bolognese_2, R.drawable.spaghetti_bolognese_3, R.drawable.spaghetti_bolognese_4),
         ingredients = listOf(
-            Ingredient(R.drawable.ingredient_tomato, "Chicken Drumsticks/Thighs", "Meat", 500.0, "g"),
-            Ingredient(R.drawable.ingredient_tomato, "All-Purpose Flour", "Grains", 150.0, "g"),
-            Ingredient(R.drawable.ingredient_tomato, "Cornstarch", "Grains", 50.0, "g"),
-            Ingredient(R.drawable.ingredient_tomato, "Egg", "Dairy", 1.0, "pcs"),
-            Ingredient(R.drawable.ingredient_tomato, "Garlic", "Spices", 3.0, "cloves"),
-            Ingredient(R.drawable.ingredient_tomato, "Red Chilies", "Vegetables", 10.0, "pcs"),
-            Ingredient(R.drawable.ingredient_tomato, "Bird's Eye Chilies", "Vegetables", 5.0, "pcs"),
-            Ingredient(R.drawable.ingredient_tomato, "Shallots", "Vegetables", 3.0, "pcs"),
-            Ingredient(R.drawable.ingredient_tomato, "Cooking Oil", "Fats", 500.0, "ml"),
-            Ingredient(R.drawable.ingredient_tomato, "Salt", "Seasoning", 1.0, "tsp"),
-            Ingredient(R.drawable.ingredient_tomato, "Sugar", "Sweeteners", 0.5, "tsp")
+            Ingredient(R.drawable.ingredient_tomato, "Spaghetti", "Pasta", 200.0, "g"),
+            Ingredient(R.drawable.ingredient_tomato, "Ground Beef", "Beef", 150.0, "g"),
+            Ingredient(R.drawable.ingredient_tomato, "Tomato Sauce", "Condiments", 100.0, "ml"),
+            Ingredient(R.drawable.ingredient_tomato, "Onion", "Vegetables", 1.0, "piece"),
+            Ingredient(R.drawable.ingredient_tomato, "Garlic", "Spices", 2.0, "cloves"),
+            Ingredient(R.drawable.ingredient_tomato, "Rice", "Rice", 1.0, "cup")
         ),
         steps = listOf(
-            Instruction(1, "Prepare the chicken: Marinate chicken pieces with salt and pepper for 15 minutes. In a bowl, mix flour and cornstarch. In another bowl, beat the egg."),
-            Instruction(2, "Coat the chicken: Dip each chicken piece into the beaten egg, then roll it in the flour mixture, ensuring it's fully coated. Repeat for a thicker crust."),
-            Instruction(3, "Fry the chicken: Heat cooking oil in a deep pan. Fry the coated chicken pieces until golden brown and crispy, about 8-10 minutes. Drain excess oil."),
-            Instruction(4, "Prepare the sambal: Roughly chop garlic, red chilies, bird's eye chilies, and shallots. You can also lightly fry them for a minute if desired."),
-            Instruction(5, "Pound the sambal: Place the chopped ingredients in a mortar. Add salt and sugar. Pound until desired consistency is reached. Add a tablespoon of hot oil from frying the chicken."),
-            Instruction(6, "Smash the chicken: Place a piece of fried chicken on the sambal in the mortar. Gently smash it using the pestle to combine it with the sambal."),
-            Instruction(7, "Serve immediately with warm rice and fresh vegetables.")
+            Instruction(1, "Cook spaghetti according to package directions. Drain and set aside.", timerSeconds = 600),
+            Instruction(2, "In a large skillet or pot, brown ground beef over medium heat. Drain excess fat.", timerSeconds = 420),
+            Instruction(3, "Add chopped onion and minced garlic to the beef. Cook until onion is softened and transparent.", timerSeconds = 300),
+            Instruction(4, "Stir in tomato sauce and bring to a simmer. Reduce heat and let it simmer for at least 15 minutes to meld flavors (longer for richer taste).", timerSeconds = 900),
+            Instruction(5, "Season the sauce with salt, pepper, and any other desired herbs (e.g., oregano, basil)."),
+            Instruction(6, "Serve the bolognese sauce over the cooked spaghetti. Garnish with Parmesan cheese if desired.")
         ),
         servings = 2,
         duration = "30 min",
-        upvoteCount = 1000,
-        recipeMaker = "By Chef Pok",
-        comments = listOf(
-            Comment("Spicy Lover", "This Ayam Geprek is incredibly authentic and delicious!"),
-            Comment("Foodie Adventurer", "The sambal has the perfect kick, absolutely love it.", isUpvote = true)
-        ),
+        upvoteCount = 124,
+        recipeMaker = "by Mia's Meals",
         nutritionFacts = listOf(
-            NutritionFact("Calories", "480 kcal"),
-            NutritionFact("Protein", "35g"),
-            NutritionFact("Fat", "30g"),
-            NutritionFact("Carbs", "20g")
+            NutritionFact("Calories", "600 kcal"),
+            NutritionFact("Protein", "30g"),
+            NutritionFact("Fat", "25g"),
+            NutritionFact("Carbs", "50g")
+        ),
+        comments = listOf(
+            Comment("Pasta Lover", "Classic comfort food, can't go wrong with this!"),
+            Comment("Italian Grandma", "Delizioso! A perfect bolognese.", isUpvote = true)
         )
     ),
     Recipe(
-        id = 2, // Unique ID for Rawon
-        title = "Rawon Khas Jawa Timur",
-        description = "A rich, aromatic black beef soup from East Java, known for its unique 'keluak' nut flavor.",
-        images = listOf(R.drawable.rawon), // Example additional images
+        id = 2,
+        title = "Fresh Garden Salad (Grocery)",
+        description = "A light and healthy salad perfect for any meal.",
+        // Corrected image references based on your provided file
+        images = listOf(R.drawable.fresh_garden_salad, R.drawable.fresh_garden_salad_2, R.drawable.fresh_garden_salad_3, R.drawable.fresh_garden_salad_4),
         ingredients = listOf(
-            Ingredient(R.drawable.ingredient_tomato, "Beef (shank/brisket)", "Meat", 500.0, "g"),
-            Ingredient(R.drawable.ingredient_tomato, "Kluwek (Black Nut)", "Spices", 4.0, "pcs"),
-            Ingredient(R.drawable.ingredient_tomato, "Shallots", "Vegetables", 8.0, "pcs"),
-            Ingredient(R.drawable.ingredient_tomato, "Garlic", "Spices", 4.0, "cloves"),
-            Ingredient(R.drawable.ingredient_tomato, "Red Chili", "Vegetables", 3.0, "pcs"),
-            Ingredient(R.drawable.ingredient_tomato, "Turmeric", "Spices", 1.0, "inch"),
-            Ingredient(R.drawable.ingredient_tomato, "Ginger", "Spices", 1.0, "inch"),
-            Ingredient(R.drawable.ingredient_tomato, "Lemongrass", "Spices", 1.0, "stalk"),
-            Ingredient(R.drawable.ingredient_tomato, "Galangal", "Spices", 1.0, "inch"),
-            Ingredient(R.drawable.ingredient_tomato, "Bay Leaves", "Spices", 2.0, "pcs"),
-            Ingredient(R.drawable.ingredient_tomato, "Lime Leaves", "Spices", 3.0, "pcs"),
-            Ingredient(R.drawable.ingredient_tomato, "Cooking Oil", "Fats", 2.0, "tbsp"),
-            Ingredient(R.drawable.ingredient_tomato, "Water", "Liquids", 1.5, "L"),
-            Ingredient(R.drawable.ingredient_tomato, "Salt", "Seasoning", 1.0, "tsp")
+            Ingredient(R.drawable.ingredient_tomato, "Lettuce", "Vegetables", 1.0, "head"),
+            Ingredient(R.drawable.ingredient_tomato, "Tomato", "Vegetables", 2.0, "pieces"),
+            Ingredient(R.drawable.ingredient_tomato, "Cucumber", "Vegetables", 1.0, "piece"),
+            Ingredient(R.drawable.ingredient_tomato, "Olive oil", "Condiments", 2.0, "tbsp"),
+            Ingredient(R.drawable.ingredient_tomato, "Feta cheese", "Cheese", 50.0, "g")
         ),
         steps = listOf(
-            Instruction(1, "Prepare Kluwek: Crack open kluwek nuts, scoop out the black paste, and soak in hot water for 15 minutes. Mash into a paste."),
-            Instruction(2, "Prepare Beef: Cut beef into cubes. Boil beef until tender, discard water (or reserve for broth), and set aside."),
-            Instruction(3, "Grind Spices: Blend or grind shallots, garlic, red chili, turmeric, ginger, and galangal into a smooth paste."),
-            Instruction(4, "Sauté Spices: Heat oil in a pot. Sauté the ground spice paste until fragrant. Add lemongrass (bruised), bay leaves, and lime leaves."),
-            Instruction(5, "Add Kluwek: Stir in the kluwek paste and cook for another 2-3 minutes."),
-            Instruction(6, "Combine: Add the boiled beef and stir to coat with the spices. Pour in water and bring to a boil."),
-            Instruction(7, "Simmer: Reduce heat, cover, and simmer for at least 1 hour, or until flavors meld and beef is very tender. Season with salt to taste."),
-            Instruction(8, "Serve hot with rice, bean sprouts, salted egg, and a sprinkle of fried shallots.")
+            Instruction(1, "Wash and pat dry all vegetables. Tear or chop lettuce into bite-sized pieces."),
+            Instruction(2, "Slice tomatoes and cucumber into desired shapes."),
+            Instruction(3, "Combine lettuce, tomatoes, and cucumber in a large salad bowl."),
+            Instruction(4, "Crumble feta cheese over the vegetables."),
+            Instruction(5, "Drizzle with olive oil. Add salt and pepper to taste."),
+            Instruction(6, "Toss gently until all ingredients are well combined. Serve fresh.")
         ),
-        servings = 4,
-        duration = "1 hour 30 min", // Adjusted for realistic cooking time
-        upvoteCount = 500,
-        recipeMaker = "By Juseyo",
-        comments = listOf(
-            Comment("Indonesian Foodie", "The authentic taste of East Java, truly amazing!"),
-            Comment("Soup Lover", "So rich and comforting, perfect on a rainy day.", isUpvote = true)
-        ),
+        servings = 1,
+        duration = "15 min",
+        upvoteCount = 89,
+        recipeMaker = "by Jake's Plates",
         nutritionFacts = listOf(
-            NutritionFact("Calories", "400 kcal"),
-            NutritionFact("Protein", "25g"),
-            NutritionFact("Fat", "28g"),
-            NutritionFact("Carbs", "15g")
+            NutritionFact("Calories", "150 kcal"),
+            NutritionFact("Protein", "5g"),
+            NutritionFact("Fat", "10g"),
+            NutritionFact("Carbs", "10g")
+        ),
+        comments = listOf(
+            Comment("Salad Fan", "Fresh and light, great for lunch."),
+            Comment("Healthy Eater", "My daily dose of greens!", isUpvote = true)
         )
     ),
     Recipe(
-        id = 3, // Unique ID for Nasi Bakar Cumi
-        title = "Nasi Bakar Cumi",
-        description = "Fragrant grilled rice with savory squid, wrapped in aromatic banana leaves.",
-        images = listOf(R.drawable.nasi_bakar), // Example additional images
+        id = 3,
+        title = "Grilled Chicken",
+        description = "Simple, juicy grilled chicken breast.",
+        // Corrected image references based on your provided file
+        images = listOf(R.drawable.grilled_chicken, R.drawable.grilled_chicken_2, R.drawable.grilled_chicken_3, R.drawable.grilled_chicken_4),
         ingredients = listOf(
-            Ingredient(R.drawable.ingredient_tomato, "Cooked Rice", "Grains", 3.0, "cups"),
-            Ingredient(R.drawable.ingredient_tomato, "Squid (cleaned, cut)", "Seafood", 250.0, "g"),
-            Ingredient(R.drawable.ingredient_tomato, "Coconut Milk", "Dairy", 100.0, "ml"),
-            Ingredient(R.drawable.ingredient_tomato, "Shallots", "Vegetables", 4.0, "pcs"),
-            Ingredient(R.drawable.ingredient_tomato, "Garlic", "Spices", 2.0, "cloves"),
-            Ingredient(R.drawable.ingredient_tomato, "Red Chilies", "Vegetables", 3.0, "pcs"),
-            Ingredient(R.drawable.ingredient_tomato, "Lemongrass (bruised)", "Spices", 1.0, "stalk"),
-            Ingredient(R.drawable.ingredient_tomato, "Kaffir Lime Leaves", "Spices", 2.0, "pcs"),
-            Ingredient(R.drawable.ingredient_tomato, "Bay Leaves", "Spices", 1.0, "pcs"),
-            Ingredient(R.drawable.ingredient_tomato, "Cooking Oil", "Fats", 1.0, "tbsp"),
-            Ingredient(R.drawable.ingredient_tomato, "Salt", "Seasoning", 0.5, "tsp"),
-            Ingredient(R.drawable.ingredient_tomato, "Sugar", "Sweeteners", 0.25, "tsp"),
-            Ingredient(R.drawable.ingredient_tomato, "Banana Leaves", "Other", 4.0, "sheets")
+            Ingredient(R.drawable.ingredient_tomato, "Chicken Breast", "Chicken", 200.0, "g"),
+            Ingredient(R.drawable.ingredient_tomato, "Salt", "Seasoning", 1.0, "tsp"),
+            Ingredient(R.drawable.ingredient_tomato, "Pepper", "Seasoning", 1.0, "tsp"),
+            Ingredient(R.drawable.ingredient_tomato, "Rosemary", "Herbs", 1.0, "tsp"),
+            Ingredient(R.drawable.ingredient_tomato, "Olive oil", "Condiments", 1.0, "tbsp")
         ),
         steps = listOf(
-            Instruction(1, "Prepare Banana Leaves: Briefly wilt banana leaves over a flame or steam them to make them pliable."),
-            Instruction(2, "Sauté Spices: Grind or finely chop shallots, garlic, and red chilies. Sauté in oil until fragrant. Add lemongrass, kaffir lime leaves, and bay leaf."),
-            Instruction(3, "Cook Squid: Add cleaned and cut squid to the pan. Cook until it changes color and is tender. Season with salt and sugar."),
-            Instruction(4, "Mix with Rice: In a large bowl, combine the cooked rice with the sautéed squid mixture and coconut milk. Mix well."),
-            Instruction(5, "Wrap Rice: Take a piece of banana leaf. Place a portion of the rice mixture in the center. Fold the leaf to form a packet and secure with toothpicks."),
-            Instruction(6, "Grill: Grill the banana leaf packets over charcoal or on a griddle until the leaves are slightly charred and fragrant, about 5-7 minutes per side."),
-            Instruction(7, "Serve hot directly from the banana leaf.")
+            Instruction(1, "Pat chicken breasts dry with paper towels. Season generously with salt, pepper, and rosemary on both sides."),
+            Instruction(2, "Heat olive oil in a grill pan or outdoor grill over medium-high heat."),
+            Instruction(3, "Place chicken breasts on the hot grill. Cook for about 6-8 minutes per side, or until internal temperature reaches 165°F (74°C) and juices run clear.", timerSeconds = 480),
+            Instruction(4, "Remove from grill and let rest for 5 minutes before slicing or serving. This helps keep the chicken juicy.", timerSeconds = 300)
         ),
         servings = 2,
-        duration = "45 min", // Adjusted for realistic cooking time
-        upvoteCount = 500,
-        recipeMaker = "By Chef Jusa",
-        comments = listOf(
-            Comment("Traditional Taste", "The aroma of the banana leaf makes this so special!"),
-            Comment("Seafood Lover", "Delicious and unique, the squid is perfectly cooked.", isUpvote = true)
-        ),
+        duration = "25 min",
+        upvoteCount = 176,
+        recipeMaker = "by Mia's Meals",
         nutritionFacts = listOf(
-            NutritionFact("Calories", "520 kcal"),
-            NutritionFact("Protein", "18g"),
-            NutritionFact("Fat", "20g"),
-            NutritionFact("Carbs", "65g")
+            NutritionFact("Calories", "280 kcal"),
+            NutritionFact("Protein", "40g"),
+            NutritionFact("Fat", "12g"),
+            NutritionFact("Carbs", "0g")
+        ),
+        comments = listOf(
+            Comment("Grill Master", "Perfectly grilled chicken every time!"),
+            Comment("Gym Buff", "High protein, low carb. Excellent!", isUpvote = true)
         )
     ),
     Recipe(
         id = 9, // Unique ID for Ketoprak Bandung
-        title = "Ketoprak Bandung",
-        description = "A popular Indonesian vegetarian dish with rice vermicelli, tofu, and rich peanut sauce.",
-        images = listOf(R.drawable.ketoprak), // Example additional images
-        ingredients = listOf(
-            Ingredient(R.drawable.ingredient_tomato, "Rice Vermicelli (bihun)", "Grains", 100.0, "g"),
-            Ingredient(R.drawable.ingredient_tomato, "Fried Tofu (cut)", "Protein", 2.0, "pcs"),
-            Ingredient(R.drawable.ingredient_tomato, "Lontong or Rice Cake (cubed)", "Grains", 100.0, "g"),
-            Ingredient(R.drawable.ingredient_tomato, "Cabbage (shredded)", "Vegetables", 50.0, "g"),
-            Ingredient(R.drawable.ingredient_tomato, "Bean Sprouts", "Vegetables", 50.0, "g"),
-            Ingredient(R.drawable.ingredient_tomato, "Cucumber (sliced)", "Vegetables", 0.5, "pcs"),
-            Ingredient(R.drawable.ingredient_tomato, "Fried Peanuts", "Nuts", 50.0, "g"),
-            Ingredient(R.drawable.ingredient_tomato, "Garlic", "Spices", 2.0, "cloves"),
-            Ingredient(R.drawable.ingredient_tomato, "Red Chilies", "Vegetables", 2.0, "pcs"),
-            Ingredient(R.drawable.ingredient_tomato, "Tamarind Paste", "Condiments", 1.0, "tsp"),
-            Ingredient(R.drawable.ingredient_tomato, "Palm Sugar", "Sweeteners", 1.0, "tbsp"),
-            Ingredient(R.drawable.ingredient_tomato, "Sweet Soy Sauce (Kecap Manis)", "Condiments", 2.0, "tbsp"),
-            Ingredient(R.drawable.ingredient_tomato, "Water", "Liquids", 100.0, "ml"),
-            Ingredient(R.drawable.ingredient_tomato, "Fried Shallots", "Garnish", 1.0, "tbsp"),
-            Ingredient(R.drawable.ingredient_tomato, "Emping/Kerupuk (crackers)", "Other", 1.0, "portion")
-        ),
+        images = listOf(R.drawable.grilled_fish, R.drawable.grilled_fish_2, R.drawable.grilled_fish_3),
+        title = "Grilled Fish",
+        description = "Light and healthy, perfect for summer.",
         steps = listOf(
-            Instruction(1, "Prepare Vermicelli: Soak rice vermicelli in hot water until soft. Drain and set aside."),
-            Instruction(2, "Blanch Vegetables: Quickly blanch cabbage and bean sprouts in hot water until tender-crisp. Drain and set aside."),
-            Instruction(3, "Prepare Peanut Sauce: In a mortar, pound fried peanuts, garlic, red chilies, tamarind paste, and palm sugar until smooth. Gradually add water to achieve desired consistency."),
-            Instruction(4, "Assemble: Arrange rice vermicelli, fried tofu, lontong (or rice cake), blanched cabbage, bean sprouts, and cucumber slices on a plate."),
-            Instruction(5, "Pour Sauce: Drizzle the prepared peanut sauce generously over all ingredients. Add sweet soy sauce to taste."),
-            Instruction(6, "Garnish: Sprinkle with fried shallots and serve with emping or kerupuk (crackers).")
+            Instruction(1, "Pat fish fillets dry with paper towels. Season both sides with salt, pepper, and lemon zest."),
+            Instruction(2, "Preheat grill to medium-high heat. Lightly oil the grill grates."),
+            Instruction(3, "Grill fish for 3-5 minutes per side, depending on thickness, until opaque and flakes easily with a fork.", timerSeconds = 300),
+            Instruction(4, "Squeeze fresh lemon juice over the grilled fish before serving."),
+            Instruction(5, "Serve with a side of steamed vegetables or a fresh salad.")
+        ),
+        ingredients = listOf(
+            Ingredient(R.drawable.ingredient_tomato, "Fish Fillets", "Seafood", 2.0, "pcs"),
+            Ingredient(R.drawable.ingredient_tomato, "Lemon", "Fruit", 1.0, "pcs"),
+            Ingredient(R.drawable.ingredient_tomato, "Olive Oil", "Condiments", 1.0, "tbsp"),
+            Ingredient(R.drawable.ingredient_tomato, "Salt", "Seasoning", 0.5, "tsp"),
+            Ingredient(R.drawable.ingredient_tomato, "Black Pepper", "Seasoning", 0.25, "tsp")
         ),
         servings = 2,
-        duration = "30 min",
-        upvoteCount = 1500,
-        recipeMaker = "By Kai",
-        comments = listOf(
-            Comment("Vegetarian Delight", "So flavorful and filling, a great vegetarian option!"),
-            Comment("Indonesian Street Food", "Authentic Ketoprak taste, reminds me of home.", isUpvote = true)
-        ),
+        duration = "35 min",
+        upvoteCount = 789,
+        recipeMaker = "by Mark's Kitchen",
         nutritionFacts = listOf(
-            NutritionFact("Calories", "450 kcal"),
-            NutritionFact("Protein", "15g"),
-            NutritionFact("Fat", "25g"),
-            NutritionFact("Carbs", "45g")
+            NutritionFact("Calories", "200 kcal"),
+            NutritionFact("Protein", "25g"),
+            NutritionFact("Fat", "10g"),
+            NutritionFact("Carbs", "5g")
+        ),
+        comments = listOf(
+            Comment("Fisherman Fred", "Simple and delicious, great for grilling season."),
+            Comment("Health Nut", "Light and healthy, exactly what I needed!", isUpvote = true)
         )
     )
 )
@@ -650,7 +612,7 @@ fun HomeScreen(navController: NavController) {
 
         // Pass a subset of local 'recipes' to SwipeableCardStack
         SwipeableCardStack(
-            recipes = recipes.take(6), // Using local 'recipes' list
+            recipes = recipes.take(6),
             modifier = Modifier.fillMaxSize(),
             navController = navController // Pass navController directly
         )
@@ -1067,7 +1029,6 @@ fun SwipeableCardStack(
 ) {
     val cardStack = remember { mutableStateListOf<Recipe>().apply { addAll(recipes) } }
     val swipedCards = remember { mutableStateListOf<Recipe>() }
-
     val density = LocalDensity.current
     val coroutineScope = rememberCoroutineScope()
 
@@ -1076,15 +1037,13 @@ fun SwipeableCardStack(
 
     Box(modifier = modifier.padding(start = 20.dp)) {
 
+        // Handle restoring card
         if (restoring && swipedCards.isNotEmpty()) {
             val recipe = swipedCards.last()
 
             LaunchedEffect(recipe) {
                 restoreOffsetX.snapTo(-1000f)
-                restoreOffsetX.animateTo(
-                    targetValue = 0f,
-                    animationSpec = tween(durationMillis = 400)
-                )
+                restoreOffsetX.animateTo(0f, tween(400))
                 swipedCards.removeLast()
                 cardStack.add(recipe)
                 restoring = false
@@ -1093,13 +1052,13 @@ fun SwipeableCardStack(
             Box(
                 modifier = Modifier
                     .fillMaxWidth(0.85f)
+                    .offset { IntOffset(restoreOffsetX.value.toInt(), 0) }
                     .graphicsLayer {
-                        translationX = 1f
+                        translationX = restoreOffsetX.value
                         scaleX = 1f
                         scaleY = 1f
                         shadowElevation = 0f
                     }
-                    .offset { IntOffset(restoreOffsetX.value.toInt(), 0) }
                     .zIndex(cardStack.size + 1f)
             ) {
                 RecipeReusableCard(
@@ -1113,25 +1072,21 @@ fun SwipeableCardStack(
                     likeCount = recipe.upvoteCount,
                     imageHeight = 230.dp,
                     onClick = { navController.navigate(Screen.DetailRecipe.createRoute(recipe.id)) },
-                    isBookmarked = bookmarkedRecipes.contains(allAppRecipes.find { it.id == recipe.id }), // Changed to allAppRecipes
+                    isBookmarked = bookmarkedRecipes.contains(allAppRecipes.find { it.id == recipe.id }),
                     onBookmarkClick = {
-                        val canonicalRecipe = allAppRecipes.find { it.id == recipe.id } // Changed to allAppRecipes
-                        if (canonicalRecipe != null) {
-                            if (bookmarkedRecipes.contains(canonicalRecipe)) {
-                                bookmarkedRecipes.remove(canonicalRecipe)
-                            } else {
-                                bookmarkedRecipes.add(canonicalRecipe)
-                            }
+                        allAppRecipes.find { it.id == recipe.id }?.let { canonical ->
+                            if (bookmarkedRecipes.contains(canonical)) bookmarkedRecipes.remove(canonical)
+                            else bookmarkedRecipes.add(canonical)
                         }
                     }
                 )
             }
         }
 
+        // Swipeable cards
         cardStack.forEachIndexed { index, recipe ->
             val isTop = index == cardStack.lastIndex
             val offsetX = remember { Animatable(0f) }
-
             val cardOffset = with(density) { (cardStack.size - 1 - index) * 16.dp.toPx() }
             val cardScale = 1f - (cardStack.size - 1 - index) * 0.02f
 
@@ -1164,7 +1119,7 @@ fun SwipeableCardStack(
                                         if (offsetX.value < -300f && cardStack.size > 1) {
                                             offsetX.animateTo(-1000f, tween(300))
                                             swipedCards.add(cardStack.removeLast())
-                                            offsetX.snapTo(0f) // Reset offset for the new top card
+                                            offsetX.snapTo(0f)
                                         } else {
                                             offsetX.animateTo(0f, tween(300))
                                         }
@@ -1173,7 +1128,9 @@ fun SwipeableCardStack(
                             )
                         }
                     }
-                    .clickable(enabled = isTop) { navController.navigate(Screen.DetailRecipe.createRoute(recipe.id)) }
+                    .clickable(enabled = isTop) {
+                        navController.navigate(Screen.DetailRecipe.createRoute(recipe.id))
+                    }
             ) {
                 RecipeReusableCard(
                     modifier = Modifier
@@ -1185,15 +1142,12 @@ fun SwipeableCardStack(
                     duration = recipe.duration,
                     likeCount = recipe.upvoteCount,
                     imageHeight = 230.dp,
-                    isBookmarked = bookmarkedRecipes.contains(allAppRecipes.find { it.id == recipe.id }), // Changed to allAppRecipes
+                    onClick = { navController.navigate(Screen.DetailRecipe.createRoute(recipe.id)) },
+                    isBookmarked = bookmarkedRecipes.contains(allAppRecipes.find { it.id == recipe.id }),
                     onBookmarkClick = {
-                        val canonicalRecipe = allAppRecipes.find { it.id == recipe.id } // Changed to allAppRecipes
-                        if (canonicalRecipe != null) {
-                            if (bookmarkedRecipes.contains(canonicalRecipe)) {
-                                bookmarkedRecipes.remove(canonicalRecipe)
-                            } else {
-                                bookmarkedRecipes.add(canonicalRecipe)
-                            }
+                        allAppRecipes.find { it.id == recipe.id }?.let { canonical ->
+                            if (bookmarkedRecipes.contains(canonical)) bookmarkedRecipes.remove(canonical)
+                            else bookmarkedRecipes.add(canonical)
                         }
                     }
                 )
@@ -1201,6 +1155,8 @@ fun SwipeableCardStack(
         }
     }
 }
+
+
 
 
 @Preview(showBackground = true)
