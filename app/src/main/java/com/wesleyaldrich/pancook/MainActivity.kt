@@ -35,6 +35,6 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun Preview() {
     PancookTheme {
-        MainScreen()
+//        MainScreen()
     }
 }

@@ -62,7 +62,7 @@ import com.wesleyaldrich.pancook.ui.theme.nunito
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainScreen() {
+fun MainScreen(onLogout: () -> Unit) {
     val navController = rememberNavController()
     val currentBackStack by navController.currentBackStackEntryAsState()
     val currentRoute = currentBackStack?.destination?.route
@@ -93,7 +93,11 @@ fun MainScreen() {
         // 1. The separate FloatingActionButton has been removed from here, as you requested.
     ) { paddingValues ->
         // This modifier has been updated to prevent content from being cut off.
-        NavigationGraph(navController, modifier = Modifier.padding(paddingValues).fillMaxSize())
+        NavigationGraph(
+            navController,
+            modifier = Modifier.padding(paddingValues).fillMaxSize(),
+            onLogout = onLogout
+        )
     }
 }
 

@@ -17,7 +17,11 @@ import com.wesleyaldrich.pancook.ui.screens.*
 const val BOTTOM_BAR_ROUTE = "bottom_bar"
 
 @Composable
-fun NavigationGraph(navController: NavHostController, modifier: Modifier = Modifier) {
+fun NavigationGraph(
+    navController: NavHostController,
+    modifier: Modifier = Modifier,
+    onLogout: () -> Unit
+) {
     NavHost(
         navController = navController,
         // The start destination is now the entire nested graph
@@ -43,7 +47,7 @@ fun NavigationGraph(navController: NavHostController, modifier: Modifier = Modif
                 PlannerScreen(navController = navController)
             }
             composable(Screen.Profile.route) {
-                ProfileScreen()
+                ProfileScreen(onLogout = onLogout)
             }
         }
 

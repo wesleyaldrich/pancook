@@ -21,7 +21,16 @@ fun RootNavigation() {
         composable(Screen.Main.route) {
             // When we navigate to "main", we show the entire MainScreen composable,
             // which contains its own internal navigation.
-            MainScreen()
+            MainScreen(
+                onLogout = {
+                    navController.navigate(Screen.Login.route) {
+                        // Pop everything up to and including the main screen off the back stack
+                        popUpTo(Screen.Main.route) {
+                            inclusive = true
+                        }
+                    }
+                }
+            )
         }
     }
 }
