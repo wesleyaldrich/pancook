@@ -1,6 +1,5 @@
 package com.wesleyaldrich.pancook.ui.screens
 
-import androidx.annotation.ColorRes
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -18,57 +17,54 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material3.Checkbox
-import androidx.compose.material3.Divider
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.sp
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.DpSize
-import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateMapOf
-import androidx.compose.runtime.setValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.wesleyaldrich.pancook.R
-import com.wesleyaldrich.pancook.model.Ingredient
 import com.wesleyaldrich.pancook.model.Recipe
-import com.wesleyaldrich.pancook.ui.theme.inter
-import com.wesleyaldrich.pancook.ui.theme.montserrat
 import com.wesleyaldrich.pancook.ui.theme.nunito
+import com.wesleyaldrich.pancook.ui.navigation.Screen
+import com.wesleyaldrich.pancook.ui.screens.allRecipes
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.Locale
-import com.wesleyaldrich.pancook.model.Instruction
-import com.wesleyaldrich.pancook.model.NutritionFact
-import com.wesleyaldrich.pancook.model.Comment
-import com.wesleyaldrich.pancook.ui.screens.allRecipes // Import allRecipes
+
+sealed class PlannerItem {
+    data class Header(val title: String) : PlannerItem()
+    data class Card(val date: String, val recipe: Recipe, val serveCount: Int, var isChecked: Boolean = false) : PlannerItem()
+}
 
 @Composable
 fun CenteredTextBox(text: String, family: FontFamily, weight: FontWeight = FontWeight.Normal, size: TextUnit, align: TextAlign) {
@@ -80,132 +76,109 @@ fun CenteredTextBox(text: String, family: FontFamily, weight: FontWeight = FontW
     }
 }
 
-fun getDummyPlannerData(upcoming: Boolean): Map<String, Map<Recipe, Int>> {
-    // These recipes are defined locally here, but their IDs should match those in allRecipes
-    val hashBrowns = Recipe(
-        id = 101,
-        title = "Hash Browns",
-        description = "Classic crispy potato breakfast.",
-        // Corrected image references based on your provided file
-        images = listOf(R.drawable.hash_brown, R.drawable.hash_brown_2, R.drawable.hash_brown_3, R.drawable.hash_brown_4, R.drawable.hash_brown_5),
-        ingredients = listOf(
-            Ingredient(R.drawable.ingredient_tomato, "Potatoes", "Vegetables", 2.0, "large"),
-            Ingredient(R.drawable.ingredient_tomato, "Butter", "Dairy", 2.0, "tbsp"),
-            Ingredient(R.drawable.ingredient_tomato, "Salt", "Seasoning", 0.5, "tsp"),
-            Ingredient(R.drawable.ingredient_tomato, "Black Pepper", "Seasoning", 0.25, "tsp")
-        ),
-        steps = listOf(
-            Instruction(1, "Peel and grate potatoes. Rinse grated potatoes thoroughly under cold water until water runs clear."),
-            Instruction(2, "Squeeze out as much excess water as possible from the grated potatoes using a clean kitchen towel or paper towels. This is crucial for crispiness!"),
-            Instruction(3, "Season the dried grated potatoes with salt and pepper."),
-            Instruction(4, "Heat butter in a large non-stick skillet over medium heat until melted and slightly browned."),
-            Instruction(5, "Press the grated potatoes into an even layer in the skillet. Cook for 5-7 minutes per side, pressing occasionally with a spatula, until golden brown and crispy."),
-            Instruction(6, "Flip carefully and cook the other side until also golden and crispy."),
-            Instruction(7, "Serve hot immediately, optionally with ketchup or a fried egg.")
-        ),
-        servings = 2,
-        duration = "20 min",
-        upvoteCount = 500,
-        recipeMaker = "by Chef Emily",
-        nutritionFacts = listOf(
-            NutritionFact("Calories", "300 kcal"),
-            NutritionFact("Protein", "5g"),
-            NutritionFact("Fat", "18g"),
-            NutritionFact("Carbs", "30g")
-        ),
-        comments = listOf(
-            Comment("Breakfast King", "Crispy and delicious, a perfect breakfast side!")
-        )
-    )
-    val fudgyBrownies = Recipe(
-        id = 102,
-        title = "Fudgy Brownies",
-        description = "Rich, decadent, and perfectly fudgy.",
-        // Corrected image references based on your provided file
-        images = listOf(R.drawable.fudgy_brownies, R.drawable.fudgy_brownies_2, R.drawable.fudgy_brownies_3, R.drawable.fudgy_brownies_4),
-        ingredients = listOf(
-            Ingredient(R.drawable.ingredient_tomato, "Unsalted Butter", "Dairy", 100.0, "g"),
-            Ingredient(R.drawable.ingredient_tomato, "Granulated Sugar", "Sweeteners", 200.0, "g"),
-            Ingredient(R.drawable.ingredient_tomato, "Unsweetened Cocoa Powder", "Baking", 50.0, "g"),
-            Ingredient(R.drawable.ingredient_tomato, "Large Eggs", "Dairy", 2.0, "pcs"),
-            Ingredient(R.drawable.ingredient_tomato, "All-Purpose Flour", "Baking", 60.0, "g"),
-            Ingredient(R.drawable.ingredient_tomato, "Vanilla Extract", "Flavoring", 1.0, "tsp"),
-            Ingredient(R.drawable.ingredient_tomato, "Salt", "Seasoning", 0.25, "tsp")
-        ),
-        steps = listOf(
-            Instruction(1, "Preheat oven to 175°C (350°F). Grease and flour an 8x8 inch baking pan."),
-            Instruction(2, "In a medium saucepan, melt butter over low heat. Remove from heat and stir in sugar until combined."),
-            Instruction(3, "Whisk in cocoa Powder. Add eggs one at a time, mixing well after each addition. Stir in vanilla extract."),
-            Instruction(4, "Gradually add flour and salt, mixing until just combined. Do not overmix."),
-            Instruction(5, "Pour batter into the prepared baking pan and spread evenly."),
-            Instruction(6, "Bake for 20-25 minutes, or until a toothpick inserted into the center comes out with moist crumbs (not wet batter)."),
-            Instruction(7, "Let cool completely in the pan on a wire rack before cutting into squares.")
-        ),
-        servings = 2,
-        duration = "1 hour",
-        upvoteCount = 750,
-        recipeMaker = "by Baker John",
-        nutritionFacts = listOf(
-            NutritionFact("Calories", "450 kcal"),
-            NutritionFact("Protein", "5g"),
-            NutritionFact("Fat", "25g"),
-            NutritionFact("Carbs", "60g")
-        ),
-        comments = listOf(
-            Comment("Sweet Tooth", "The fudgiest brownies ever! A must-try.")
-        )
-    )
-    val frenchToast = Recipe(
-        id = 103,
-        title = "French Toast",
-        description = "A sweet and savory breakfast classic.",
-        // Corrected image references based on your provided file
-        images = listOf(R.drawable.french_toast, R.drawable.french_toast_2, R.drawable.french_toast_3, R.drawable.french_toast_4),
-        ingredients = listOf(
-            Ingredient(R.drawable.ingredient_tomato, "Bread", "Bakery", 4.0, "slices"),
-            Ingredient(R.drawable.ingredient_tomato, "Large Eggs", "Dairy", 2.0, "pcs"),
-            Ingredient(R.drawable.ingredient_tomato, "Milk", "Dairy", 100.0, "ml"),
-            Ingredient(R.drawable.ingredient_tomato, "Granulated Sugar", "Sweeteners", 1.0, "tbsp"),
-            Ingredient(R.drawable.ingredient_tomato, "Vanilla Extract", "Flavoring", 0.5, "tsp"),
-            Ingredient(R.drawable.ingredient_tomato, "Cinnamon", "Spices", 0.25, "tsp"),
-            Ingredient(R.drawable.ingredient_tomato, "Butter", "Dairy", 1.0, "tbsp")
-        ),
-        steps = listOf(
-            Instruction(1, "In a shallow dish, whisk together eggs, milk, sugar, vanilla extract, and cinnamon until well combined."),
-            Instruction(2, "Heat butter in a large non-stick skillet or griddle over medium heat."),
-            Instruction(3, "Dip each slice of bread into the egg mixture, ensuring both sides are fully coated but not soggy."),
-            Instruction(4, "Place bread slices on the hot skillet. Cook for 2-4 minutes per side, or until golden brown and cooked through."),
-            Instruction(5, "Serve hot with your favorite toppings like syrup, fresh fruit, or powdered sugar.")
-        ),
-        servings = 1,
-        duration = "30 min",
-        upvoteCount = 300,
-        recipeMaker = "by Chef Jane",
-        nutritionFacts = listOf(
-            NutritionFact("Calories", "350 kcal"),
-            NutritionFact("Protein", "10g"),
-            NutritionFact("Fat", "15g"),
-            NutritionFact("Carbs", "40g")
-        ),
-        comments = listOf(
-            Comment("Brunch Fan", "Best French Toast ever, simple and delicious!")
-        )
-    )
+fun getPlannerData(upcoming: Boolean): MutableMap<String, MutableMap<Recipe, Int>> {
+    val spaghettiBolognese = allRecipes.find { it.id == 1 }
+    val freshGardenSalad = allRecipes.find { it.id == 2 }
+    val grilledChicken = allRecipes.find { it.id == 3 }
+    val deliciousSalad = allRecipes.find { it.id == 4 }
+    val spicyNoodles = allRecipes.find { it.id == 5 }
+    val chickenStirFry = allRecipes.find { it.id == 6 }
+    val vegetableCurry = allRecipes.find { it.id == 7 }
+    val creamyPasta = allRecipes.find { it.id == 8 }
+    val grilledFish = allRecipes.find { it.id == 9 }
+    val beefStew = allRecipes.find { it.id == 11 }
+    val tomatoSoup = allRecipes.find { it.id == 12 }
+    val hashBrowns = allRecipes.find { it.id == 101 }
+    val fudgyBrownies = allRecipes.find { it.id == 102 }
+    val frenchToast = allRecipes.find { it.id == 103 }
 
     return if (upcoming) {
-        mapOf(
-            "08-07-2025" to mapOf(
+        val upcomingMap = mutableMapOf<String, MutableMap<Recipe, Int>>()
+        if (spaghettiBolognese != null && grilledChicken != null) {
+            upcomingMap["28-07-2025"] = mutableMapOf(
+                spaghettiBolognese to 2,
+                grilledChicken to 2
+            )
+        }
+        if (hashBrowns != null && fudgyBrownies != null) {
+            upcomingMap["30-07-2025"] = mutableMapOf(
                 hashBrowns to 2,
                 fudgyBrownies to 3
             )
-        )
-    } else {
-        mapOf(
-            "01-07-2025" to mapOf(
-                frenchToast to 1
+        }
+        if (chickenStirFry != null && spicyNoodles != null) {
+            upcomingMap["31-07-2025"] = mutableMapOf(
+                chickenStirFry to 2,
+                spicyNoodles to 1
             )
-        )
+        }
+        if (freshGardenSalad != null) {
+            upcomingMap["01-08-2025"] = mutableMapOf(
+                freshGardenSalad to 1
+            )
+        }
+        if (grilledFish != null && vegetableCurry != null) {
+            upcomingMap["02-08-2025"] = mutableMapOf(
+                grilledFish to 2,
+                vegetableCurry to 2
+            )
+        }
+        if (beefStew != null && tomatoSoup != null) {
+            upcomingMap["03-08-2025"] = mutableMapOf(
+                beefStew to 3,
+                tomatoSoup to 2
+            )
+        }
+        upcomingMap
+    } else {
+        val passedMap = mutableMapOf<String, MutableMap<Recipe, Int>>()
+        if (spaghettiBolognese != null) {
+            passedMap["07-07-2025"] = mutableMapOf(
+                spaghettiBolognese to 2
+            )
+        }
+        if (grilledFish != null && creamyPasta != null) {
+            passedMap["08-07-2025"] = mutableMapOf(
+                grilledFish to 2,
+                creamyPasta to 2
+            )
+        }
+        if (spicyNoodles != null) {
+            passedMap["09-07-2025"] = mutableMapOf(
+                spicyNoodles to 1
+            )
+        }
+        if (freshGardenSalad != null && grilledChicken != null) {
+            passedMap["11-07-2025"] = mutableMapOf(
+                freshGardenSalad to 1,
+                grilledChicken to 2
+            )
+        }
+        if (frenchToast != null) {
+            passedMap["12-07-2025"] = mutableMapOf(
+                frenchToast to 2
+            )
+        }
+        if (vegetableCurry != null && hashBrowns != null && fudgyBrownies != null) {
+            passedMap["13-07-2025"] = mutableMapOf(
+                vegetableCurry to 2,
+                hashBrowns to 2,
+                fudgyBrownies to 3
+            )
+        }
+        passedMap
     }
+}
+
+fun createPlannerItems(data: Map<String, Map<Recipe, Int>>): List<PlannerItem> {
+    val items = mutableListOf<PlannerItem>()
+    data.forEach { (dateStr, recipeMap) ->
+        items.add(PlannerItem.Header(formatDateHeader(dateStr)))
+        recipeMap.forEach { (recipe, serveCount) ->
+            items.add(PlannerItem.Card(dateStr, recipe, serveCount))
+        }
+    }
+    return items
 }
 
 enum class PlannerTab(val title: String) {
@@ -214,12 +187,21 @@ enum class PlannerTab(val title: String) {
 }
 
 @Composable
-fun PlannerScreen() {
+fun PlannerScreen(navController: NavController) {
     var selectedTabIndex by remember { mutableStateOf(0) }
     val tabs = listOf("Upcoming", "Passed")
 
+    var upcomingItems by remember { mutableStateOf(createPlannerItems(getPlannerData(true))) }
+    var passedItems by remember { mutableStateOf(createPlannerItems(getPlannerData(false))) }
+
+    val currentItems = if (selectedTabIndex == 0) upcomingItems else passedItems
+    val setCurrentItems = if (selectedTabIndex == 0) {
+        { newItems: List<PlannerItem> -> upcomingItems = newItems }
+    } else {
+        { newItems: List<PlannerItem> -> passedItems = newItems }
+    }
+
     Column {
-        // Tab Container with rounded corners
         Box(
             modifier = Modifier
                 .padding(top = 10.dp, start = 10.dp, end = 10.dp)
@@ -260,21 +242,65 @@ fun PlannerScreen() {
             }
         }
 
-        // Content below tabs
-        val data = if (selectedTabIndex == 0) {
-            getDummyPlannerData(upcoming = true)
-        } else {
-            getDummyPlannerData(upcoming = false)
-        }
+        PlannerList(
+            data = currentItems,
+            onRemoveRecipe = { itemToRemove: PlannerItem.Card ->
+                val updatedList = currentItems.toMutableList()
+                updatedList.remove(itemToRemove)
 
-        PlannerList(data = data)
+                val cardsForDate = updatedList.filterIsInstance<PlannerItem.Card>().count { it.date == itemToRemove.date }
+                if (cardsForDate == 0) {
+                    val headerToRemove = updatedList.firstOrNull { it is PlannerItem.Header && it.title == formatDateHeader(itemToRemove.date) }
+                    if (headerToRemove != null) {
+                        updatedList.remove(headerToRemove)
+                    }
+                }
+
+                setCurrentItems(updatedList)
+            },
+            onCardCheckedChanged = { changedItem: PlannerItem.Card, isChecked: Boolean ->
+                val currentList = currentItems.toMutableList()
+
+                val updatedListWithCheck = currentList.map { item ->
+                    if (item is PlannerItem.Card && item.recipe.id == changedItem.recipe.id && item.date == changedItem.date) {
+                        item.copy(isChecked = isChecked)
+                    } else {
+                        item
+                    }
+                }
+
+                val dateCards = updatedListWithCheck.filterIsInstance<PlannerItem.Card>().filter { it.date == changedItem.date }
+                val uncheckedCards = dateCards.filter { !it.isChecked }
+                val checkedCards = dateCards.filter { it.isChecked }
+
+                val sortedDateCards = uncheckedCards + checkedCards
+
+                val newList = updatedListWithCheck.toMutableList()
+                val startIndex = newList.indexOfFirst { it is PlannerItem.Card && it.date == changedItem.date }
+                val endIndex = newList.indexOfLast { it is PlannerItem.Card && it.date == changedItem.date }
+
+                if (startIndex != -1 && endIndex != -1) {
+                    newList.subList(startIndex, endIndex + 1).clear()
+                    newList.addAll(startIndex, sortedDateCards)
+                }
+
+                setCurrentItems(newList)
+            },
+            navController = navController
+        )
     }
 }
 
 @Composable
-fun PlannerList(modifier: Modifier = Modifier, data: Map<String, Map<Recipe, Int>>) {
+fun PlannerList(
+    modifier: Modifier = Modifier,
+    data: List<PlannerItem>,
+    onRemoveRecipe: (PlannerItem.Card) -> Unit,
+    onCardCheckedChanged: (PlannerItem.Card, Boolean) -> Unit,
+    navController: NavController
+) {
     val checkedStates = remember {
-        mutableStateMapOf<Int, Boolean>() // key = recipe.id, value = checked
+        mutableStateMapOf<Int, Boolean>()
     }
 
     LazyColumn(
@@ -282,18 +308,30 @@ fun PlannerList(modifier: Modifier = Modifier, data: Map<String, Map<Recipe, Int
             .fillMaxSize()
             .padding(horizontal = 15.dp)
     ) {
-        data.forEach { (dateStr, recipeMap) ->
-            item {
-                DateSectionHeader(title = formatDateHeader(dateStr))
+        items(
+            items = data,
+            key = { item ->
+                when (item) {
+                    is PlannerItem.Header -> "header-${item.title}"
+                    is PlannerItem.Card -> "card-${item.date}-${item.recipe.id}"
+                }
             }
-            recipeMap.forEach { (recipe, serveCount) ->
-                item {
+        ) { item ->
+            when (item) {
+                is PlannerItem.Header -> {
+                    DateSectionHeader(title = item.title)
+                }
+                is PlannerItem.Card -> {
                     PlanCard(
-                        recipe = recipe,
-                        serveCount = serveCount,
-                        isChecked = checkedStates[recipe.id] ?: false,
+                        recipe = item.recipe,
+                        serveCount = item.serveCount,
+                        isChecked = item.isChecked,
                         onCheckedChange = { newValue ->
-                            checkedStates[recipe.id] = newValue
+                            onCardCheckedChanged(item, newValue)
+                        },
+                        navController = navController,
+                        onDeleteClick = {
+                            onRemoveRecipe(item)
                         }
                     )
                 }
@@ -302,7 +340,6 @@ fun PlannerList(modifier: Modifier = Modifier, data: Map<String, Map<Recipe, Int
     }
 }
 
-
 fun formatDateHeader(dateString: String): String {
     val inputFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy", Locale.getDefault())
     val outputFormatter = DateTimeFormatter.ofPattern("EEEE, d MMMM yyyy", Locale.getDefault())
@@ -310,7 +347,7 @@ fun formatDateHeader(dateString: String): String {
         val date = LocalDate.parse(dateString, inputFormatter)
         date.format(outputFormatter)
     } catch (e: Exception) {
-        dateString // fallback
+        dateString
     }
 }
 
@@ -378,21 +415,27 @@ fun PlanCard(
     recipe: Recipe,
     serveCount: Int,
     isChecked: Boolean,
-    onCheckedChange: (Boolean) -> Unit
+    onCheckedChange: (Boolean) -> Unit,
+    navController: NavController,
+    onDeleteClick: () -> Unit
 ) {
-    val textAlpha by animateFloatAsState(
+    val alpha by animateFloatAsState(
         targetValue = if (isChecked) 0.5f else 1f,
-        label = "TextAlpha"
+        label = "PlanCardAlpha"
     )
     val textDecoration = if (isChecked) TextDecoration.LineThrough else TextDecoration.None
 
     Box(
         modifier = Modifier
             .padding(bottom = 5.dp)
+            .alpha(alpha)
             .background(
                 color = colorResource(R.color.primary),
                 shape = RoundedCornerShape(10.dp)
             )
+            .clickable {
+                navController.navigate(Screen.DetailRecipe.createRoute(recipe.id))
+            }
     ) {
         Row(
             modifier = Modifier
@@ -400,15 +443,14 @@ fun PlanCard(
                 .padding(horizontal = 12.dp, vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Image Container
             Box(
                 modifier = Modifier
                     .size(55.dp)
-                    .clip(CircleShape)
+                    .clip(RoundedCornerShape(10.dp))
                     .background(Color.Gray.copy(alpha = if (isChecked) 0.3f else 1f))
             ) {
                 Image(
-                    painter = painterResource(id = recipe.images.first()), // Use the first image from the list
+                    painter = painterResource(id = recipe.images.first()),
                     contentDescription = null,
                     modifier = Modifier.fillMaxSize()
                 )
@@ -420,7 +462,7 @@ fun PlanCard(
                 modifier = Modifier
                     .weight(1f)
                     .height(55.dp)
-                    .alpha(textAlpha),
+                    .alpha(alpha),
                 verticalArrangement = Arrangement.Top,
             ) {
                 Text(
@@ -455,6 +497,24 @@ fun PlanCard(
                 checked = isChecked,
                 onCheckedChange = onCheckedChange
             )
+
+            Spacer(modifier = Modifier.width(10.dp))
+
+            Box(
+                modifier = Modifier
+                    .size(25.dp)
+                    .clip(CircleShape)
+                    .background(Color.Red)
+                    .clickable { onDeleteClick() },
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Close,
+                    contentDescription = "Delete",
+                    tint = Color.White,
+                    modifier = Modifier.size(15.dp)
+                )
+            }
         }
     }
 }
@@ -462,5 +522,5 @@ fun PlanCard(
 @Preview(showSystemUi = true)
 @Composable
 private fun PlannerPagePreview () {
-    PlannerScreen()
+    PlannerScreen(navController = rememberNavController())
 }
