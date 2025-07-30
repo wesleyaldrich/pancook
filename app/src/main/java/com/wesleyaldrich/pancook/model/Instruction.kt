@@ -4,6 +4,6 @@ data class Instruction(
     val stepNumber: Int,
     val description: String,
     val timerSeconds: Int = 0,
-    val imageRes: Int? = null,
+    val images: List<Int> = emptyList(),
     val videoUrl: String? = null
 )

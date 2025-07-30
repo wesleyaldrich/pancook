@@ -2,7 +2,7 @@ package com.wesleyaldrich.pancook.ui.components
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+// import androidx.compose.foundation.clickable // Remove this import if no longer needed anywhere in this file
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
@@ -32,6 +32,11 @@ import androidx.compose.ui.unit.sp
 import com.wesleyaldrich.pancook.ui.theme.nunito
 import com.wesleyaldrich.pancook.ui.theme.poppins
 import androidx.compose.ui.graphics.Color
+import kotlin.math.floor
+import kotlin.math.log
+// Make sure to add this import if you still use clickable for the bookmark/delete buttons
+import androidx.compose.foundation.clickable // Ensure this is imported if other clickables remain
+
 
 /**
  * A reusable card component for displaying content with an image, title, and actions.
@@ -47,7 +52,7 @@ import androidx.compose.ui.graphics.Color
  * @param onDeleteClick Lambda to handle delete icon clicks.
  * @param hideDeleteButton Boolean to control the visibility of the delete button.
  * @param isUpvoted Boolean to indicate if the recipe is upvoted by the current user.
- * @param onUpvoteClick Lambda to handle upvote icon clicks.
+ * @param onUpvoteClick Lambda to handle upvote icon clicks. (This lambda will now be unused in this component)
  */
 @Composable
 fun ReusableCard(
@@ -62,12 +67,20 @@ fun ReusableCard(
     onDeleteClick: () -> Unit = {},
     hideDeleteButton: Boolean = false, // New parameter
     isUpvoted: Boolean = false, // New parameter for upvote state
-    onUpvoteClick: () -> Unit = {} // New parameter for upvote click
+    onUpvoteClick: () -> Unit = {} // New parameter for upvote click (will be ignored for upvote icon)
 ) {
+    // Helper function for formatting count (copied from DetailRecipeScreen for consistency)
+    fun formatCount(count: Int): String {
+        if (count < 1000) return count.toString()
+        val exp = floor(log(count.toDouble(), 1000.0)).toInt()
+        val units = arrayOf("", "k", "M", "B", "T")
+        val formattedValue = String.format("%.1f", count / Math.pow(1000.0, exp.toDouble()))
+        return formattedValue.replace(".0", "") + units[exp]
+    }
+
     Card(
         modifier = modifier
-            .fillMaxWidth()
-            .padding(8.dp),
+            .width(180.dp),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = colorResource(R.color.white)),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
@@ -78,6 +91,7 @@ fun ReusableCard(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .height(140.dp) // Adjusted image height for better balance
                     .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
             ) {
                 Image(
@@ -86,7 +100,7 @@ fun ReusableCard(
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(180.dp)
+                        .fillMaxHeight() // Fill the Box height
                 )
 
                 Row(
@@ -101,7 +115,7 @@ fun ReusableCard(
                         text = formatDurationShort(duration), // Apply formatting
                         fontFamily = nunito,
                         fontWeight = FontWeight.SemiBold,
-                        fontSize = 14.sp, // Toned down from 16.sp
+                        fontSize = 14.sp,
                         color = colorResource(R.color.accent_yellow),
                         modifier = Modifier
                             .background(
@@ -117,33 +131,33 @@ fun ReusableCard(
                                 .size(30.dp)
                                 .clip(RoundedCornerShape(20.dp))
                                 .background(colorResource(R.color.primary).copy(alpha = 0.75f))
-                                .clickable { onBookmarkClick() },
+                                .clickable { onBookmarkClick() }, // This remains clickable
                             contentAlignment = Alignment.Center
                         ) {
                             // Border Icon (always white, slightly larger)
                             Icon(
                                 imageVector = Icons.Filled.Bookmark,
                                 contentDescription = "Bookmark Border",
-                                tint = Color.White, // Fixed white for the border
-                                modifier = Modifier.size(20.dp) // Slightly larger than the fill icon
+                                tint = Color.White,
+                                modifier = Modifier.size(20.dp)
                             )
                             // Fill Icon (dynamic color, slightly smaller)
                             Icon(
                                 imageVector = Icons.Filled.Bookmark,
                                 contentDescription = "Bookmark Fill",
-                                tint = if (isBookmarked) colorResource(R.color.accent_yellow) else colorResource(R.color.primary).copy(alpha = 0.75f), // Red when bookmarked, transparent when not
-                                modifier = Modifier.size(16.dp) // Smaller than the border icon
+                                tint = if (isBookmarked) colorResource(R.color.accent_yellow) else colorResource(R.color.primary).copy(alpha = 0.75f),
+                                modifier = Modifier.size(16.dp)
                             )
                         }
                         Spacer(modifier = Modifier.width(8.dp))
                         // Delete button (conditionally visible)
-                        if (!hideDeleteButton) { // Apply the new parameter here
+                        if (!hideDeleteButton) {
                             Box(
                                 modifier = Modifier
                                     .size(30.dp)
                                     .clip(RoundedCornerShape(20.dp))
                                     .background(colorResource(R.color.primary).copy(alpha = 0.75f))
-                                    .clickable { onDeleteClick() },
+                                    .clickable { onDeleteClick() }, // This remains clickable
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(
@@ -171,34 +185,32 @@ fun ReusableCard(
                     // Upvote button with layered icons for border effect
                     Box(
                         modifier = Modifier
-                            .size(24.dp) // Toned down from 28.dp
+                            .size(24.dp)
                             .clip(RoundedCornerShape(20.dp))
                             .background(colorResource(R.color.primary).copy(alpha = 0.75f))
-                            .clickable { onUpvoteClick() }, // Make clickable
+                        // --- REMOVED: .clickable { onUpvoteClick() } ---
+                        , // Keep the comma if you remove the clickable modifier
                         contentAlignment = Alignment.Center
                     ) {
                         // Border Icon (always white, slightly larger)
                         Icon(
                             imageVector = Icons.Filled.ThumbUp,
                             contentDescription = "Upvotes Border",
-                            tint = Color.White, // Fixed white for the border
-                            modifier = Modifier.size(18.dp) // Toned down from 20.dp
+                            tint = Color.White,
+                            modifier = Modifier.size(18.dp)
                         )
                         // Fill Icon (dynamic color, slightly smaller)
                         Icon(
                             imageVector = Icons.Filled.ThumbUp,
                             contentDescription = "Upvotes Fill",
-                            tint = if (isUpvoted) colorResource(R.color.accent_yellow) else colorResource(R.color.primary).copy(alpha = 0.75f), // Change color based on isUpvoted
-                            modifier = Modifier.size(14.dp) // Toned down from 16.dp
+                            tint = if (isUpvoted) colorResource(R.color.accent_yellow) else colorResource(R.color.primary).copy(alpha = 0.75f),
+                            modifier = Modifier.size(14.dp)
                         )
                     }
                     Spacer(modifier = Modifier.width(3.dp))
+                    // Using the new formatCount helper for consistency
                     Text(
-                        text = if (upvoteCount >= 1000) {
-                            "${upvoteCount / 1000}k"
-                        } else {
-                            "$upvoteCount"
-                        },
+                        text = formatCount(upvoteCount),
                         fontFamily = nunito,
                         fontWeight = FontWeight.Medium,
                         fontSize = 12.sp,
@@ -216,23 +228,21 @@ fun ReusableCard(
                     text = title,
                     fontFamily = poppins,
                     fontWeight = FontWeight.SemiBold,
-                    fontSize = 15.sp, // Toned down from 16.sp
-                    maxLines = 1, // Limit text to 1 line
-                    overflow = TextOverflow.Ellipsis, // Add ellipsis if text overflows
+                    fontSize = 15.sp,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
                     color = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(start = 8.dp)
                 )
                 Text(
                     text = description,
                     fontFamily = nunito,
                     fontWeight = FontWeight.SemiBold,
-                    fontSize = 11.sp, // Toned down from 12.sp
+                    fontSize = 11.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(start = 8.dp)
                 )
             }
         }
@@ -296,48 +306,49 @@ fun ReusableCardPreview() {
                 imagePainter = painterResource(id = R.drawable.salad),
                 title = "Delicious Salad",
                 description = "by Nunuk",
-                duration = "15 minutes", // Changed for preview
+                duration = "15 minutes",
                 upvoteCount = 1234,
                 isBookmarked = true,
                 onBookmarkClick = {},
                 onDeleteClick = {},
-                isUpvoted = true // Preview with upvoted state
+                isUpvoted = true
             )
             Spacer(modifier = Modifier.height(16.dp))
             ReusableCard(
-                imagePainter = painterResource(id = R.drawable.salad),
+                imagePainter = painterResource(id = R.drawable.spicy_noodle),
                 title = "Another Delicious Dish",
                 description = "by Chef John",
-                duration = "1 hour 30 minutes", // Changed for preview
+                duration = "1 hour 30 minutes",
                 upvoteCount = 987,
                 isBookmarked = false,
                 onBookmarkClick = {},
                 onDeleteClick = {},
-                isUpvoted = false // Preview with unupvoted state
+                isUpvoted = false
             )
             Spacer(modifier = Modifier.height(16.dp))
             ReusableCard(
-                imagePainter = painterResource(id = R.drawable.salad),
+                imagePainter = painterResource(id = R.drawable.chicken_stir_fry),
                 title = "Quick Snack",
                 description = "by Mary",
-                duration = "5 min", // Changed for preview
+                duration = "5 min",
                 upvoteCount = 10000,
                 isBookmarked = true,
                 onBookmarkClick = {},
                 onDeleteClick = {},
-                isUpvoted = true // Preview with upvoted state
+                isUpvoted = true
             )
             Spacer(modifier = Modifier.height(16.dp))
             ReusableCard(
-                imagePainter = painterResource(id = R.drawable.salad),
+                imagePainter = painterResource(id = R.drawable.vegetable_curry),
                 title = "Long Cook Meal",
                 description = "by Chef Gordon",
-                duration = "2 hours", // Changed for preview
+                duration = "2 hours",
                 upvoteCount = 5000,
                 isBookmarked = true,
                 onBookmarkClick = {},
                 onDeleteClick = {},
-                isUpvoted = false // Preview with unupvoted state
+                isUpvoted = false,
+                hideDeleteButton = true
             )
         }
     }
