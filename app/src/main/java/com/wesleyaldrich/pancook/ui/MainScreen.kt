@@ -15,7 +15,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
@@ -101,13 +103,15 @@ fun CustomPanCookBar(navController: NavHostController, currentRoute: String?) {
                         onClick = { navController.navigate(Screen.Add.route) },
                         modifier = Modifier.offset(y = (-40).dp),
                         shape = CircleShape,
-                        containerColor = MaterialTheme.colorScheme.primary
+                        containerColor = Color(5, 26, 57),
+                        contentColor = Color.White
                     ) {
-                        Icon(Icons.Default.Add, contentDescription = "Add Recipe", tint = MaterialTheme.colorScheme.onPrimary)
+                        Icon(Icons.Default.Add, contentDescription = "Add Recipe")
                     }
                 }
             } else {
-                Column(
+                // ✅ MODIFIED: The item is now wrapped in a Box to layer the glow effect.
+                Box(
                     modifier = Modifier
                         .weight(1f)
                         .fillMaxHeight()
@@ -120,22 +124,40 @@ fun CustomPanCookBar(navController: NavHostController, currentRoute: String?) {
                                 }
                             }
                         },
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
+                    contentAlignment = Alignment.Center
                 ) {
-                    AppIcon(
-                        iconResource = screen.icon,
-                        contentDescription = screen.title,
-                        tint = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    if (!screensWithoutLabels.contains(screen.route)) {
-                        Text(
-                            text = screen.title,
-                            fontSize = 12.sp,
-                            fontFamily = poppins,
-                            fontWeight = FontWeight.SemiBold,
-                            color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                    // ✅ This is the conditional red glow effect.
+                    if (isSelected) {
+                        Box(
+                            modifier = Modifier
+                                .width(65.dp)
+                                .height(65.dp)
+                                .background(
+                                    color = Color(176, 221, 242).copy(alpha = 0.5f),
+                                    shape = RoundedCornerShape(50)
+                                )
                         )
+                    }
+
+                    // This Column holds the icon and text, placed on top of the glow.
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        AppIcon(
+                            iconResource = screen.icon,
+                            contentDescription = screen.title,
+                            tint = if (isSelected) Color(5, 26, 57) else MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        if (!screensWithoutLabels.contains(screen.route)) {
+                            Text(
+                                text = screen.title,
+                                fontSize = 12.sp,
+                                fontFamily = poppins,
+                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                                color = if (isSelected) Color(5, 26, 57) else MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
                     }
                 }
             }
@@ -233,7 +255,7 @@ fun IconButtonPill(
             iconResource = icon,
             contentDescription = null,
             tint = Color.White,
-            size = 32.dp
+            size = 28.dp
         )
     }
 }

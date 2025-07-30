@@ -28,6 +28,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.ExperimentalMaterial3Api // Required for TopAppBar
@@ -63,7 +64,7 @@ fun SavedRecipeScreen(
                     IconButton(onClick = onBackClick) {
                         // Change icon to ArrowBack and remove graphicsLayer if you want it to match GroceryScreen exactly
                         Icon(
-                            imageVector = Icons.Filled.ArrowBack, // Changed from PlayArrow
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack, // Changed from PlayArrow
                             contentDescription = "Back",
                             modifier = Modifier
                                 .size(50.dp)
