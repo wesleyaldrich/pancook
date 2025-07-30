@@ -1,3 +1,4 @@
+// MyRecipeScreen.kt
 package com.wesleyaldrich.pancook.ui.screens
 
 import androidx.compose.foundation.clickable
@@ -22,9 +23,18 @@ import com.wesleyaldrich.pancook.ui.navigation.Screen
 import com.wesleyaldrich.pancook.model.Instruction
 import com.wesleyaldrich.pancook.model.NutritionFact
 import com.wesleyaldrich.pancook.model.Comment
-import androidx.compose.runtime.LaunchedEffect // Added for initializing upvotedRecipes
-import androidx.compose.runtime.remember // Added for remember
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
+import android.net.Uri // Important for video URIs
 
+
+// --- START: GLOBAL RECIPE DATA ---
+// Move allRecipes, bookmarkedRecipes, and upvotedRecipes back to top-level
+// Note: For local video URIs (android.resource://), you cannot directly use `packageName` here.
+// You would either hardcode the package name or use external video URLs.
+// For the purpose of getting your app to compile and fix the immediate error,
+// I'm keeping `videos = emptyList()` for the ones you provided previously,
+// or if you had a local video example, you'd need a hardcoded packageName or external URL.
 
 val allRecipes = mutableStateListOf<Recipe>().apply {
     addAll(
@@ -33,8 +43,10 @@ val allRecipes = mutableStateListOf<Recipe>().apply {
                 id = 4,
                 title = "Delicious Salad",
                 description = "A refreshing mix of garden greens.",
-                // Corrected image references based on your provided file
                 images = listOf(R.drawable.salad, R.drawable.salad_2, R.drawable.salad_3, R.drawable.salad_4, R.drawable.salad_5),
+                // --- FIX IS HERE ---
+                videos = listOf(Uri.parse("android.resource://com.wesleyaldrich.pancook/${R.raw.salad_video}")),
+                // -------------------
                 ingredients = listOf(
                     Ingredient(R.drawable.ingredient_tomato, "Fresh Lettuce", "Vegetables", 1.0, "head"),
                     Ingredient(R.drawable.ingredient_tomato, "Cherry Tomatoes", "Vegetables", 150.0, "g"),
@@ -48,16 +60,24 @@ val allRecipes = mutableStateListOf<Recipe>().apply {
                     Ingredient(R.drawable.ingredient_tomato, "Egg", "Egg", 2.05, "pcs")
                 ),
                 steps = listOf(
-                    Instruction(1, "Wash and dry the lettuce. Tear into bite-sized pieces and place in a large salad bowl."),
-                    Instruction(2, "Halve the cherry tomatoes. Dice the cucumber and finely slice the red onion."),
-                    Instruction(3, "Add the tomatoes, cucumber, and red onion to the salad bowl with the lettuce."),
-                    Instruction(4, "Crumble the feta cheese over the vegetables."),
-                    Instruction(5, "Boil 2 large eggs for 8-10 minutes for a hard-boiled consistency. Let them cool, peel, and quarter them.", timerSeconds = 480),
-                    Instruction(6, "In a small bowl, whisk together the olive oil, lemon juice, salt, and black pepper to make the dressing."),
-                    Instruction(7, "Pour the dressing over the salad. Toss gently to combine all ingredients evenly."),
-                    Instruction(8, "Add the quartered boiled eggs to the salad."),
-                    Instruction(9, "Serve immediately as a refreshing side or light meal."),
-                    Instruction(10, "Enjoy your delicious salad!")
+                    Instruction(1, "Wash and dry the lettuce. Tear into bite-sized pieces and place in a large salad bowl.",
+                        images = listOf(R.drawable.salad_step_1_wash_lettuce)),
+                    Instruction(2, "Halve the cherry tomatoes. Dice the cucumber and finely slice the red onion.",
+                        images = listOf(R.drawable.salad_step_2_chop_veg)),
+                    Instruction(3, "Add the tomatoes, cucumber, and red onion to the salad bowl with the lettuce.",
+                        images = listOf(R.drawable.salad_step_3_add_to_bowl)),
+                    Instruction(4, "Crumble the feta cheese over the vegetables.",
+                        images = listOf(R.drawable.salad_step_4_feta)),
+                    Instruction(5, "Boil 2 large eggs for 8-10 minutes for a hard-boiled consistency. Let them cool, peel, and quarter them.", timerSeconds = 480,
+                        images = listOf(R.drawable.salad_step_5_eggs)),
+                    Instruction(6, "In a small bowl, whisk together the olive oil, lemon juice, salt, and black pepper to make the dressing.",
+                        images = listOf(R.drawable.salad_step_6_dressing)),
+                    Instruction(7, "Pour the dressing over the salad. Toss gently to combine all ingredients evenly.",
+                        images = listOf(R.drawable.salad_step_7_pour_dressing)),
+                    Instruction(8, "Add the quartered boiled eggs to the salad.",
+                        images = listOf(R.drawable.salad_step_8_eggs_added)),
+                    Instruction(9, "Serve immediately as a refreshing side or light meal.",
+                        images = listOf(R.drawable.salad))
                 ),
                 servings = 2,
                 duration = "15 min",
@@ -73,12 +93,17 @@ val allRecipes = mutableStateListOf<Recipe>().apply {
                     Comment("John Doe", "This is a delicious salad, easy to make!"),
                     Comment("Jane Smith", "Loved the addition of feta cheese, great recipe!", isUpvote = true)
                 ),
-                isUpvoted = false // Initial state for this specific recipe
+                isUpvoted = false
             ),
             Recipe(
                 id = 5,
-                // Corrected image references based on your provided file
                 images = listOf(R.drawable.spicy_noodle, R.drawable.spicy_noodle_2, R.drawable.spicy_noodle_3, R.drawable.spicy_noodle_4),
+                // For local video files in `res/raw`, you *must* hardcode the package name here
+                // if `allRecipes` is a top-level property. Otherwise, you'd move `allRecipes`
+                // inside a Composable to get `LocalContext.current.packageName`.
+                // Example with hardcoded package name (replace 'com.wesleyaldrich.pancook' with your actual package)
+                // If you don't have sample_video.mp4, keep emptyList() or use an external URL
+                videos = emptyList(),
                 title = "Spicy Noodles",
                 description = "Quick and flavorful, with a kick.",
                 steps = listOf(
@@ -115,12 +140,12 @@ val allRecipes = mutableStateListOf<Recipe>().apply {
                     Comment("Mark T.", "Super spicy, just how I like it!"),
                     Comment("Chef Emily", "Quick dinner solution, love it!", isUpvote = true)
                 ),
-                isUpvoted = false // Initial state
+                isUpvoted = false
             ),
             Recipe(
                 id = 6,
-                // Corrected image references based on your provided file
                 images = listOf(R.drawable.chicken_stir_fry, R.drawable.chicken_stir_fry_2, R.drawable.chicken_stir_fry_3, R.drawable.chicken_stir_fry_4),
+                videos = emptyList(),
                 title = "Chicken Stir-fry",
                 description = "Healthy and quick weeknight dinner.",
                 steps = listOf(
@@ -157,12 +182,12 @@ val allRecipes = mutableStateListOf<Recipe>().apply {
                     Comment("David S.", "My go-to weeknight recipe!"),
                     Comment("Sara L.", "Healthy and delicious. Perfect combo.", isUpvote = true)
                 ),
-                isUpvoted = false // Initial state
+                isUpvoted = false
             ),
             Recipe(
                 id = 7,
-                // Corrected image references based on your provided file
                 images = listOf(R.drawable.vegetable_curry, R.drawable.vegetable_curry_2, R.drawable.vegetable_curry_3, R.drawable.vegetable_curry_4),
+                videos = emptyList(),
                 title = "Vegetable Curry",
                 description = "Aromatic and hearty vegetarian dish.",
                 steps = listOf(
@@ -201,12 +226,12 @@ val allRecipes = mutableStateListOf<Recipe>().apply {
                     Comment("Priya R.", "So flavorful and comforting!"),
                     Comment("Vegan Chef", "A staple in my kitchen, absolutely love it.", isUpvote = true)
                 ),
-                isUpvoted = false // Initial state
+                isUpvoted = false
             ),
             Recipe(
                 id = 8,
-                // Corrected image references based on your provided file
                 images = listOf(R.drawable.creamy_pasta, R.drawable.creamy_pasta_2, R.drawable.creamy_pasta_3, R.drawable.creamy_pasta_4),
+                videos = emptyList(),
                 title = "Creamy Pasta",
                 description = "Rich and comforting, a family favorite.",
                 steps = listOf(
@@ -240,12 +265,12 @@ val allRecipes = mutableStateListOf<Recipe>().apply {
                     Comment("Tom H.", "My kids devour this every time!"),
                     Comment("RecipeFan", "Creamy perfection!", isUpvote = true)
                 ),
-                isUpvoted = false // Initial state
+                isUpvoted = false
             ),
             Recipe(
                 id = 9,
-                // Corrected image references based on your provided file
                 images = listOf(R.drawable.grilled_fish, R.drawable.grilled_fish_2, R.drawable.grilled_fish_3),
+                videos = emptyList(),
                 title = "Grilled Fish",
                 description = "Light and healthy, perfect for summer.",
                 steps = listOf(
@@ -276,12 +301,12 @@ val allRecipes = mutableStateListOf<Recipe>().apply {
                     Comment("Fisherman Fred", "Simple and delicious, great for grilling season."),
                     Comment("Health Nut", "Light and healthy, exactly what I needed!", isUpvote = true)
                 ),
-                isUpvoted = false // Initial state
+                isUpvoted = false
             ),
             Recipe(
                 id = 11,
-                // Corrected image references based on your provided file
                 images = listOf(R.drawable.beef_stew, R.drawable.beef_stew_2, R.drawable.beef_stew_3),
+                videos = emptyList(),
                 title = "Beef Stew",
                 description = "Hearty and comforting, ideal for cold days.",
                 steps = listOf(
@@ -320,12 +345,12 @@ val allRecipes = mutableStateListOf<Recipe>().apply {
                     Comment("Grandma's Boy", "Just like my grandma used to make! So hearty."),
                     Comment("Winter Warmer", "Perfect for a cold evening.", isUpvote = true)
                 ),
-                isUpvoted = false // Initial state
+                isUpvoted = false
             ),
             Recipe(
                 id = 12,
-                // Corrected image references based on your provided file
                 images = listOf(R.drawable.tomato_soup, R.drawable.tomato_soup_2, R.drawable.tomato_soup_3, R.drawable.tomato_soup_4),
+                videos = emptyList(),
                 title = "Tomato Soup",
                 description = "Classic comfort, warm and delicious.",
                 steps = listOf(
@@ -361,15 +386,15 @@ val allRecipes = mutableStateListOf<Recipe>().apply {
                     Comment("Soup Lover", "My favorite quick soup recipe!"),
                     Comment("Warm Belly", "Comfort in a bowl.", isUpvote = true)
                 ),
-                isUpvoted = false // Initial state
+                isUpvoted = false
             ),
 
             Recipe(
                 id = 1,
                 title = "Spaghetti Bolognese",
                 description = "A classic Italian pasta dish with rich meat sauce.",
-                // Corrected image references based on your provided file
                 images = listOf(R.drawable.spaghetti_bolognese, R.drawable.spaghetti_bolognese_2, R.drawable.spaghetti_bolognese_3, R.drawable.spaghetti_bolognese_4),
+                videos = emptyList(),
                 ingredients = listOf(
                     Ingredient(R.drawable.ingredient_tomato, "Spaghetti", "Pasta", 200.0, "g"),
                     Ingredient(R.drawable.ingredient_tomato, "Ground Beef", "Beef", 150.0, "g"),
@@ -400,14 +425,14 @@ val allRecipes = mutableStateListOf<Recipe>().apply {
                     Comment("Pasta Lover", "Classic comfort food, can't go wrong with this!"),
                     Comment("Italian Grandma", "Delizioso! A perfect bolognese.", isUpvote = true)
                 ),
-                isUpvoted = false // Initial state
+                isUpvoted = false
             ),
             Recipe(
                 id = 2,
                 title = "Fresh Garden Salad (Grocery)",
                 description = "A light and healthy salad perfect for any meal.",
-                // Corrected image references based on your provided file
                 images = listOf(R.drawable.fresh_garden_salad, R.drawable.fresh_garden_salad_2, R.drawable.fresh_garden_salad_3, R.drawable.fresh_garden_salad_4),
+                videos = emptyList(),
                 ingredients = listOf(
                     Ingredient(R.drawable.ingredient_tomato, "Lettuce", "Vegetables", 1.0, "head"),
                     Ingredient(R.drawable.ingredient_tomato, "Tomato", "Vegetables", 2.0, "pieces"),
@@ -437,14 +462,14 @@ val allRecipes = mutableStateListOf<Recipe>().apply {
                     Comment("Salad Fan", "Fresh and light, great for lunch."),
                     Comment("Healthy Eater", "My daily dose of greens!", isUpvote = true)
                 ),
-                isUpvoted = false // Initial state
+                isUpvoted = false
             ),
             Recipe(
                 id = 3,
                 title = "Grilled Chicken",
                 description = "Simple, juicy grilled chicken breast.",
-                // Corrected image references based on your provided file
                 images = listOf(R.drawable.grilled_chicken, R.drawable.grilled_chicken_2, R.drawable.grilled_chicken_3, R.drawable.grilled_chicken_4),
+                videos = emptyList(),
                 ingredients = listOf(
                     Ingredient(R.drawable.ingredient_tomato, "Chicken Breast", "Chicken", 200.0, "g"),
                     Ingredient(R.drawable.ingredient_tomato, "Salt", "Seasoning", 1.0, "tsp"),
@@ -472,15 +497,15 @@ val allRecipes = mutableStateListOf<Recipe>().apply {
                     Comment("Grill Master", "Perfectly grilled chicken every time!"),
                     Comment("Gym Buff", "High protein, low carb. Excellent!", isUpvote = true)
                 ),
-                isUpvoted = false // Initial state
+                isUpvoted = false
             ),
 
             Recipe(
                 id = 101,
                 title = "Hash Browns",
                 description = "Classic crispy potato breakfast.",
-                // Corrected image references based on your provided file
                 images = listOf(R.drawable.hash_brown, R.drawable.hash_brown_2, R.drawable.hash_brown_3, R.drawable.hash_brown_4, R.drawable.hash_brown_5),
+                videos = emptyList(),
                 ingredients = listOf(
                     Ingredient(R.drawable.ingredient_tomato, "Potatoes", "Potato", 2.0, "large"),
                     Ingredient(R.drawable.ingredient_tomato, "Butter", "Dairy", 2.0, "tbsp"),
@@ -510,14 +535,14 @@ val allRecipes = mutableStateListOf<Recipe>().apply {
                     Comment("Breakfast King", "Crispy and delicious, a perfect breakfast side!"),
                     Comment("Morning Person", "Can't start my day without these.", isUpvote = true)
                 ),
-                isUpvoted = false // Initial state
+                isUpvoted = false
             ),
             Recipe(
                 id = 102,
                 title = "Fudgy Brownies",
                 description = "Rich, decadent, and perfectly fudgy.",
-                // Corrected image references based on your provided file
                 images = listOf(R.drawable.fudgy_brownies, R.drawable.fudgy_brownies_2, R.drawable.fudgy_brownies_3, R.drawable.fudgy_brownies_4),
+                videos = emptyList(),
                 ingredients = listOf(
                     Ingredient(R.drawable.ingredient_tomato, "Unsalted Butter", "Dairy", 100.0, "g"),
                     Ingredient(R.drawable.ingredient_tomato, "Granulated Sugar", "Sweeteners", 200.0, "g"),
@@ -550,14 +575,14 @@ val allRecipes = mutableStateListOf<Recipe>().apply {
                     Comment("Sweet Tooth", "The fudgiest brownies ever! A must-try."),
                     Comment("Dessert Queen", "Perfect texture and rich chocolate flavor.", isUpvote = true)
                 ),
-                isUpvoted = false // Initial state
+                isUpvoted = false
             ),
             Recipe(
                 id = 103,
                 title = "French Toast",
                 description = "A sweet and savory breakfast classic.",
-                // Corrected image references based on your provided file
                 images = listOf(R.drawable.french_toast, R.drawable.french_toast_2, R.drawable.french_toast_3, R.drawable.french_toast_4),
+                videos = emptyList(),
                 ingredients = listOf(
                     Ingredient(R.drawable.ingredient_tomato, "Bread", "Bread", 4.0, "slices"),
                     Ingredient(R.drawable.ingredient_tomato, "Large Eggs", "Egg", 2.0, "pcs"),
@@ -587,7 +612,7 @@ val allRecipes = mutableStateListOf<Recipe>().apply {
                 comments = listOf(
                     Comment("Brunch Fan", "Best French Toast ever, simple and delicious!")
                 ),
-                isUpvoted = false // Initial state
+                isUpvoted = false
             )
         )
     )
@@ -595,7 +620,6 @@ val allRecipes = mutableStateListOf<Recipe>().apply {
 
 // Global mutable list to store bookmarked recipes
 val bookmarkedRecipes = mutableStateListOf<Recipe>().apply {
-    // Initialize with some bookmarked recipes for demonstration
     val initialBookmarks = listOf(4, 6, 102, 5, 9)
     initialBookmarks.forEach { id ->
         allRecipes.find { it.id == id }?.let { add(it) }
@@ -604,11 +628,7 @@ val bookmarkedRecipes = mutableStateListOf<Recipe>().apply {
 
 // GLOBAL mutable list to store upvoted recipes
 val upvotedRecipes = mutableStateListOf<Recipe>().apply {
-    // Optionally initialize with some upvoted recipes for demonstration
-    // val initialUpvotes = listOf(4, 1, 103) // Example
-    // initialUpvotes.forEach { id ->
-    //     allRecipes.find { it.id == id }?.let { add(it) }
-    // }
+    // No initial upvotes for demonstration here, handled by `isUpvoted` in Recipe model
 }
 
 

@@ -1,41 +1,39 @@
-// DetailRecipeScreen.kt - CORRECTED
 package com.wesleyaldrich.pancook.ui.screens
 
+import android.app.Activity
 import android.content.Intent
+import android.content.pm.ActivityInfo
+import android.net.Uri
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
-import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsDraggedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.Share
-import androidx.compose.material.icons.filled.Bookmark
-import androidx.compose.material.icons.filled.ThumbUp
-import androidx.compose.material.icons.filled.ThumbDown
-import androidx.compose.material.icons.filled.ContentCopy
-import androidx.compose.material.icons.filled.ChatBubble
-import androidx.compose.material.icons.filled.People
-import androidx.compose.material.icons.filled.MoreHoriz
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.* // Make sure to import all necessary remember, mutableStateOf, etc.
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
@@ -44,29 +42,36 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
-import com.wesleyaldrich.pancook.R
-import kotlin.math.floor
-import kotlin.math.log
-import com.wesleyaldrich.pancook.ui.theme.PancookTheme
-import com.wesleyaldrich.pancook.ui.navigation.Screen
-import coil.compose.rememberAsyncImagePainter
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
-import androidx.compose.ui.graphics.vector.ImageVector
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.collectIsPressedAsState
-import androidx.compose.material.icons.filled.KeyboardArrowUp
-import androidx.compose.ui.input.pointer.pointerInput
-import kotlin.math.roundToInt
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.wesleyaldrich.pancook.model.Recipe // Ensure Recipe model is imported
+import androidx.compose.ui.viewinterop.AndroidView
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.LifecycleOwner
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
+import coil.compose.rememberAsyncImagePainter
+import com.google.android.exoplayer2.ExoPlayer
+import com.google.android.exoplayer2.MediaItem as ExoPlayerMediaItem
+import com.google.android.exoplayer2.Player
+import com.google.android.exoplayer2.ui.StyledPlayerView
+import com.wesleyaldrich.pancook.R
+import com.wesleyaldrich.pancook.model.MediaItem
+import com.wesleyaldrich.pancook.model.MediaType
+import com.wesleyaldrich.pancook.ui.navigation.Screen
+import com.wesleyaldrich.pancook.ui.theme.PancookTheme
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlin.math.floor
+import kotlin.math.log
+import kotlin.math.roundToInt
+
 
 /**
  * Helper function to format duration strings into a shorter format.
@@ -102,12 +107,12 @@ private fun formatDurationShort(duration: String): String {
         val singleUnitMatch = Regex("(\\d+)\\s*(min|minutes|hour|hours|day|days|week|weeks)").find(durationLower)
         singleUnitMatch?.let {
             val value = it.groupValues[1]
-            when (it.groupValues[2]) { // Make 'when' exhaustive
+            when (it.groupValues[2]) {
                 "min", "minutes" -> components.add("${value}m")
                 "hour", "hours" -> components.add("${value}h")
                 "day", "days" -> components.add("${value}d")
                 "week", "weeks" -> components.add("${value}w")
-                else -> components.add(duration) // Fallback for unhandled units
+                else -> components.add(duration)
             }
         }
     }
@@ -116,74 +121,140 @@ private fun formatDurationShort(duration: String): String {
 }
 
 /**
- * A reusable, auto-scrolling image carousel with infinite loop behavior and indicator dots.
+ * A reusable, auto-scrolling image/video carousel with infinite loop behavior and indicator dots.
+ * This carousel now uses HorizontalPager for one-item-at-a-time swiping and pauses on video playback.
  *
- * @param images A list of drawable resource IDs for the images to display.
+ * @param mediaItems A list of MediaItem objects (image resource IDs or video URIs) to display.
  * @param modifier The modifier to be applied to the carousel.
  * @param autoScrollDelay The delay in milliseconds between automatic scrolls. Defaults to 3000ms.
- * @param imageContentDescription A function that provides content description for each image based on its index.
+ * @param contentDescription A function that provides content description for each item.
  */
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun AutoScrollingImageCarousel(
-    images: List<Int>,
+    mediaItems: List<MediaItem>,
     modifier: Modifier = Modifier,
     autoScrollDelay: Long = 3000L,
-    imageContentDescription: (Int) -> String = { index -> "Image ${index + 1}" }
+    contentDescription: (Int, MediaType) -> String = { index, type -> "${type.name} ${index + 1}" }
 ) {
-    if (images.isEmpty()) {
-        Spacer(modifier = modifier) // Render nothing or a placeholder if no images
+    if (mediaItems.isEmpty()) {
+        Spacer(modifier = modifier)
         return
     }
 
-    val lazyListState = rememberLazyListState()
+    val pagerState = rememberPagerState(
+        initialPage = 0,
+        pageCount = { Int.MAX_VALUE }
+    )
     val coroutineScope = rememberCoroutineScope()
-    val flingBehavior = rememberSnapFlingBehavior(lazyListState)
-    val isDragged by lazyListState.interactionSource.collectIsDraggedAsState()
-    val interactionSource = remember { MutableInteractionSource() }
-    val isPressed by interactionSource.collectIsPressedAsState()
+    val isDragged by pagerState.interactionSource.collectIsDraggedAsState()
+    val context = LocalContext.current
 
-    // Key to restart auto-scroll effect
+    val exoPlayer: ExoPlayer = remember { ExoPlayer.Builder(context).build() }
+    var isVideoPlaying by remember { mutableStateOf(false) }
+    var isVideoFullscreen by remember { mutableStateOf(false) }
     var autoScrollKey by remember { mutableStateOf(0) }
 
-    // Auto-scroll logic with user interaction pause
-    LaunchedEffect(autoScrollKey, isDragged, isPressed, images.size) {
-        if (images.isNotEmpty()) { // Ensure images list is not empty
-            // Initialize or reset scroll position to give an infinite loop illusion
-            if (!lazyListState.isScrollInProgress && lazyListState.firstVisibleItemIndex == 0) {
-                // When starting or resetting, jump to a "middle" point for infinite scroll effect
-                val initialIndex = Int.MAX_VALUE / 2 - (Int.MAX_VALUE / 2 % images.size)
-                lazyListState.scrollToItem(initialIndex)
-            }
+    val activity = context as? Activity
+    val window = activity?.window
 
-            // Only auto-scroll if user is not dragging or pressing and not already scrolling
-            if (!isDragged && !isPressed && !lazyListState.isScrollInProgress) {
-                while (true) {
-                    delay(autoScrollDelay)
-                    // Calculate next index to scroll, ensuring it wraps around for infinite effect
-                    val nextIndex = (lazyListState.firstVisibleItemIndex + 1)
-                    lazyListState.animateScrollToItem(nextIndex)
-                }
+    fun enterFullscreen() {
+        if (activity == null || window == null) return
+        activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE // Allows rotation to both landscape modes
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+        val controller = WindowInsetsControllerCompat(window, window.decorView)
+        controller.hide(WindowInsetsCompat.Type.systemBars())
+        controller.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+        isVideoFullscreen = true
+    }
+
+    fun exitFullscreen() {
+        if (activity == null || window == null) return
+        activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED // Return to default orientation handling
+        WindowCompat.setDecorFitsSystemWindows(window, true)
+        val controller = WindowInsetsControllerCompat(window, window.decorView)
+        controller.show(WindowInsetsCompat.Type.systemBars())
+        isVideoFullscreen = false
+    }
+
+    DisposableEffect(Unit) {
+        val playerListener = object : Player.Listener {
+            override fun onIsPlayingChanged(isPlaying: Boolean) {
+                isVideoPlaying = isPlaying
+            }
+        }
+        exoPlayer.addListener(playerListener)
+
+        val lifecycleObserver = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_STOP) {
+                exoPlayer.pause()
+            } else if (event == Lifecycle.Event.ON_START) {
+                // We don't want it to auto-play on resume, user should press play
+                // exoPlayer.play()
+            }
+        }
+        val lifecycle = (context as? LifecycleOwner)?.lifecycle
+        lifecycle?.addObserver(lifecycleObserver)
+
+        onDispose {
+            lifecycle?.removeObserver(lifecycleObserver)
+            // Ensure we exit fullscreen and reset orientation when the composable is disposed
+            if (isVideoFullscreen) {
+                exitFullscreen()
+            }
+            exoPlayer.release()
+        }
+    }
+
+    LaunchedEffect(autoScrollKey, isDragged, isVideoPlaying) {
+        if (pagerState.currentPage == 0 && mediaItems.isNotEmpty()) {
+            val initialIndex = Int.MAX_VALUE / 2 - (Int.MAX_VALUE / 2 % mediaItems.size)
+            pagerState.scrollToPage(initialIndex)
+        }
+        if (!isDragged && !pagerState.isScrollInProgress && !isVideoPlaying) {
+            while (true) {
+                delay(autoScrollDelay)
+                val nextPage = pagerState.currentPage + 1
+                pagerState.animateScrollToPage(nextPage)
             }
         }
     }
 
-    // Listener for scroll state changes to reset autoScrollKey when user stops scrolling
-    // This is crucial to re-initiate auto-scroll if the user stopped it by dragging/pressing
-    LaunchedEffect(lazyListState.isScrollInProgress, isDragged, isPressed) {
-        if (!lazyListState.isScrollInProgress && !isDragged && !isPressed) {
-            // Small delay to ensure user has fully stopped interacting
-            delay(500) // Give a brief moment for the user to fully release/stop
-            autoScrollKey++ // Increment key to re-trigger the auto-scroll LaunchedEffect
+    LaunchedEffect(pagerState.isScrollInProgress, isDragged) {
+        if (!pagerState.isScrollInProgress && !isDragged) {
+            delay(500)
+            autoScrollKey++
         }
     }
 
-    // Keep track of the currently visible item for the indicator dots, accounting for infinite scroll
     val currentImageIndex = remember {
         derivedStateOf {
-            if (images.isNotEmpty() && lazyListState.firstVisibleItemIndex >= 0) {
-                lazyListState.firstVisibleItemIndex % images.size
+            if (mediaItems.isNotEmpty()) {
+                pagerState.currentPage % mediaItems.size
             } else 0
+        }
+    }
+
+    // Fullscreen dialog for video playback
+    if (isVideoFullscreen) {
+        Dialog(
+            onDismissRequest = { exitFullscreen() },
+            properties = DialogProperties(usePlatformDefaultWidth = false)
+        ) {
+            BackHandler { exitFullscreen() }
+            AndroidView(
+                factory = { ctx ->
+                    StyledPlayerView(ctx).apply {
+                        player = exoPlayer
+                        useController = true
+                        // Ensure fullscreen button toggles the orientation explicitly
+                        setFullscreenButtonClickListener {
+                            if (isVideoFullscreen) exitFullscreen() else enterFullscreen()
+                        }
+                    }
+                },
+                modifier = Modifier.fillMaxSize().background(Color.Black)
+            )
         }
     }
 
@@ -194,35 +265,97 @@ fun AutoScrollingImageCarousel(
                 .height(220.dp)
                 .clip(RoundedCornerShape(12.dp))
         ) {
-            LazyRow(
+            HorizontalPager(
+                state = pagerState,
                 modifier = Modifier.fillMaxSize(),
-                state = lazyListState,
-                flingBehavior = flingBehavior,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                items(Int.MAX_VALUE, key = { it }) { index ->
-                    val actualIndex = index % images.size
-                    Image(
-                        painter = painterResource(id = images[actualIndex]),
-                        contentDescription = imageContentDescription(actualIndex),
-                        modifier = Modifier
-                            .fillParentMaxWidth() // CRITICAL: Ensure each item takes full width
-                            .fillMaxHeight(),
-                        contentScale = ContentScale.Crop
-                    )
+            ) { page ->
+                val actualIndex = page % mediaItems.size
+                val mediaItem = mediaItems[actualIndex]
+
+                when (mediaItem.type) {
+                    MediaType.IMAGE -> {
+                        Image(
+                            painter = painterResource(id = mediaItem.resourceId!!),
+                            contentDescription = contentDescription(actualIndex, MediaType.IMAGE),
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Crop
+                        )
+                    }
+                    MediaType.VIDEO -> {
+                        // Only show the embedded player if not in fullscreen mode
+                        if (!isVideoFullscreen) {
+                            Box(
+                                modifier = Modifier.fillMaxSize(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                AndroidView(
+                                    factory = { ctx ->
+                                        StyledPlayerView(ctx).apply {
+                                            player = exoPlayer
+                                            useController = false // Start with no controller for click-to-play
+                                            setFullscreenButtonClickListener { enterFullscreen() }
+                                        }
+                                    },
+                                    modifier = Modifier.fillMaxSize().background(Color.Black)
+                                ) { playerView ->
+                                    // Update useController based on isVideoPlaying state
+                                    playerView.useController = isVideoPlaying
+
+                                    if (actualIndex == currentImageIndex.value) {
+                                        val exoMediaItem = ExoPlayerMediaItem.fromUri(mediaItem.uri!!)
+                                        // Load media only if it's different from the current one to avoid re-buffering
+                                        if (exoPlayer.currentMediaItem != exoMediaItem) {
+                                            exoPlayer.setMediaItem(exoMediaItem)
+                                            exoPlayer.prepare()
+                                            exoPlayer.playWhenReady = false // Don't auto-play
+                                        }
+                                    } else {
+                                        // Pause and seek to start if not the current video
+                                        if (exoPlayer.isPlaying) {
+                                            exoPlayer.pause()
+                                            exoPlayer.seekTo(0)
+                                        }
+                                    }
+                                }
+
+                                if (!isVideoPlaying && actualIndex == currentImageIndex.value) {
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .clickable(
+                                                interactionSource = remember { MutableInteractionSource() },
+                                                indication = null
+                                            ) {
+                                                exoPlayer.play()
+                                            },
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Filled.PlayCircleOutline,
+                                            contentDescription = "Play Video",
+                                            tint = Color.White.copy(alpha = 0.8f),
+                                            modifier = Modifier.size(80.dp)
+                                        )
+                                    }
+                                }
+                            }
+                        } else {
+                            // When in fullscreen, this Box acts as a placeholder or prevents rendering the embedded view
+                            Box(modifier = Modifier.fillMaxSize().background(Color.Black))
+                        }
+                    }
                 }
             }
         }
-        Box( // This Box ensures the dots are centered horizontally
+
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = 8.dp),
             contentAlignment = Alignment.Center
         ) {
-            Row(
-                horizontalArrangement = Arrangement.Center // This centers the dots within their Row
-            ) {
-                images.forEachIndexed { index, _ ->
+            Row(horizontalArrangement = Arrangement.Center) {
+                mediaItems.forEachIndexed { index, _ ->
                     Box(
                         modifier = Modifier
                             .size(8.dp)
@@ -233,37 +366,23 @@ fun AutoScrollingImageCarousel(
                                 )
                             )
                             .clickable(
-                                interactionSource = interactionSource,
+                                interactionSource = remember { MutableInteractionSource() },
                                 indication = null
                             ) {
                                 coroutineScope.launch {
-                                    if (images.isNotEmpty()) {
-                                        val currentFirstVisibleItem = lazyListState.firstVisibleItemIndex
-                                        val currentVisibleImageIndex = currentFirstVisibleItem % images.size
-                                        val targetImageIndex = index
-
-                                        // Calculate the optimal scroll direction (forward or backward)
-                                        // to reach the targetImageIndex from the current visible image index.
-                                        val totalItems = images.size
-                                        val forwardScroll = (targetImageIndex - currentVisibleImageIndex + totalItems) % totalItems
-                                        val backwardScroll = (currentVisibleImageIndex - targetImageIndex + totalItems) % totalItems
-
-                                        val targetScrollOffset: Int // Relative offset from currentFirstVisibleItem to target image
-                                        if (forwardScroll <= backwardScroll) {
-                                            targetScrollOffset = forwardScroll
-                                        } else {
-                                            targetScrollOffset = -backwardScroll
-                                        }
-
-                                        // Animate to the relative target index, which will correctly wrap around.
-                                        lazyListState.animateScrollToItem(currentFirstVisibleItem + targetScrollOffset)
-
-                                        autoScrollKey++ // Reset auto-scroll after manual interaction
-                                    }
+                                    val currentPagerPage = pagerState.currentPage
+                                    val currentVisibleImageIndex = currentPagerPage % mediaItems.size
+                                    val totalItems = mediaItems.size
+                                    // Calculate shortest path to target page
+                                    val forwardScroll = (index - currentVisibleImageIndex + totalItems) % totalItems
+                                    val backwardScroll = (currentVisibleImageIndex - index + totalItems) % totalItems
+                                    val targetScrollOffset = if (forwardScroll <= backwardScroll) forwardScroll else -backwardScroll
+                                    pagerState.animateScrollToPage(currentPagerPage + targetScrollOffset)
+                                    autoScrollKey++
                                 }
                             }
                     )
-                    if (index < images.size - 1) Spacer(modifier = Modifier.width(4.dp))
+                    if (index < mediaItems.size - 1) Spacer(modifier = Modifier.width(4.dp))
                 }
             }
         }
@@ -277,13 +396,10 @@ fun DetailRecipeScreen(recipeId: Int, navController: NavController) {
     var showShareDialog by remember { mutableStateOf(false) }
     val context = LocalContext.current
 
-    // Find the recipe from the global allRecipes list
-    // Use derivedStateOf to ensure currentRecipe updates if allRecipes changes
     val currentRecipe by remember(recipeId) {
         derivedStateOf { allRecipes.find { it.id == recipeId } }
     }
 
-    // Early exit if recipe not found (e.g., deleted)
     if (currentRecipe == null) {
         LaunchedEffect(Unit) {
             navController.popBackStack()
@@ -291,18 +407,21 @@ fun DetailRecipeScreen(recipeId: Int, navController: NavController) {
         return
     }
 
-    // Use currentRecipe directly for its upvoteCount and isUpvoted state
-    // These values will be observed from the global allRecipes list
-    val recipe = currentRecipe!! // Non-null asserted after null check above
+    val recipe = currentRecipe!!
 
-    // These states are now derived from the global lists, making them consistent
-    // No need for local mutableStateOf for isUpvoted and currentUpvoteCount for display
     val isRecipeBookmarked = bookmarkedRecipes.contains(recipe)
     val isRecipeUpvoted = upvotedRecipes.contains(recipe)
-    val currentDisplayUpvoteCount = recipe.upvoteCount // Directly read from the recipe object
+    val currentDisplayUpvoteCount = recipe.upvoteCount
 
-    val displayImages = remember(recipe.images) {
-        recipe.images
+    val displayMediaItems = remember(recipe.images, recipe.videos) {
+        val items = mutableListOf<MediaItem>()
+        recipe.videos.forEach { videoUri ->
+            items.add(MediaItem(type = MediaType.VIDEO, uri = videoUri))
+        }
+        recipe.images.forEach { imageResourceId ->
+            items.add(MediaItem(type = MediaType.IMAGE, resourceId = imageResourceId))
+        }
+        items
     }
 
     fun formatCount(count: Int): String {
@@ -313,10 +432,9 @@ fun DetailRecipeScreen(recipeId: Int, navController: NavController) {
         return formattedValue.replace(".0", "") + units[exp]
     }
 
-    // Function to format ingredient quantity based on international standards
     fun formatIngredientQuantity(qty: Double, unit: String): Pair<String, String> {
         val calculatedQty = qty * servingCount
-        val formattedNumber = if (calculatedQty % 1.0 == 0.0) { // Check if it's a whole number
+        val formattedNumber = if (calculatedQty % 1.0 == 0.0) {
             "%.0f".format(calculatedQty)
         } else {
             "%.2f".format(calculatedQty)
@@ -324,26 +442,24 @@ fun DetailRecipeScreen(recipeId: Int, navController: NavController) {
 
         return when (unit.lowercase()) {
             "g" -> {
-                if (calculatedQty >= 750) { // If 750g or more, convert to kg
+                if (calculatedQty >= 750) {
                     "%.2f".format(calculatedQty / 1000.0).removeSuffix(".00") to "kg"
                 } else {
-                    formattedNumber to "g" // Use formattedNumber for g, without .00 if whole
+                    formattedNumber to "g"
                 }
             }
             "ml" -> {
-                if (calculatedQty >= 750) { // If 750ml or more, convert to L
+                if (calculatedQty >= 750) {
                     "%.2f".format(calculatedQty / 1000.0).removeSuffix(".00") to "L"
                 } else {
-                    formattedNumber to "ml" // Use formattedNumber for ml, without .00 if whole
+                    formattedNumber to "ml"
                 }
             }
             "pcs", "items" -> {
-                // Keep 'pcs' and 'items' as they are, no conversion to dozens
-                formattedNumber to unit // Use formattedNumber for pcs/items, without .00 if whole
+                formattedNumber to unit
             }
             else -> {
-                // For other units, just format the number
-                formattedNumber to unit // Use formattedNumber for others, without .00 if whole
+                formattedNumber to unit
             }
         }
     }
@@ -377,8 +493,7 @@ fun DetailRecipeScreen(recipeId: Int, navController: NavController) {
                             .fillMaxWidth()
                             .padding(horizontal = 16.dp)
                     ) {
-                        // Replaced the old LazyRow and Box for dots with the new Composable
-                        AutoScrollingImageCarousel(images = displayImages)
+                        AutoScrollingImageCarousel(mediaItems = displayMediaItems)
                     }
                 }
 
@@ -391,8 +506,8 @@ fun DetailRecipeScreen(recipeId: Int, navController: NavController) {
                         ) {
                             Column(modifier = Modifier.weight(1f)) {
                                 Text(
-                                    text = recipe.title, // Use 'recipe' directly
-                                    style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold, fontSize = 22.sp, color = colorResource(R.color.primary).copy(alpha = 1f)), // Toned down from 24.sp
+                                    text = recipe.title,
+                                    style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold, fontSize = 22.sp, color = colorResource(R.color.primary).copy(alpha = 1f)),
                                     modifier = Modifier.fillMaxWidth()
                                 )
                                 Spacer(modifier = Modifier.height(4.dp))
@@ -403,15 +518,15 @@ fun DetailRecipeScreen(recipeId: Int, navController: NavController) {
                                             painter = painterResource(id = R.drawable.nopal),
                                             contentDescription = "Creator Profile",
                                             modifier = Modifier
-                                                .size(18.dp) // Toned down from 20.dp
+                                                .size(18.dp)
                                                 .clip(CircleShape)
                                                 .background(MaterialTheme.colorScheme.surfaceVariant),
                                             contentScale = ContentScale.Crop,
                                         )
                                         Spacer(modifier = Modifier.width(4.dp))
                                         Text(
-                                            text = recipe.recipeMaker, // Use 'recipe' directly
-                                            style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium, fontSize = 14.sp, color = colorResource(R.color.primary).copy(alpha = 1f)) // Toned down from 16.sp
+                                            text = recipe.recipeMaker,
+                                            style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium, fontSize = 14.sp, color = colorResource(R.color.primary).copy(alpha = 1f))
                                         )
                                     }
 
@@ -420,25 +535,23 @@ fun DetailRecipeScreen(recipeId: Int, navController: NavController) {
                                         Icon(
                                             painterResource(id = R.drawable.ic_clock),
                                             contentDescription = "Duration",
-                                            modifier = Modifier.size(18.dp), // Toned down from 20.dp
+                                            modifier = Modifier.size(18.dp),
                                             tint = colorResource(R.color.primary).copy(alpha = 1f)
                                         )
                                         Spacer(modifier = Modifier.width(2.dp))
-                                        Text(text = formatDurationShort(recipe.duration), style = MaterialTheme.typography.bodyMedium.copy(fontSize = 14.sp)) // Toned down from 16.sp
+                                        Text(text = formatDurationShort(recipe.duration), style = MaterialTheme.typography.bodyMedium.copy(fontSize = 14.sp))
                                     }
                                 }
-                                Spacer(modifier = Modifier.height(8.dp)) // Added space here to push description down
+                                Spacer(modifier = Modifier.height(8.dp))
                             }
 
                             Row(
                                 modifier = Modifier.padding(top = 8.dp),
                                 verticalAlignment = Alignment.Top
                             ) {
-                                // Upvote Button
                                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                     IconButton(
                                         onClick = {
-                                            // Toggle upvote state and update count on the global recipe object
                                             if (upvotedRecipes.contains(recipe)) {
                                                 upvotedRecipes.remove(recipe)
                                                 recipe.upvoteCount--
@@ -446,38 +559,34 @@ fun DetailRecipeScreen(recipeId: Int, navController: NavController) {
                                                 upvotedRecipes.add(recipe)
                                                 recipe.upvoteCount++
                                             }
-                                            // The isUpvoted state and count will now automatically reflect
-                                            // the changes because they are derived from the global lists/objects.
                                         },
-                                        modifier = Modifier.size(22.dp) // Toned down from 24.dp
+                                        modifier = Modifier.size(22.dp)
                                     ) {
                                         Box(
                                             contentAlignment = Alignment.Center,
-                                            modifier = Modifier.size(22.dp) // Toned down from 24.dp
+                                            modifier = Modifier.size(22.dp)
                                         ) {
                                             Icon(
                                                 imageVector = Icons.Filled.ThumbUp,
                                                 contentDescription = "Upvote Border",
-                                                tint = colorResource(R.color.primary), // Border color
-                                                modifier = Modifier.size(22.dp) // Toned down from 24.dp
+                                                tint = colorResource(R.color.primary),
+                                                modifier = Modifier.size(22.dp)
                                             )
                                             Icon(
                                                 imageVector = Icons.Filled.ThumbUp,
                                                 contentDescription = "Upvote Fill",
-                                                // Use the derived isRecipeUpvoted state
-                                                tint = if (isRecipeUpvoted) colorResource(R.color.primary) else MaterialTheme.colorScheme.surface, // Fill color based on state
-                                                modifier = Modifier.size(18.dp) // Toned down from 20.dp
+                                                tint = if (isRecipeUpvoted) colorResource(R.color.primary) else MaterialTheme.colorScheme.surface,
+                                                modifier = Modifier.size(18.dp)
                                             )
                                         }
                                     }
                                     Spacer(modifier = Modifier.height(0.dp))
                                     Text(
-                                        text = formatCount(currentDisplayUpvoteCount), // Use the derived count
-                                        style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp) // Toned down from 12.sp
+                                        text = formatCount(currentDisplayUpvoteCount),
+                                        style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp)
                                     )
                                 }
                                 Spacer(modifier = Modifier.width(4.dp))
-                                // Bookmark Button
                                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                     IconButton(
                                         onClick = {
@@ -486,56 +595,53 @@ fun DetailRecipeScreen(recipeId: Int, navController: NavController) {
                                             } else {
                                                 bookmarkedRecipes.add(recipe)
                                             }
-                                            // The isBookmarked state will automatically reflect the change
-                                            // because it's derived from the global list.
                                         },
-                                        modifier = Modifier.size(22.dp) // Toned down from 24.dp
+                                        modifier = Modifier.size(22.dp)
                                     ) {
                                         Box(
                                             contentAlignment = Alignment.Center,
-                                            modifier = Modifier.size(22.dp) // Toned down from 24.dp
+                                            modifier = Modifier.size(22.dp)
                                         ) {
                                             Icon(
                                                 imageVector = Icons.Filled.Bookmark,
                                                 contentDescription = "Bookmark Border",
-                                                tint = colorResource(R.color.primary), // Border color (fixed)
-                                                modifier = Modifier.size(22.dp) // Toned down from 24.dp
+                                                tint = colorResource(R.color.primary),
+                                                modifier = Modifier.size(22.dp)
                                             )
                                             Icon(
                                                 imageVector = Icons.Filled.Bookmark,
                                                 contentDescription = "Bookmark Fill",
-                                                // Use the derived isRecipeBookmarked state
-                                                tint = if (isRecipeBookmarked) colorResource(R.color.primary) else MaterialTheme.colorScheme.surface, // Fill color based on state
-                                                modifier = Modifier.size(18.dp) // Toned down from 20.dp
+                                                tint = if (isRecipeBookmarked) colorResource(R.color.primary) else MaterialTheme.colorScheme.surface,
+                                                modifier = Modifier.size(18.dp)
                                             )
                                         }
                                     }
                                     Spacer(modifier = Modifier.height(0.dp))
                                     Text(
                                         text = formatCount(bookmarkedRecipes.size),
-                                        style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp) // Toned down from 12.sp
+                                        style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp)
                                     )
                                 }
                                 Spacer(modifier = Modifier.width(4.dp))
                                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                     IconButton(
                                         onClick = { showShareDialog = true },
-                                        modifier = Modifier.size(22.dp) // Toned down from 24.dp
+                                        modifier = Modifier.size(22.dp)
                                     ) {
                                         Icon(Icons.Filled.Share, contentDescription = "Share", tint = colorResource(R.color.primary).copy(alpha = 1f))
                                     }
                                     Spacer(modifier = Modifier.height(0.dp))
                                     Text(
-                                        text = formatCount(567), // Static share count for now
-                                        style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp) // Toned down from 12.sp
+                                        text = formatCount(567),
+                                        style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp)
                                     )
                                 }
                             }
                         }
 
                         Text(
-                            text = recipe.description, // Use 'recipe' directly
-                            style = MaterialTheme.typography.bodyLarge.copy(fontSize = 14.sp), // Toned down from 16.sp
+                            text = recipe.description,
+                            style = MaterialTheme.typography.bodyLarge.copy(fontSize = 14.sp),
                             modifier = Modifier.padding(bottom = 6.dp)
                         )
                     }
@@ -551,13 +657,15 @@ fun DetailRecipeScreen(recipeId: Int, navController: NavController) {
                     ) {
                         Column(modifier = Modifier.padding(16.dp)) {
                             Row(
-                                modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(bottom = 8.dp),
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.SpaceBetween
                             ) {
                                 Text(
                                     text = "Ingredients",
-                                    style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold, fontSize = 18.sp, color = colorResource(R.color.primary).copy(alpha = 1f)), // Toned down from 20.sp
+                                    style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold, fontSize = 18.sp, color = colorResource(R.color.primary).copy(alpha = 1f)),
                                     modifier = Modifier.weight(1f)
                                 )
 
@@ -565,33 +673,33 @@ fun DetailRecipeScreen(recipeId: Int, navController: NavController) {
                                     Icon(
                                         painterResource(id = R.drawable.ic_serving),
                                         contentDescription = "Serving Count",
-                                        modifier = Modifier.size(18.dp), // Toned down from 20.dp
+                                        modifier = Modifier.size(18.dp),
                                         tint = colorResource(R.color.primary).copy(alpha = 1f)
                                     )
                                     Spacer(modifier = Modifier.width(4.dp))
 
                                     Button(
                                         onClick = { if (servingCount > 1) servingCount-- },
-                                        modifier = Modifier.size(18.dp), // Toned down from 20.dp
+                                        modifier = Modifier.size(18.dp),
                                         shape = CircleShape,
                                         contentPadding = PaddingValues(0.dp),
                                         colors = ButtonDefaults.buttonColors(containerColor = colorResource(R.color.primary).copy(alpha = 1f))
                                     ) {
-                                        Icon(Icons.Filled.KeyboardArrowDown, contentDescription = "Decrease Serving", tint = colorResource(R.color.accent_yellow).copy(alpha = 1f), modifier = Modifier.size(14.dp)) // Toned down from 16.dp
+                                        Icon(Icons.Filled.KeyboardArrowDown, contentDescription = "Decrease Serving", tint = colorResource(R.color.accent_yellow).copy(alpha = 1f), modifier = Modifier.size(14.dp))
                                     }
                                     Text(
                                         text = "$servingCount",
-                                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, fontSize = 14.sp), // Toned down from 16.sp
+                                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, fontSize = 14.sp),
                                         modifier = Modifier.padding(horizontal = 4.dp)
                                     )
                                     Button(
                                         onClick = { servingCount++ },
-                                        modifier = Modifier.size(18.dp), // Toned down from 20.dp
+                                        modifier = Modifier.size(18.dp),
                                         shape = CircleShape,
                                         contentPadding = PaddingValues(0.dp),
                                         colors = ButtonDefaults.buttonColors(containerColor = colorResource(R.color.primary).copy(alpha = 1f))
                                     ) {
-                                        Icon(Icons.Filled.KeyboardArrowUp, contentDescription = "Increase Serving", tint = colorResource(R.color.accent_yellow).copy(alpha = 1f), modifier = Modifier.size(14.dp)) // Toned down from 16.dp
+                                        Icon(Icons.Filled.KeyboardArrowUp, contentDescription = "Increase Serving", tint = colorResource(R.color.accent_yellow).copy(alpha = 1f), modifier = Modifier.size(14.dp))
                                     }
                                 }
                             }
@@ -600,7 +708,7 @@ fun DetailRecipeScreen(recipeId: Int, navController: NavController) {
                             val indentSpacerWidth = 8.dp
 
                             Column(modifier = Modifier.padding(start = 8.dp)) {
-                                recipe.ingredients.forEach { ingredient -> // Use 'recipe' directly
+                                recipe.ingredients.forEach { ingredient ->
                                     Row(
                                         modifier = Modifier
                                             .fillMaxWidth()
@@ -609,7 +717,7 @@ fun DetailRecipeScreen(recipeId: Int, navController: NavController) {
                                     ) {
                                         Box(
                                             modifier = Modifier
-                                                .width(ingredientValueBoxWidth) // Fixed width for quantity
+                                                .width(ingredientValueBoxWidth)
                                                 .height(20.dp)
                                                 .clip(RoundedCornerShape(8.dp))
                                                 .background(colorResource(R.color.primary).copy(alpha = 1f)),
@@ -618,7 +726,7 @@ fun DetailRecipeScreen(recipeId: Int, navController: NavController) {
                                             val (formattedQty, _) = formatIngredientQuantity(ingredient.qty, ingredient.unitMeasurement)
                                             Text(
                                                 text = formattedQty,
-                                                style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold, fontSize = 10.sp), // Toned down from 11.sp
+                                                style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold, fontSize = 10.sp),
                                                 color = colorResource(R.color.accent_yellow).copy(alpha = 1f),
                                                 textAlign = TextAlign.End,
                                                 modifier = Modifier.padding(end = 8.dp),
@@ -629,8 +737,8 @@ fun DetailRecipeScreen(recipeId: Int, navController: NavController) {
                                         Spacer(modifier = Modifier.width(indentSpacerWidth))
 
                                         Text(
-                                            text = formatIngredientQuantity(ingredient.qty, ingredient.unitMeasurement).second, // Display formatted unit
-                                            style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp), // Toned down from 14.sp
+                                            text = formatIngredientQuantity(ingredient.qty, ingredient.unitMeasurement).second,
+                                            style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp),
                                             fontWeight = FontWeight.Normal,
                                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                                             modifier = Modifier.width(70.dp)
@@ -639,11 +747,24 @@ fun DetailRecipeScreen(recipeId: Int, navController: NavController) {
 
                                         Text(
                                             text = ingredient.name,
-                                            style = MaterialTheme.typography.bodyLarge.copy(fontSize = 14.sp), // Toned down from 16.sp
+                                            style = MaterialTheme.typography.bodyLarge.copy(fontSize = 14.sp),
                                             modifier = Modifier.weight(1f)
                                         )
                                     }
                                 }
+                            }
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Button(
+                                onClick = { /* Handle add to groceries */ },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(45.dp),
+                                colors = ButtonDefaults.buttonColors(containerColor = colorResource(R.color.primary).copy(alpha = 1f)),
+                                shape = RoundedCornerShape(8.dp)
+                            ) {
+                                Icon(Icons.Filled.Add, contentDescription = "Add to Groceries", tint = MaterialTheme.colorScheme.onPrimary)
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(text = "Add to Groceries", color = MaterialTheme.colorScheme.onPrimary, fontSize = 14.sp)
                             }
                         }
                     }
@@ -658,41 +779,40 @@ fun DetailRecipeScreen(recipeId: Int, navController: NavController) {
                         colors = CardDefaults.cardColors(containerColor = Color.Transparent)
                     ) {
                         Column(modifier = Modifier.padding(16.dp)) {
-                            Row(verticalAlignment = Alignment.Bottom) { // Aligns children baselines at the bottom
+                            Row(verticalAlignment = Alignment.Bottom) {
                                 Text(
                                     text = "Nutrition",
-                                    style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold, fontSize = 18.sp, color = colorResource(R.color.primary).copy(alpha = 1f)), // Toned down from 20.sp
+                                    style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold, fontSize = 18.sp, color = colorResource(R.color.primary).copy(alpha = 1f)),
                                 )
                             }
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceAround, // Changed to SpaceAround for even spacing
+                                horizontalArrangement = Arrangement.SpaceAround,
                                 verticalAlignment = Alignment.Top
                             ) {
-                                // Define a common width for all nutrition value boxes
-                                val commonNutritionItemWidth = 70.dp // Adjusted for consistent width
+                                val commonNutritionItemWidth = 70.dp
 
-                                recipe.nutritionFacts.forEach { fact -> // Use 'recipe' directly
+                                recipe.nutritionFacts.forEach { fact ->
                                     Column(
                                         horizontalAlignment = Alignment.CenterHorizontally,
-                                        modifier = Modifier.width(commonNutritionItemWidth) // Apply common width
+                                        modifier = Modifier.width(commonNutritionItemWidth)
                                     ) {
                                         Text(
                                             text = fact.label,
-                                            style = MaterialTheme.typography.bodyMedium.copy(fontSize = 14.sp), // Toned down from 16.sp
+                                            style = MaterialTheme.typography.bodyMedium.copy(fontSize = 14.sp),
                                             modifier = Modifier.padding(bottom = 4.dp)
                                         )
                                         Box(
                                             modifier = Modifier
-                                                .height(30.dp) // Toned down from 32.dp
-                                                .fillMaxWidth() // Fill the commonNutritionItemWidth
+                                                .height(30.dp)
+                                                .fillMaxWidth()
                                                 .clip(RoundedCornerShape(8.dp))
                                                 .background(colorResource(R.color.primary).copy(alpha = 1f)),
                                             contentAlignment = Alignment.Center
                                         ) {
                                             Text(
                                                 text = fact.value,
-                                                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold, fontSize = 10.sp), // Toned down from 11.sp
+                                                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold, fontSize = 10.sp),
                                                 color = colorResource(R.color.accent_yellow).copy(alpha = 1f),
                                                 maxLines = 1,
                                                 overflow = TextOverflow.Ellipsis
@@ -716,11 +836,11 @@ fun DetailRecipeScreen(recipeId: Int, navController: NavController) {
                         Column(modifier = Modifier.padding(16.dp)) {
                             Text(
                                 text = "Instructions",
-                                style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold, fontSize = 18.sp, color = colorResource(R.color.primary).copy(alpha = 1f)), // Toned down from 20.sp
+                                style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold, fontSize = 18.sp, color = colorResource(R.color.primary).copy(alpha = 1f)),
                                 modifier = Modifier.padding(bottom = 8.dp)
                             )
 
-                            recipe.steps.forEach { step -> // Use 'recipe' directly
+                            recipe.steps.forEach { step ->
                                 Column(
                                     modifier = Modifier
                                         .fillMaxWidth()
@@ -729,17 +849,17 @@ fun DetailRecipeScreen(recipeId: Int, navController: NavController) {
                                     Row(verticalAlignment = Alignment.CenterVertically) {
                                         Box(
                                             modifier = Modifier
-                                                .size(28.dp) // Toned down from 30.dp
+                                                .size(28.dp)
                                                 .clip(CircleShape)
                                                 .background(colorResource(R.color.primary).copy(alpha = 1f)),
                                             contentAlignment = Alignment.Center
                                         ) {
-                                            Text(text = "${step.stepNumber}", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 14.sp) // Toned down from 16.sp
+                                            Text(text = "${step.stepNumber}", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 14.sp)
                                         }
                                         Spacer(modifier = Modifier.width(8.dp))
                                         Text(
                                             text = step.description,
-                                            style = MaterialTheme.typography.bodyLarge.copy(fontSize = 14.sp), // Toned down from 16.sp
+                                            style = MaterialTheme.typography.bodyLarge.copy(fontSize = 14.sp),
                                             modifier = Modifier.weight(1f)
                                         )
                                     }
@@ -760,18 +880,18 @@ fun DetailRecipeScreen(recipeId: Int, navController: NavController) {
                         Column(modifier = Modifier.padding(16.dp)) {
                             Text(
                                 text = "Comments",
-                                style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold, fontSize = 18.sp, color = colorResource(R.color.primary).copy(alpha = 1f)), // Toned down from 20.sp
+                                style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold, fontSize = 18.sp, color = colorResource(R.color.primary).copy(alpha = 1f)),
                                 modifier = Modifier.padding(bottom = 8.dp)
                             )
-                            if (recipe.comments.isEmpty()) { // Use 'recipe' directly
+                            if (recipe.comments.isEmpty()) {
                                 Text(
                                     text = "No comments yet. Be the first to share your thoughts!",
-                                    style = MaterialTheme.typography.bodyMedium.copy(fontSize = 14.sp), // Toned down from default
+                                    style = MaterialTheme.typography.bodyMedium.copy(fontSize = 14.sp),
                                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                                     modifier = Modifier.padding(vertical = 8.dp)
                                 )
                             } else {
-                                recipe.comments.forEach { comment -> // Use 'recipe' directly
+                                recipe.comments.forEach { comment ->
                                     Row(
                                         modifier = Modifier
                                             .fillMaxWidth()
@@ -783,7 +903,7 @@ fun DetailRecipeScreen(recipeId: Int, navController: NavController) {
                                                 painter = rememberAsyncImagePainter(comment.imageUrl),
                                                 contentDescription = "User Avatar",
                                                 modifier = Modifier
-                                                    .size(40.dp) // Toned down from 48.dp
+                                                    .size(40.dp)
                                                     .clip(CircleShape)
                                                     .background(colorResource(R.color.accent_yellow).copy(alpha = 1f)),
                                                 contentScale = ContentScale.Crop
@@ -793,7 +913,7 @@ fun DetailRecipeScreen(recipeId: Int, navController: NavController) {
                                                 painter = painterResource(id = R.drawable.ic_serving),
                                                 contentDescription = "User Avatar",
                                                 modifier = Modifier
-                                                    .size(40.dp) // Toned down from 48.dp
+                                                    .size(40.dp)
                                                     .clip(CircleShape)
                                                     .background(colorResource(R.color.accent_yellow).copy(alpha = 1f)),
                                                 contentScale = ContentScale.Crop,
@@ -802,20 +922,20 @@ fun DetailRecipeScreen(recipeId: Int, navController: NavController) {
                                         }
                                         Spacer(modifier = Modifier.width(8.dp))
                                         Column(modifier = Modifier.weight(1f)) {
-                                            Text(text = comment.userName, fontWeight = FontWeight.Bold, fontSize = 14.sp) // Toned down from 16.sp
-                                            Text(text = comment.commentText, style = MaterialTheme.typography.bodyLarge.copy(fontSize = 14.sp)) // Toned down from 16.sp
+                                            Text(text = comment.userName, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                                            Text(text = comment.commentText, style = MaterialTheme.typography.bodyLarge.copy(fontSize = 14.sp))
                                             comment.isUpvote?.let { isUpvote ->
                                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                                     Icon(
                                                         imageVector = if (isUpvote) Icons.Default.ThumbUp else Icons.Default.ThumbDown,
                                                         contentDescription = if (isUpvote) "Upvoted" else "Downvoted",
                                                         tint = if (isUpvote) Color.Green else Color.Red,
-                                                        modifier = Modifier.size(14.dp) // Toned down from 16.dp
+                                                        modifier = Modifier.size(14.dp)
                                                     )
                                                     Spacer(modifier = Modifier.width(4.dp))
                                                     Text(
                                                         text = if (isUpvote) "Recommended" else "Not Recommended",
-                                                        fontSize = 11.sp, // Toned down from 12.sp
+                                                        fontSize = 11.sp,
                                                         color = if (isUpvote) Color.Green else Color.Red
                                                     )
                                                 }
@@ -857,7 +977,7 @@ fun DetailRecipeScreen(recipeId: Int, navController: NavController) {
                         onClick = { /* Handle add to planner */ },
                         modifier = Modifier
                             .weight(0.5f)
-                            .height(45.dp), // Toned down from 50.dp
+                            .height(45.dp),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = MaterialTheme.colorScheme.surfaceVariant,
                             contentColor = MaterialTheme.colorScheme.onSurfaceVariant
@@ -866,7 +986,7 @@ fun DetailRecipeScreen(recipeId: Int, navController: NavController) {
                     ) {
                         Icon(Icons.Filled.Add, contentDescription = "Add to Planner")
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text(text = "Add to Planner", fontSize = 14.sp) // Toned down from 15.5.sp
+                        Text(text = "Add to Planner", fontSize = 14.sp)
                     }
 
                     Spacer(modifier = Modifier.width(16.dp))
@@ -877,11 +997,11 @@ fun DetailRecipeScreen(recipeId: Int, navController: NavController) {
                         },
                         modifier = Modifier
                             .weight(0.5f)
-                            .height(45.dp), // Toned down from 50.dp
+                            .height(45.dp),
                         colors = ButtonDefaults.buttonColors(containerColor = colorResource(R.color.primary).copy(alpha = 1f)),
                         shape = RoundedCornerShape(8.dp)
                     ) {
-                        Text(text = "Start Instruction", color = MaterialTheme.colorScheme.onPrimary, fontSize = 14.sp) // Toned down from 16.sp
+                        Text(text = "Start Instruction", color = MaterialTheme.colorScheme.onPrimary, fontSize = 14.sp)
                     }
                 }
             }
@@ -923,10 +1043,9 @@ fun DetailRecipeScreen(recipeId: Int, navController: NavController) {
                             .pointerInput(Unit) {
                                 detectDragGestures(
                                     onDragEnd = {
-                                        if (offsetY > size.height / 4f) { // Dismiss if dragged down by more than 25% of its height
+                                        if (offsetY > size.height / 4f) {
                                             showShareDialog = false
                                         } else {
-                                            // Animate back to original position if not dismissed
                                             coroutineScope.launch {
                                                 offsetY = 0f
                                             }
@@ -934,7 +1053,6 @@ fun DetailRecipeScreen(recipeId: Int, navController: NavController) {
                                     }
                                 ) { change, dragAmount ->
                                     change.consume()
-                                    // Only allow dragging downwards (positive y-axis delta)
                                     offsetY = (offsetY + dragAmount.y).coerceAtLeast(0f)
                                 }
                             },
@@ -947,7 +1065,6 @@ fun DetailRecipeScreen(recipeId: Int, navController: NavController) {
                                 .fillMaxWidth(),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            // Drag handle
                             Box(
                                 modifier = Modifier
                                     .width(40.dp)
@@ -957,16 +1074,17 @@ fun DetailRecipeScreen(recipeId: Int, navController: NavController) {
                             )
                             Text(
                                 text = "Share to...",
-                                style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold, fontSize = 20.sp), // Toned down from default
+                                style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold, fontSize = 20.sp),
                                 color = MaterialTheme.colorScheme.onSurface,
                                 modifier = Modifier.padding(vertical = 16.dp)
                             )
 
-                            // Changed shareLink to use a custom scheme for internal app navigation
-                            val shareLink = "app://pancook.recipe/${recipe.id}" // Use 'recipe.id'
+                            val shareLink = "app://pancook.recipe/${recipe.id}"
 
                             LazyRow(
-                                modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 8.dp),
                                 horizontalArrangement = Arrangement.SpaceAround,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
@@ -995,7 +1113,6 @@ fun DetailRecipeScreen(recipeId: Int, navController: NavController) {
                                         try {
                                             context.startActivity(sendIntent)
                                         } catch (e: Exception) {
-                                            // Handle if WhatsApp is not installed
                                             showShareDialog = false
                                         }
                                         showShareDialog = false
@@ -1015,7 +1132,6 @@ fun DetailRecipeScreen(recipeId: Int, navController: NavController) {
                                         try {
                                             context.startActivity(sendIntent)
                                         } catch (e: Exception) {
-                                            // Handle if Facebook is not installed
                                             showShareDialog = false
                                         }
                                         showShareDialog = false
@@ -1044,7 +1160,7 @@ fun DetailRecipeScreen(recipeId: Int, navController: NavController) {
                                 onValueChange = { /* Read-only */ },
                                 readOnly = true,
                                 modifier = Modifier.fillMaxWidth(),
-                                label = { Text("Link", fontSize = 14.sp) }, // Toned down from default
+                                label = { Text("Link", fontSize = 14.sp) },
                                 trailingIcon = {
                                     IconButton(onClick = {
                                         val clipboardManager = context.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
@@ -1052,18 +1168,20 @@ fun DetailRecipeScreen(recipeId: Int, navController: NavController) {
                                         clipboardManager.setPrimaryClip(clipData)
                                         showShareDialog = false
                                     }) {
-                                        Icon(Icons.Default.ContentCopy, contentDescription = "Copy", modifier = Modifier.size(20.dp)) // Toned down from default
+                                        Icon(Icons.Default.ContentCopy, contentDescription = "Copy", modifier = Modifier.size(20.dp))
                                     }
                                 }
                             )
                             Spacer(modifier = Modifier.height(16.dp))
                             Button(
                                 onClick = { showShareDialog = false },
-                                modifier = Modifier.fillMaxWidth().height(40.dp), // Toned down from default
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(40.dp),
                                 colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
                                 shape = RoundedCornerShape(8.dp)
                             ) {
-                                Text("Close", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp) // Toned down from default
+                                Text("Close", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp)
                             }
                         }
                     }
@@ -1079,11 +1197,11 @@ fun ShareOption(icon: ImageVector, text: String, onClick: () -> Unit) {
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
             .clickable(onClick = onClick)
-            .padding(6.dp) // Toned down from 8.dp
+            .padding(6.dp)
     ) {
         Box(
             modifier = Modifier
-                .size(45.dp) // Toned down from 50.dp
+                .size(45.dp)
                 .clip(CircleShape)
                 .background(MaterialTheme.colorScheme.secondaryContainer),
             contentAlignment = Alignment.Center
@@ -1091,12 +1209,12 @@ fun ShareOption(icon: ImageVector, text: String, onClick: () -> Unit) {
             Icon(
                 imageVector = icon,
                 contentDescription = text,
-                modifier = Modifier.size(20.dp), // Toned down from 24.dp
+                modifier = Modifier.size(20.dp),
                 tint = MaterialTheme.colorScheme.onSecondaryContainer
             )
         }
         Spacer(modifier = Modifier.width(4.dp))
-        Text(text = text, style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp)) // Toned down from default
+        Text(text = text, style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp))
     }
 }
 
@@ -1108,6 +1226,6 @@ fun ShareOption(icon: ImageVector, text: String, onClick: () -> Unit) {
 @Composable
 fun DetailRecipeScreenPreview() {
     PancookTheme {
-        DetailRecipeScreen(recipeId = 1, navController = rememberNavController())
+        DetailRecipeScreen(recipeId = 4, navController = rememberNavController())
     }
 }

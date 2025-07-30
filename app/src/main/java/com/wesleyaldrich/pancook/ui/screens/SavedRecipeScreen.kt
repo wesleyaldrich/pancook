@@ -28,7 +28,6 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.ExperimentalMaterial3Api // Required for TopAppBar
@@ -41,6 +40,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import com.wesleyaldrich.pancook.ui.theme.poppins
+import androidx.compose.runtime.LaunchedEffect // Required for LaunchedEffect
 
 @OptIn(ExperimentalMaterial3Api::class) // Add this annotation
 @Composable
@@ -48,6 +48,13 @@ fun SavedRecipeScreen(
     navController: NavController,
     onBackClick: () -> Unit // ADD THIS PARAMETER
 ) {
+    // Ensure upvotedRecipes state is reflected in allRecipes for consistent upvote status display
+    LaunchedEffect(upvotedRecipes.toList()) {
+        allRecipes.forEach { recipe ->
+            recipe.isUpvoted = upvotedRecipes.contains(recipe)
+        }
+    }
+
     Scaffold( // Wrap your content with Scaffold
         topBar = {
             TopAppBar(
@@ -64,7 +71,7 @@ fun SavedRecipeScreen(
                     IconButton(onClick = onBackClick) {
                         // Change icon to ArrowBack and remove graphicsLayer if you want it to match GroceryScreen exactly
                         Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack, // Changed from PlayArrow
+                            imageVector = Icons.Filled.ArrowBack, // Changed from PlayArrow
                             contentDescription = "Back",
                             modifier = Modifier
                                 .size(50.dp)
@@ -98,6 +105,8 @@ fun SavedRecipeScreen(
                 ) {
                     items(bookmarkedRecipes) { recipe ->
                         val isBookmarked = remember(recipe.id) { bookmarkedRecipes.contains(recipe) }
+                        val isUpvoted = remember(recipe.id) { upvotedRecipes.contains(recipe) } // Get upvote status for the recipe
+
                         ReusableCard(
                             imagePainter = painterResource(id = recipe.images.first()),
                             title = recipe.title,
@@ -116,6 +125,16 @@ fun SavedRecipeScreen(
                                 bookmarkedRecipes.remove(recipe)
                             },
                             hideDeleteButton = true,
+                            isUpvoted = isUpvoted, // Pass isUpvoted to ReusableCard
+                            onUpvoteClick = { // Add onUpvoteClick lambda for the upvote button
+                                if (upvotedRecipes.contains(recipe)) {
+                                    upvotedRecipes.remove(recipe)
+                                    recipe.upvoteCount--
+                                } else {
+                                    upvotedRecipes.add(recipe)
+                                    recipe.upvoteCount++
+                                }
+                            },
                             modifier = Modifier.clickable {
                                 navController.navigate(Screen.DetailRecipe.createRoute(recipe.id))
                             }
