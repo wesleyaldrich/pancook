@@ -4,41 +4,12 @@ import android.graphics.Color.rgb
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.RowScope
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.SaveAlt
-import androidx.compose.material3.BottomAppBar
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FabPosition
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Icon
-import androidx.compose.material3.LocalAbsoluteTonalElevation
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.NavigationBarItemDefaults
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.surfaceColorAtElevation
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -49,6 +20,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp // ✅ FIXED: Add this import
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -56,9 +28,11 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.wesleyaldrich.pancook.R
+import com.wesleyaldrich.pancook.ui.navigation.IconResource
 import com.wesleyaldrich.pancook.ui.navigation.NavigationGraph
 import com.wesleyaldrich.pancook.ui.navigation.Screen
 import com.wesleyaldrich.pancook.ui.theme.nunito
+import com.wesleyaldrich.pancook.ui.theme.poppins
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -86,29 +60,24 @@ fun MainScreen(onLogout: () -> Unit) {
         },
         bottomBar = {
             if (!isSpecialScreen) {
-                // We call the new Custom PanCook Bar
                 CustomPanCookBar(navController = navController, currentRoute = currentRoute)
             }
         }
-        // 1. The separate FloatingActionButton has been removed from here, as you requested.
     ) { paddingValues ->
-        // This modifier has been updated to prevent content from being cut off.
         NavigationGraph(
             navController,
-            modifier = Modifier.padding(paddingValues).fillMaxSize(),
+            modifier = Modifier
+                .padding(paddingValues)
+                .fillMaxSize(),
             onLogout = onLogout
         )
     }
 }
 
-/**
- * The new bottom bar. It uses a simple Row to prevent layout issues
- * while allowing for the custom "Add" button design.
- */
 @Composable
 fun CustomPanCookBar(navController: NavHostController, currentRoute: String?) {
     val items = listOf(Screen.Home, Screen.MyRecipe, Screen.Add, Screen.Planner, Screen.Profile)
-    val screensWithoutLabels = listOf(Screen.Add.route) // Add screens here that shouldn't have a label
+    val screensWithoutLabels = listOf(Screen.Add.route)
 
     Row(
         modifier = Modifier
@@ -121,7 +90,6 @@ fun CustomPanCookBar(navController: NavHostController, currentRoute: String?) {
         items.forEach { screen ->
             val isSelected = currentRoute == screen.route
             if (screen == Screen.Add) {
-                // 2. The "Add" button is now inside the bar, with the elevated look.
                 Box(
                     modifier = Modifier
                         .weight(1f)
@@ -132,10 +100,9 @@ fun CustomPanCookBar(navController: NavHostController, currentRoute: String?) {
                         onClick = { navController.navigate(Screen.Add.route) },
                         modifier = Modifier.offset(y = (-40).dp),
                         shape = CircleShape,
-                        containerColor = MaterialTheme.colorScheme.primary,
-                        contentColor = MaterialTheme.colorScheme.onPrimary
+                        containerColor = MaterialTheme.colorScheme.primary
                     ) {
-                        Icon(Icons.Default.Add, contentDescription = "Add Recipe")
+                        Icon(Icons.Default.Add, contentDescription = "Add Recipe", tint = MaterialTheme.colorScheme.onPrimary)
                     }
                 }
             } else {
@@ -155,8 +122,8 @@ fun CustomPanCookBar(navController: NavHostController, currentRoute: String?) {
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
                 ) {
-                    Icon(
-                        imageVector = screen.icon,
+                    AppIcon(
+                        iconResource = screen.icon,
                         contentDescription = screen.title,
                         tint = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -164,6 +131,8 @@ fun CustomPanCookBar(navController: NavHostController, currentRoute: String?) {
                         Text(
                             text = screen.title,
                             fontSize = 12.sp,
+                            fontFamily = poppins,
+                            fontWeight = FontWeight.SemiBold,
                             color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
@@ -174,9 +143,35 @@ fun CustomPanCookBar(navController: NavHostController, currentRoute: String?) {
 }
 
 @Composable
+fun AppIcon(
+    iconResource: IconResource,
+    contentDescription: String?,
+    modifier: Modifier = Modifier,
+    tint: Color = LocalContentColor.current,
+    size: Dp = 32.dp
+) {
+    val combinedModifier = modifier.size(size)
+
+    when (iconResource) {
+        is IconResource.Drawable -> Icon(
+            painter = painterResource(id = iconResource.id),
+            contentDescription = contentDescription,
+            modifier = combinedModifier,
+            tint = tint
+        )
+        is IconResource.Vector -> Icon(
+            imageVector = iconResource.imageVector,
+            contentDescription = contentDescription,
+            modifier = combinedModifier,
+            tint = tint
+        )
+    }
+}
+
+@Composable
 fun CustomTopBar(
     username: String,
-    profileImageResId: Int = R.drawable.nopal, // replace with your image
+    profileImageResId: Int = R.drawable.nopal,
     onFirstButtonClick: () -> Unit,
     onSecondButtonClick: () -> Unit
 ) {
@@ -189,7 +184,6 @@ fun CustomTopBar(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        // Left Side: Profile picture + Username
         Row(verticalAlignment = Alignment.CenterVertically) {
             Image(
                 painter = painterResource(profileImageResId),
@@ -209,14 +203,13 @@ fun CustomTopBar(
             )
         }
 
-        // Right Side: Two pill buttons
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             IconButtonPill(
-                icon = Icons.AutoMirrored.Filled.List,
+                icon = IconResource.Drawable(R.drawable.nav_grocery_list),
                 onClick = onFirstButtonClick
             )
             IconButtonPill(
-                icon = Icons.Default.SaveAlt,
+                icon = IconResource.Drawable(R.drawable.nav_saved_recipe),
                 onClick = onSecondButtonClick
             )
         }
@@ -225,7 +218,7 @@ fun CustomTopBar(
 
 @Composable
 fun IconButtonPill(
-    icon: ImageVector,
+    icon: IconResource,
     onClick: () -> Unit
 ) {
     Box(
@@ -233,12 +226,13 @@ fun IconButtonPill(
             .clip(RoundedCornerShape(50))
             .background(Color(5, 26, 57))
             .clickable(onClick = onClick)
-            .padding(horizontal = 20.dp, vertical = 6.dp)
+            .padding(horizontal = 16.dp, vertical = 4.dp)
     ) {
-        Icon(
-            imageVector = icon,
+        AppIcon(
+            iconResource = icon,
             contentDescription = null,
-            tint = Color.White
+            tint = Color.White,
+            size = 32.dp
         )
     }
 }
