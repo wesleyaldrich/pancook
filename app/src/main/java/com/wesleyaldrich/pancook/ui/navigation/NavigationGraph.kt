@@ -65,7 +65,8 @@ fun NavigationGraph(
         }
         composable(Screen.SavedRecipe.route) {
             SavedRecipeScreen(
-                navController = navController
+                navController = navController,
+                onBackClick = { navController.popBackStack() }
             )
         }
         composable(
